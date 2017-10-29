@@ -467,7 +467,7 @@ defmodule ExAws.ElasticLoadBalancing do
               |> filter_nil_params
               |> Map.put("Action", action_string)
               |> Map.put("Version", @version),
-      service: :elb,
+      service: :elastic_load_balancing,
       action: action
     }
   end
