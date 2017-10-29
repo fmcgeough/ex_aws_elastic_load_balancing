@@ -19,4 +19,5 @@ def deps do
 end
 ```
 
-Documentation can be found at https://hexdocs.pm/ex_aws_elastic_load_balancing.
+This is just the initial project structure. Lots of work to do to make this
+viable.
