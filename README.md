@@ -2,7 +2,7 @@
 
 Service module for https://github.com/ex-aws/ex_aws
 
-##Installation
+## Installation
 
 The package can be installed by adding ex_aws_elastic_load_balancing to your 
 list of dependencies in mix.exs along with :ex_aws and your 
