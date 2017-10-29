@@ -8,6 +8,7 @@ The package can be installed by adding ex_aws_elastic_load_balancing to your
 list of dependencies in mix.exs along with :ex_aws and your 
 preferred JSON codec / http client
 
+```elixir
 def deps do
   [
     {:ex_aws, "~> 2.0"},
@@ -16,5 +17,6 @@ def deps do
     {:hackney, "~> 1.9"},
   ]
 end
+```
 
 Documentation can be found at https://hexdocs.pm/ex_aws_elastic_load_balancing.
