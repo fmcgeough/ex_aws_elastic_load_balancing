@@ -26,6 +26,62 @@ defmodule ExAws.ElasticLoadBalancing do
 
   @type tag :: {key :: atom, value :: binary}
   
+  @type load_balancer_address :: [
+    ip_address: binary,
+    allocation_id: binary
+  ]
+
+  @type action :: [
+    action_type_enum: binary,
+    target_group_arn: binary
+  ]
+
+  @type availability_zone :: [
+    zone_name: boolean,
+    subnet_id: binary,
+    load_balancer_addresses: [load_balancer_address, ...]
+  ]
+  
+  @type certificate :: [
+    certificate_arn: binary,
+    is_default: boolean
+  ]
+
+  @type add_listener_certificates_input :: [
+    listener_arn: binary,
+    certificates: [certificate, ...]
+  ]
+
+  @type port_spec :: [
+    max: integer,
+    min: integer
+  ]
+
+  @type target_group :: [
+    target_group_arn: binary,
+    target_group_name: binary,
+    protocol: binary,
+    port: port_spec,
+  ]
+
+  @type remove_listener_certificates_input :: [
+    listener_arn: binary,
+    certificates: [certificate, ...]
+  ]
+
+  @type rule_condition :: [
+    field: binary,
+    values: [binary, ...]
+  ]
+
+  @type rule :: [
+    rule_arn: binary,
+    priority: binary,
+    conditions: [rule_condition, ...],
+    actions: [action, ...],
+    is_default: boolean
+  ]
+  
   @doc """
   Adds the specified certificate to the specified secure listener.
 
@@ -52,9 +108,9 @@ defmodule ExAws.ElasticLoadBalancing do
   """
   @spec add_tags(load_balancer_names :: [binary, ...], tags :: [tag, ...]) :: ExAws.Operation.Query.t
   def add_tags(load_balancer_names, tags, opts \\ []) do
-    [ {:load_balancer_name, load_balancer_names},
+    [ {:load_balancer_names, load_balancer_names},
     {:tags, tags} | opts ]
-    |> build_request(:add_listener_certificates)
+    |> build_request(:add_tags)
   end
 
   @doc """
