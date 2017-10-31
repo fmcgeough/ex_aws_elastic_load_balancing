@@ -38,12 +38,6 @@ defmodule ExAws.ElasticLoadBalancing do
           tags: [tag, ...]
         ]
 
-  @type availability_zone :: [
-          zone_name: boolean,
-          subnet_id: binary,
-          load_balancer_addresses: [load_balancer_address, ...]
-        ]
-
   @type certificate :: [
           certificate_arn: binary,
           is_default: boolean
@@ -72,34 +66,9 @@ defmodule ExAws.ElasticLoadBalancing do
           availability_zone: binary
         ]
 
-  @type load_balancer :: [
-          load_balancer_arn: binary,
-          dns_name: binary,
-          canonical_hosted_zone_id: binary,
-          created_time: %DateTime{},
-          load_balancer_name: binary,
-          scheme: binary,
-          vpc_id: binary,
-          state: binary,
-          type: binary,
-          availability_zones: [binary, ...],
-          security_groups: [binary, ...],
-          ip_address_type: binary
-        ]
-
   @type load_balancer_address :: [
           ip_address: binary,
           allocation_id: binary
-        ]
-
-  @type listener :: [
-          listener_arn: binary,
-          load_balancer_arn: binary,
-          port: port_spec,
-          protocol: binary,
-          certificates: [certificate, ...],
-          ssl_policy: binary,
-          default_actions: [action, ...]
         ]
 
   @type rule_condition :: [
@@ -174,18 +143,31 @@ defmodule ExAws.ElasticLoadBalancing do
   * [Listeners for Your Network Load Balancers](http://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-listeners.html) 
   in the *Network Load Balancers Guide*
   """
-  @type create_listener_input :: [
-          load_balancer_arn: binary,
-          protocol: binary,
-          port: port_spec,
-          default_actions: [action, ...],
+  @type create_listener_opts :: [
           ssl_policy: binary,
           certificates: [certificate, ...]
         ]
-  @spec create_listener() :: ExAws.Operation.Query.t()
-  @spec create_listener(opts :: create_listener_input) :: ExAws.Operation.Query.t()
-  def create_listener(opts \\ []) do
-    opts |> build_request(:create_listener)
+  @spec create_listener(
+          load_balancer_arn :: binary,
+          protocol :: binary,
+          port :: port_spec,
+          default_actions :: [action, ...]
+        ) :: ExAws.Operation.Query.t()
+  @spec create_listener(
+          load_balancer_arn :: binary,
+          protocol :: binary,
+          port :: port_spec,
+          default_actions :: [action, ...],
+          opts :: create_listener_opts
+        ) :: ExAws.Operation.Query.t()
+  def create_listener(load_balancer_arn, protocol, port, default_actions, opts \\ []) do
+    [
+      {:load_balancer_arn, load_balancer_arn},
+      {:protocol, protocol},
+      {:port, port},
+      {:default_actions, default_actions} | opts
+    ]
+    |> build_request(:create_listener)
   end
 
   @doc """
@@ -209,19 +191,20 @@ defmodule ExAws.ElasticLoadBalancing do
   in the *Network Load Balancers Guide* 
   """
   @type create_load_balancer_input :: [
-          name: binary,
           subnets: [binary, ...],
-          subnet_mappings: [binary, ...],
+          subnet_mappings: [subnet_mapping, ...],
           security_groups: [binary, ...],
           scheme: binary,
           tags: [tag, ...],
           type: binary,
           ip_address_type: binary
         ]
-  @spec create_load_balancer() :: ExAws.Operation.Query.t()
-  @spec create_load_balancer(opts :: create_load_balancer_input) :: ExAws.Operation.Query.t()
-  def create_load_balancer(opts \\ []) do
-    opts |> build_request(:create_load_balancer)
+  @spec create_load_balancer(name :: binary) :: ExAws.Operation.Query.t()
+  @spec create_load_balancer(name :: binary, opts :: create_load_balancer_input) ::
+          ExAws.Operation.Query.t()
+  def create_load_balancer(name, opts \\ []) do
+    [{:name, name} | opts]
+    |> build_request(:create_load_balancer)
   end
 
   @doc """
