@@ -190,7 +190,7 @@ defmodule ExAws.ElasticLoadBalancing do
   * [Limits for Your Network Load Balancer](http://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-limits.html)
   in the *Network Load Balancers Guide* 
   """
-  @type create_load_balancer_input :: [
+  @type create_load_balancer_opts :: [
           subnets: [binary, ...],
           subnet_mappings: [subnet_mapping, ...],
           security_groups: [binary, ...],
@@ -200,7 +200,7 @@ defmodule ExAws.ElasticLoadBalancing do
           ip_address_type: binary
         ]
   @spec create_load_balancer(name :: binary) :: ExAws.Operation.Query.t()
-  @spec create_load_balancer(name :: binary, opts :: create_load_balancer_input) ::
+  @spec create_load_balancer(name :: binary, opts :: create_load_balancer_opts) ::
           ExAws.Operation.Query.t()
   def create_load_balancer(name, opts \\ []) do
     [{:name, name} | opts]
@@ -223,16 +223,16 @@ defmodule ExAws.ElasticLoadBalancing do
   `modify_rule/1`. To set the priorities of your rules, use `set_rule_priorities/1`. 
   To delete a rule, use `delete_rule/1`.
   """
-  @type create_rule_input :: [
-          listener_arn: binary,
-          conditions: [rule_condition, ...],
-          priority: integer,
-          actions: [action, ...]
-        ]
-  @spec create_rule() :: ExAws.Operation.Query.t()
-  @spec create_rule(opts :: create_rule_input) :: ExAws.Operation.Query.t()
-  def create_rule(opts \\ []) do
-    opts |> build_request(:create_rule)
+  @spec create_rule(listener_arn :: binary,
+          conditions :: [rule_condition, ...],
+          priority :: integer,
+          actions :: [action, ...]) :: ExAws.Operation.Query.t()
+  def create_rule(listener_arm, conditions, priority, actions, opts \\ []) do
+    [{:listener_arm, listener_arm},
+     {:conditions, conditions},
+     {:priority, priority},
+     {:actions, actions} | opts]
+    |> build_request(:create_rule)
   end
 
   @doc """
