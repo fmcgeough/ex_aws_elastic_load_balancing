@@ -26,6 +26,7 @@ defmodule ExAws.ElasticLoadBalancing do
 
   @type tag :: {key :: atom, value :: binary}
   @type load_balancer_attribute :: {key :: atom, value :: binary}
+  @type target_group_attribute :: {key :: atom, value :: binary}
 
   @type action :: [
           action_type_enum: binary,
@@ -71,20 +72,6 @@ defmodule ExAws.ElasticLoadBalancing do
           availability_zone: binary
         ]
 
-  @type modify_target_group_input :: [
-          target_group_arn: binary,
-          health_check_protocol: binary,
-          health_check_port: binary,
-          health_check_path: binary,
-          # min 5, max 300
-          health_check_interval_seconds: integer,
-          # min 2, max 60
-          health_check_timeout_seconds: integer,
-          # min 2, max 60
-          unhealthy_threshold_count: integer,
-          matcher: binary
-        ]
-
   @type load_balancer :: [
           load_balancer_arn: binary,
           dns_name: binary,
@@ -115,11 +102,6 @@ defmodule ExAws.ElasticLoadBalancing do
           default_actions: [action, ...]
         ]
 
-  @type remove_listener_certificates_input :: [
-          listener_arn: binary,
-          certificates: [certificate, ...]
-        ]
-
   @type rule_condition :: [
           field: binary,
           values: [binary, ...]
@@ -133,6 +115,10 @@ defmodule ExAws.ElasticLoadBalancing do
           is_default: boolean
         ]
 
+  @type subnet_mapping :: [
+          subnet_id: binary,
+          allocation_id: binary
+        ]
   @doc """
   Adds the specified certificate to the specified secure listener.
 
@@ -436,7 +422,8 @@ defmodule ExAws.ElasticLoadBalancing do
   Describes the attributes for the specified Application Load 
   Balancer or Network Load Balancer.
   """
-  @spec describe_load_balancer_attributes(load_balancer_arn :: binary) :: ExAws.Operation.Query.t()
+  @spec describe_load_balancer_attributes(load_balancer_arn :: binary) ::
+          ExAws.Operation.Query.t()
   def describe_load_balancer_attributes(load_balancer_arn, opts \\ []) do
     [{:load_balancer_arn, load_balancer_arn} | opts]
     |> build_request(:describe_load_balancer_attributes)
@@ -596,8 +583,14 @@ defmodule ExAws.ElasticLoadBalancing do
 
   To modify the default action, use `modify_listener/1`.
   """
-  def modify_rule(opts \\ []) do
-    opts |> build_request(:modify_rule)
+  @type modify_rule_input :: [
+          actions: [action, ...],
+          conditions: [rule_condition, ...]
+        ]
+  @spec modify_rule(rule_arn :: binary) :: ExAws.Operation.Query.t()
+  @spec modify_rule(rule_arn :: binary, opts :: modify_rule_input) :: ExAws.Operation.Query.t()
+  def modify_rule(rule_arn, opts \\ []) do
+    [{:rule_arn, rule_arn} | opts] |> build_request(:modify_rule)
   end
 
   @doc """
@@ -606,6 +599,21 @@ defmodule ExAws.ElasticLoadBalancing do
 
   To monitor the health of the targets, use `describe_target_health/1`.
   """
+  @type modify_target_group_input :: [
+          target_group_arn: binary,
+          health_check_protocol: binary,
+          health_check_port: binary,
+          health_check_path: binary,
+          # min 5, max 300
+          health_check_interval_seconds: integer,
+          # min 2, max 60
+          health_check_timeout_seconds: integer,
+          # min 2, max 60
+          unhealthy_threshold_count: integer,
+          matcher: binary
+        ]
+  @spec modify_target_group() :: ExAws.Operation.Query.t()
+  @spec modify_target_group(opts :: modify_target_group_input) :: ExAws.Operation.Query.t()
   def modify_target_group(opts \\ []) do
     opts |> build_request(:modify_target_group)
   end
@@ -613,8 +621,13 @@ defmodule ExAws.ElasticLoadBalancing do
   @doc """
   Modifies the specified attributes of the specified target group.
   """
-  def modify_target_group_attributes(opts \\ []) do
-    opts |> build_request(:modify_target_group_attributes)
+  @spec modify_target_group_attributes(
+          target_group_arn :: binary,
+          attributes :: [target_group_attribute, ...]
+        ) :: ExAws.Operation.Query.t()
+  def modify_target_group_attributes(target_group_arn, attributes, opts \\ []) do
+    [{:target_group_arn, target_group_arn}, {:attributes, attributes} | opts]
+    |> build_request(:modify_target_group_attributes)
   end
 
   @doc """
@@ -637,8 +650,11 @@ defmodule ExAws.ElasticLoadBalancing do
 
   To remove a target from a target group, use `deregister_targets/1`.
   """
-  def register_targets(opts \\ []) do
-    opts |> build_request(:register_targets)
+  @spec register_targets(target_group_arn :: binary, targets :: [target_description, ...]) ::
+          ExAws.Operation.Query.t()
+  def register_targets(target_group_arn, targets, opts \\ []) do
+    [{:target_group_arn, target_group_arn}, {:targets, targets} | opts]
+    |> build_request(:register_targets)
   end
 
   @doc """
@@ -648,7 +664,10 @@ defmodule ExAws.ElasticLoadBalancing do
   the default certificate, call `modify_listener/1`. To list the certificates 
   for your listener, use `describe_listener_certificates/1`.
   """
-  def remove_listener_certificates(opts \\ []) do
+  @spec remove_listener_certificates(listener_arn :: binary, certificates :: [certificate, ...]) ::
+          ExAws.Operation.Query.t()
+  def remove_listener_certificates(listener_arn, certificates, opts \\ []) do
+    [{:listener_arn, listener_arn}, {:certificates, certificates} | opts]
     opts |> build_request(:remove_listener_certificates)
   end
 
@@ -658,7 +677,8 @@ defmodule ExAws.ElasticLoadBalancing do
 
   To list the current tags for your resources, use `describe_tags/1`.
   """
-  @spec remove_tags(resource_arns :: [binary, ...], tag_keys :: [binary, ...]) :: ExAws.Operation.Query.t
+  @spec remove_tags(resource_arns :: [binary, ...], tag_keys :: [binary, ...]) ::
+          ExAws.Operation.Query.t()
   def remove_tags(resource_arns, tag_keys, opts \\ []) do
     [{:resource_arns, resource_arns}, {:tags_keys, tag_keys} | opts]
     |> build_request(:remove_tags)
@@ -670,7 +690,8 @@ defmodule ExAws.ElasticLoadBalancing do
 
   *Note: Network Load Balancers must use `ipv4`*.
   """
-  @spec set_ip_address_type(load_balancer_arn :: binary, ip_address_type :: binary) :: ExAws.Operation.Query.t
+  @spec set_ip_address_type(load_balancer_arn :: binary, ip_address_type :: binary) ::
+          ExAws.Operation.Query.t()
   def set_ip_address_type(load_balancer_arn, ip_address_type, opts \\ []) do
     [{:load_balancer_arn, load_balancer_arn}, {:ip_address_type, ip_address_type} | opts]
     |> build_request(:set_ip_address_type)
@@ -683,8 +704,10 @@ defmodule ExAws.ElasticLoadBalancing do
   in the new order. Any existing rules that you do not specify retain 
   their current priority.
   """
-  def set_rule_priorities(opts \\ []) do
-    opts |> build_request(:set_rule_priorities)
+  @spec set_rule_priorities(rule_priorities :: [integer, ...]) :: ExAws.Operation.Query.t()
+  def set_rule_priorities(rule_priorities, opts \\ []) do
+    [{:rule_priorities, rule_priorities} | opts]
+    |> build_request(:set_rule_priorities)
   end
 
   @doc """
@@ -696,8 +719,11 @@ defmodule ExAws.ElasticLoadBalancing do
 
   *Note: You can't specify a security group for a Network Load Balancer*.
   """
-  def set_security_groups(opts \\ []) do
-    opts |> build_request(:set_security_groups)
+  @spec set_security_groups(load_balancer_arn :: binary, security_groups :: [binary, ...]) ::
+          ExAws.Operation.Query.t()
+  def set_security_groups(load_balancer_arn, security_groups, opts \\ []) do
+    [{:load_balancer_arn, load_balancer_arn}, {:security_groups, security_groups} | opts]
+    |> build_request(:set_security_groups)
   end
 
   @doc """
@@ -708,8 +734,19 @@ defmodule ExAws.ElasticLoadBalancing do
 
   *Note: You can't change the subnets for a Network Load Balancer*.
   """
-  def set_subnets(opts \\ []) do
-    opts |> build_request(:set_subnets)
+  @type set_subnets_input :: [
+          subnet_mappings: [subnet_mapping, ...]
+        ]
+  @spec set_subnets(load_balancer_arn :: binary, subnets :: [binary, ...]) ::
+          ExAws.Operation.Query.t()
+  @spec set_subnets(
+          load_balancer_arn :: binary,
+          subnets :: [binary, ...],
+          opts :: set_subnets_input
+        ) :: ExAws.Operation.Query.t()
+  def set_subnets(load_balancer_arn, subnets, opts \\ []) do
+    [{:load_balancer_arn, load_balancer_arn}, {:subnets, subnets} | opts]
+    |> build_request(:set_subnets)
   end
 
   ####################
