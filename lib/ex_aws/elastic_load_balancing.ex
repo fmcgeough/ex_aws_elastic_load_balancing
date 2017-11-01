@@ -29,7 +29,7 @@ defmodule ExAws.ElasticLoadBalancing do
   @type target_group_attribute :: {key :: atom, value :: binary}
 
   @type action :: [
-          action_type_enum: binary,
+          type: binary,
           target_group_arn: binary
         ]
 
@@ -767,7 +767,15 @@ defmodule ExAws.ElasticLoadBalancing do
   defp format_param({:resource_arns, resource_arns}) do
     resource_arns |> format(prefix: "ResourceArn")
   end
-  
+
+  defp format_param({:security_groups, security_groups}) do
+    security_groups |> format(prefix: "SecurityGroupId")
+  end
+
+  defp format_param({:default_actions, actions}) do
+    actions |> format(prefix: "Action")
+  end
+
   defp format_param({key, parameters}) do
     format([{key, parameters}])
   end
