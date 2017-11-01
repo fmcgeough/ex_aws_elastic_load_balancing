@@ -97,15 +97,10 @@ defmodule ExAws.ElasticLoadBalancing do
   To list the certificates for your listener, use `describe_listener_certificates/1`.
   To remove certificates from your listener, use `remove_listener_certificates/1`.
   """
-  @type add_listener_certificates_input :: [
-          listener_arn: binary,
-          certificates: [certificate, ...]
-        ]
-  @spec add_listener_certificates() :: ExAws.Operation.Query.t()
-  @spec add_listener_certificates(opts :: add_listener_certificates_input) ::
-          ExAws.Operation.Query.t()
-  def add_listener_certificates(opts \\ []) do
-    opts |> build_request(:add_listener_certificates)
+  @spec add_listener_certificates(listener_arn :: binary, certificates :: [certificate, ...]) :: ExAws.Operation.Query.t()
+  def add_listener_certificates(listener_arn, certificates, opts \\ []) do
+    [{:listener_arn, listener_arn}, {:certificates, certificates} | opts]
+    |> build_request(:add_listener_certificates)
   end
 
   @doc """
@@ -119,10 +114,10 @@ defmodule ExAws.ElasticLoadBalancing do
   To list the current tags for your resources, use `describe_tags/1`. To remove tags from 
   your resources, use `remove_tags/1`.
   """
-  @spec add_tags(load_balancer_names :: [binary, ...], tags :: [tag, ...]) ::
+  @spec add_tags(resource_arns :: [binary, ...], tags :: [tag, ...]) ::
           ExAws.Operation.Query.t()
-  def add_tags(load_balancer_names, tags, opts \\ []) do
-    [{:load_balancer_names, load_balancer_names}, {:tags, tags} | opts]
+  def add_tags(resource_arns, tags, opts \\ []) do
+    [{:resource_arns, resource_arns}, {:tags, tags} | opts]
     |> build_request(:add_tags)
   end
 
@@ -223,15 +218,19 @@ defmodule ExAws.ElasticLoadBalancing do
   `modify_rule/1`. To set the priorities of your rules, use `set_rule_priorities/1`. 
   To delete a rule, use `delete_rule/1`.
   """
-  @spec create_rule(listener_arn :: binary,
+  @spec create_rule(
+          listener_arn :: binary,
           conditions :: [rule_condition, ...],
           priority :: integer,
-          actions :: [action, ...]) :: ExAws.Operation.Query.t()
+          actions :: [action, ...]
+        ) :: ExAws.Operation.Query.t()
   def create_rule(listener_arm, conditions, priority, actions, opts \\ []) do
-    [{:listener_arm, listener_arm},
-     {:conditions, conditions},
-     {:priority, priority},
-     {:actions, actions} | opts]
+    [
+      {:listener_arm, listener_arm},
+      {:conditions, conditions},
+      {:priority, priority},
+      {:actions, actions} | opts
+    ]
     |> build_request(:create_rule)
   end
 
@@ -251,11 +250,9 @@ defmodule ExAws.ElasticLoadBalancing do
   * [Target Groups for Your Network Load Balancers](http://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-target-groups.html)
   in the *Network Load Balancers Guide*.
   """
-  @type create_target_group_input :: [
-          name: binary,
+  @type create_target_group_opts :: [
           protocol: binary,
           port: port_spec,
-          vpc_id: binary,
           health_check_protocol: binary,
           health_check_port: binary,
           health_check_path: binary,
@@ -269,10 +266,11 @@ defmodule ExAws.ElasticLoadBalancing do
           matcher: binary,
           target_type: binary
         ]
-  @spec create_target_group() :: ExAws.Operation.Query.t()
-  @spec create_target_group(opts :: create_target_group_input) :: ExAws.Operation.Query.t()
-  def create_target_group(opts \\ []) do
-    opts |> build_request(:create_target_group)
+  @spec create_target_group(name :: binary, vpc_id :: binary) :: ExAws.Operation.Query.t()
+  @spec create_target_group(name :: binary,  vpc_id :: binary, opts :: create_target_group_opts) :: ExAws.Operation.Query.t()
+  def create_target_group(name, vpc_id, opts \\ []) do
+    [{:name, name}, {:vpc_id, vpc_id} | opts]
+    |> build_request(:create_target_group)
   end
 
   @doc """
@@ -283,7 +281,7 @@ defmodule ExAws.ElasticLoadBalancing do
   """
   @spec delete_listener(listener_arn :: binary) :: ExAws.Operation.Query.t()
   def delete_listener(listener_arn, opts \\ []) do
-    [{:listner_arn, listener_arn} | opts]
+    [{:listener_arn, listener_arn} | opts]
     |> build_request(:delete_listener)
   end
 
@@ -334,13 +332,10 @@ defmodule ExAws.ElasticLoadBalancing do
   After the targets are deregistered, they no longer receive traffic 
   from the load balancer.
   """
-  @type deregister_targets_input :: [
-          target_group_arn: binary,
-          targets: [target_description, ...]
-        ]
-  @spec deregister_targets(opts :: deregister_targets_input) :: ExAws.Operation.Query.t()
-  def deregister_targets(opts \\ []) do
-    opts |> build_request(:deregister_targets)
+  @spec deregister_targets(target_group_arn :: binary, targets :: [target_description, ...]) :: ExAws.Operation.Query.t()
+  def deregister_targets(target_group_arn, targets, opts \\ []) do
+    [{:target_group_arn, target_group_arn}, {:targets, targets} | opts]
+    |> build_request(:deregister_targets)
   end
 
   @doc """
@@ -353,13 +348,13 @@ defmodule ExAws.ElasticLoadBalancing do
   * [Limits for Your Network Load Balancers](http://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-limits.html)
   in the *Network Load Balancers Guide*.
   """
-  @type describe_account_limits_input :: [
+  @type describe_account_limits_opts :: [
           marker: binary,
           # Minimum value of 1. Maximum value of 400
           page_size: integer
         ]
   @spec describe_account_limits() :: ExAws.Operation.Query.t()
-  @spec describe_account_limits(opts :: describe_account_limits_input) ::
+  @spec describe_account_limits(opts :: describe_account_limits_opts) ::
           ExAws.Operation.Query.t()
   def describe_account_limits(opts \\ []) do
     opts |> build_request(:describe_account_limits)
@@ -368,7 +363,7 @@ defmodule ExAws.ElasticLoadBalancing do
   @doc """
   Describes the certificates for the specified secure listener.
   """
-  @type describe_listener_certificates_input :: [
+  @type describe_listener_certificates_opts :: [
           marker: binary,
           # Minimum value of 1. Maximum value of 400
           page_size: integer
@@ -376,7 +371,7 @@ defmodule ExAws.ElasticLoadBalancing do
   @spec describe_listener_certificates(listener_arn :: binary) :: ExAws.Operation.Query.t()
   @spec describe_listener_certificates(
           listener_arm :: binary,
-          opts :: describe_listener_certificates_input
+          opts :: describe_listener_certificates_opts
         ) :: ExAws.Operation.Query.t()
   def describe_listener_certificates(listener_arn, opts \\ []) do
     [{:listener_arn, listener_arn} | opts]
@@ -389,14 +384,14 @@ defmodule ExAws.ElasticLoadBalancing do
 
   You must specify either a load balancer or one or more listeners.
   """
-  @type describe_listeners_input :: [
+  @type describe_listeners_opts :: [
           listener_arns: [binary, ...],
           load_balancer_arn: binary,
           marker: binary,
           page_size: integer
         ]
   @spec describe_listeners() :: ExAws.Operation.Query.t()
-  @spec describe_listeners(opts :: describe_listeners_input) :: ExAws.Operation.Query.t()
+  @spec describe_listeners(opts :: describe_listeners_opts) :: ExAws.Operation.Query.t()
   def describe_listeners(opts \\ []) do
     opts |> build_request(:describe_listeners)
   end
@@ -419,13 +414,13 @@ defmodule ExAws.ElasticLoadBalancing do
   To describe the listeners for a load balancer, use `describe_listeners/1`.
   To describe the attributes for a load balancer, use `describe_load_balancer_attributes/1`.
   """
-  @type describe_load_balancers_input :: [
+  @type describe_load_balancers_opts :: [
           load_balancer_arns: [binary, ...],
           marker: binary,
           page_size: integer
         ]
   @spec describe_load_balancers() :: ExAws.Operation.Query.t()
-  @spec describe_load_balancers(opts :: describe_load_balancers_input) ::
+  @spec describe_load_balancers(opts :: describe_load_balancers_opts) ::
           ExAws.Operation.Query.t()
   def describe_load_balancers(opts \\ []) do
     opts |> build_request(:describe_load_balancers)
@@ -436,14 +431,14 @@ defmodule ExAws.ElasticLoadBalancing do
 
   You must specify either a listener or one or more rules.
   """
-  @type describe_rules_input :: [
+  @type describe_rules_opts :: [
           listener_arn: binary,
           rules_arn: binary,
           marker: binary,
           page_size: integer
         ]
   @spec describe_rules() :: ExAws.Operation.Query.t()
-  @spec describe_rules(opts :: describe_rules_input) :: ExAws.Operation.Query.t()
+  @spec describe_rules(opts :: describe_rules_opts) :: ExAws.Operation.Query.t()
   def describe_rules(opts \\ []) do
     opts |> build_request(:describe_rules)
   end
@@ -455,13 +450,13 @@ defmodule ExAws.ElasticLoadBalancing do
   * [Security Policies](http://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-https-listener.html#describe-ssl-policies)
   in the *Application Load Balancers Guide*.
   """
-  @type describe_ssl_policies_input :: [
+  @type describe_ssl_policies_opts :: [
           ssl_policy_names: [binary, ...],
           marker: binary,
           page_size: integer
         ]
   @spec describe_ssl_policies() :: ExAws.Operation.Query.t()
-  @spec describe_ssl_policies(opts :: describe_ssl_policies_input) :: ExAws.Operation.Query.t()
+  @spec describe_ssl_policies(opts :: describe_ssl_policies_opts) :: ExAws.Operation.Query.t()
   def describe_ssl_policies(opts \\ []) do
     opts |> build_request(:describe_ssl_policies)
   end
@@ -472,9 +467,9 @@ defmodule ExAws.ElasticLoadBalancing do
   You can describe the tags for one or more Application Load Balancers, 
   Network Load Balancers, and target groups.
   """
-  @spec describe_tags(load_balancer_names :: [binary, ...]) :: ExAws.Operation.Query.t()
-  def describe_tags(load_balancer_names, opts \\ []) do
-    [{:load_balancer_names, load_balancer_names} | opts]
+  @spec describe_tags(resource_arns :: [binary, ...]) :: ExAws.Operation.Query.t()
+  def describe_tags(resource_arns, opts \\ []) do
+    [{:resource_arns, resource_arns} | opts]
     |> build_request(:describe_tags)
   end
 
@@ -497,7 +492,7 @@ defmodule ExAws.ElasticLoadBalancing do
   target group, use `describe_target_health/1`. To describe the attributes 
   of a target group, use `describe_target_group_attributes/1`.
   """
-  @type describe_target_groups_input :: [
+  @type describe_target_groups_opts :: [
           load_balancer_arn: binary,
           target_group_arns: [binary, ...],
           names: [binary, ...],
@@ -505,7 +500,7 @@ defmodule ExAws.ElasticLoadBalancing do
           page_size: integer
         ]
   @spec describe_target_groups() :: ExAws.Operation.Query.t()
-  @spec describe_target_groups(opts :: describe_target_groups_input) :: ExAws.Operation.Query.t()
+  @spec describe_target_groups(opts :: describe_target_groups_opts) :: ExAws.Operation.Query.t()
   def describe_target_groups(opts \\ []) do
     opts |> build_request(:describe_target_groups)
   end
@@ -513,7 +508,11 @@ defmodule ExAws.ElasticLoadBalancing do
   @doc """
   Describes the health of the specified targets or all of your targets.
   """
+  @type describe_target_health_opts :: [
+    targets: [target_description, ...]
+  ]
   @spec describe_target_health(target_group_arn :: binary) :: ExAws.Operation.Query.t()
+  @spec describe_target_health(target_group_arn :: binary, opts :: describe_target_health_opts) :: ExAws.Operation.Query.t()
   def describe_target_health(target_group_arn, opts \\ []) do
     [{:target_group_arn, target_group_arn} | opts]
     |> build_request(:describe_target_health)
@@ -527,7 +526,7 @@ defmodule ExAws.ElasticLoadBalancing do
   policy and SSL certificate properties. If you change the protocol from 
   HTTP to HTTPS, you must add the security policy and server certificate.
   """
-  @type modify_listener_inputs :: [
+  @type modify_listener_opts :: [
           port: port_spec,
           protocol: binary,
           ssl_policy: binary,
@@ -535,7 +534,7 @@ defmodule ExAws.ElasticLoadBalancing do
           default_actions: [action, ...]
         ]
   @spec modify_listener(listener_arn :: binary) :: ExAws.Operation.Query.t()
-  @spec modify_listener(listener_arn :: binary, opts :: modify_listener_inputs) ::
+  @spec modify_listener(listener_arn :: binary, opts :: modify_listener_opts) ::
           ExAws.Operation.Query.t()
   def modify_listener(listener_arn, opts \\ []) do
     [{:listener_arn, listener_arn} | opts]
@@ -563,15 +562,14 @@ defmodule ExAws.ElasticLoadBalancing do
   Modifies the specified rule.
 
   Any existing properties that you do not modify retain their current values.
-
   To modify the default action, use `modify_listener/1`.
   """
-  @type modify_rule_input :: [
+  @type modify_rule_opts :: [
           actions: [action, ...],
           conditions: [rule_condition, ...]
         ]
   @spec modify_rule(rule_arn :: binary) :: ExAws.Operation.Query.t()
-  @spec modify_rule(rule_arn :: binary, opts :: modify_rule_input) :: ExAws.Operation.Query.t()
+  @spec modify_rule(rule_arn :: binary, opts :: modify_rule_opts) :: ExAws.Operation.Query.t()
   def modify_rule(rule_arn, opts \\ []) do
     [{:rule_arn, rule_arn} | opts] |> build_request(:modify_rule)
   end
@@ -582,8 +580,7 @@ defmodule ExAws.ElasticLoadBalancing do
 
   To monitor the health of the targets, use `describe_target_health/1`.
   """
-  @type modify_target_group_input :: [
-          target_group_arn: binary,
+  @type modify_target_group_opts :: [
           health_check_protocol: binary,
           health_check_port: binary,
           health_check_path: binary,
@@ -595,10 +592,11 @@ defmodule ExAws.ElasticLoadBalancing do
           unhealthy_threshold_count: integer,
           matcher: binary
         ]
-  @spec modify_target_group() :: ExAws.Operation.Query.t()
-  @spec modify_target_group(opts :: modify_target_group_input) :: ExAws.Operation.Query.t()
-  def modify_target_group(opts \\ []) do
-    opts |> build_request(:modify_target_group)
+  @spec modify_target_group(target_group_arn :: binary) :: ExAws.Operation.Query.t()
+  @spec modify_target_group(target_group_arn :: binary, opts :: modify_target_group_opts) :: ExAws.Operation.Query.t()
+  def modify_target_group(target_group_arn, opts \\ []) do
+    [{:target_group_arn, target_group_arn} | opts] 
+    |> build_request(:modify_target_group)
   end
 
   @doc """
@@ -717,7 +715,7 @@ defmodule ExAws.ElasticLoadBalancing do
 
   *Note: You can't change the subnets for a Network Load Balancer*.
   """
-  @type set_subnets_input :: [
+  @type set_subnets_opts :: [
           subnet_mappings: [subnet_mapping, ...]
         ]
   @spec set_subnets(load_balancer_arn :: binary, subnets :: [binary, ...]) ::
@@ -725,7 +723,7 @@ defmodule ExAws.ElasticLoadBalancing do
   @spec set_subnets(
           load_balancer_arn :: binary,
           subnets :: [binary, ...],
-          opts :: set_subnets_input
+          opts :: set_subnets_opts
         ) :: ExAws.Operation.Query.t()
   def set_subnets(load_balancer_arn, subnets, opts \\ []) do
     [{:load_balancer_arn, load_balancer_arn}, {:subnets, subnets} | opts]
