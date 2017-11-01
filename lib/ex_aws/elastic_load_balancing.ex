@@ -88,6 +88,21 @@ defmodule ExAws.ElasticLoadBalancing do
 
   To list the certificates for your listener, use `describe_listener_certificates/1`.
   To remove certificates from your listener, use `remove_listener_certificates/1`.
+
+  ## Examples:
+
+        iex> ExAws.ElasticLoadBalancing.add_listener_certificates("my_load_balancer", 
+        ...>  [%{certificate_arn: "test_arn", is_default: true}, 
+        ...>   %{certificate_arn: "other_arn"}])
+        %ExAws.Operation.Query{action: :add_listener_certificates,
+        params: %{"Action" => "AddListenerCertificates", 
+        "Certificate.1.CertificateArn" => "test_arn",
+        "Certificate.1.IsDefault" => true,
+        "Certificate.2.CertificateArn" => "other_arn",
+        "ListenerArn" => "my_load_balancer",
+        "Version" => "2015-12-01"}, 
+        parser: &ExAws.Utils.identity/2, path: "/", service: :elastic_load_balancing}
+
   """
   @spec add_listener_certificates(listener_arn :: binary, certificates :: [certificate, ...]) ::
           ExAws.Operation.Query.t()
@@ -106,6 +121,27 @@ defmodule ExAws.ElasticLoadBalancing do
 
   To list the current tags for your resources, use `describe_tags/1`. To remove tags from 
   your resources, use `remove_tags/1`.
+
+   ## Examples:
+
+        iex> ExAws.ElasticLoadBalancing.add_tags(["test1", "test2"], ["hello": "test"])
+        %ExAws.Operation.Query{action: :add_tags,
+        params: %{"Action" => "AddTags", 
+        "ResourceArn.1" => "test1",
+        "ResourceArn.2" => "test2", 
+        "Tag.1.Key" => "hello", "Tag.1.Value" => "test",
+        "Version" => "2015-12-01"}, 
+        parser: &ExAws.Utils.identity/2, path: "/", service: :elastic_load_balancing}
+
+        iex> ExAws.ElasticLoadBalancing.add_tags(["test1", "test2"], [{:hello, "test"}])
+        %ExAws.Operation.Query{action: :add_tags,
+        params: %{"Action" => "AddTags", 
+        "ResourceArn.1" => "test1",
+        "ResourceArn.2" => "test2", 
+        "Tag.1.Key" => "hello", "Tag.1.Value" => "test",
+        "Version" => "2015-12-01"}, 
+        parser: &ExAws.Utils.identity/2, path: "/", service: :elastic_load_balancing}
+
   """
   @spec add_tags(resource_arns :: [binary, ...], tags :: [tag, ...]) :: ExAws.Operation.Query.t()
   def add_tags(resource_arns, tags, opts \\ []) do
@@ -129,6 +165,17 @@ defmodule ExAws.ElasticLoadBalancing do
   in the *Application Load Balancers Guide*
   * [Listeners for Your Network Load Balancers](http://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-listeners.html) 
   in the *Network Load Balancers Guide*
+
+   ## Examples:
+
+        iex> ExAws.ElasticLoadBalancing.create_listener("test_arn", "HTTP", 80, 
+        ...>  [%{type: "forward", target_group_arn: "target_arn"}])
+        %ExAws.Operation.Query{action: :create_listener,
+        params: %{"Action" => "CreateListener",
+        "Action.1.TargetGroupArn" => "target_arn", "Action.1.Type" => "forward",
+        "LoadBalancerArn" => "test_arn", "Port" => 80, "Protocol" => "HTTP",
+        "Version" => "2015-12-01"}, 
+        parser: &ExAws.Utils.identity/2, path: "/", service: :elastic_load_balancing}
   """
   @type create_listener_opts :: [
           ssl_policy: binary,
