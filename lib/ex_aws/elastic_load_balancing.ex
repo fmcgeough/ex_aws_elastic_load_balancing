@@ -380,6 +380,16 @@ defmodule ExAws.ElasticLoadBalancing do
               "Version" => "2015-12-01"}, parser: &ExAws.Utils.identity/2,
             path: "/", service: :elastic_load_balancing}
 
+        iex> ExAws.ElasticLoadBalancing.deregister_targets(
+        ...> "arn:aws:elasticloadbalancing:us-west-2:123456789012:targetgroup/my-targets/73e2d6bc24d8a067",
+        ...> [%{id: "i-0f76fade435676abd"}])
+        %ExAws.Operation.Query{action: :deregister_targets,
+            params: %{"Action" => "DeregisterTargets",
+              "TargetGroupArn" => "arn:aws:elasticloadbalancing:us-west-2:123456789012:targetgroup/my-targets/73e2d6bc24d8a067",
+              "Targets.1.Id" => "i-0f76fade435676abd", 
+              "Version" => "2015-12-01"}, parser: &ExAws.Utils.identity/2,
+            path: "/", service: :elastic_load_balancing}
+        
   """
   @spec deregister_targets(target_group_arn :: binary, targets :: [target_description, ...]) ::
           ExAws.Operation.Query.t()
