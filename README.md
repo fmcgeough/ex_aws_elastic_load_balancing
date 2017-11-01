@@ -18,6 +18,8 @@ def deps do
   ]
 end
 ```
+Elastic Load Balancing protocol: "query". So every function in the API 
+returns a `%ExAws.Operation.Query{}` struct.
 
 This is just the initial project structure. Lots of work to do to make this
 viable.

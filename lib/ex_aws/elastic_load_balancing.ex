@@ -754,6 +754,20 @@ defmodule ExAws.ElasticLoadBalancing do
     }
   end
 
+  defp format_param({:certificates, certificates}) do
+    certificates |> format(prefix: "Certificate")
+  end
+
+  defp format_param({:tags, tags}) do
+    tags
+    |> Enum.map(fn {key, value} -> [key: maybe_stringify(key), value: value] end)
+    |> format(prefix: "Tag")
+  end
+
+  defp format_param({:resource_arns, resource_arns}) do
+    resource_arns |> format(prefix: "ResourceArn")
+  end
+  
   defp format_param({key, parameters}) do
     format([{key, parameters}])
   end
