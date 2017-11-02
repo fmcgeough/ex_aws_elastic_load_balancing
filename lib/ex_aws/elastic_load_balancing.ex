@@ -8,10 +8,12 @@ defmodule ExAws.ElasticLoadBalancing do
 
   More information: 
   * [Elastic Load Balancing User Guide][User_Guide]
-  * [Elastc Load Balancing API][API_Doc]
+  * [Elastic Load Balancing API][API_Doc]
+  * [Amazon Resource Names (ARNs)][ARN_Doc]
 
   [User_Guide]: http://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/
   [API_Doc]: http://docs.aws.amazon.com/elasticloadbalancing/latest/APIReference/ 
+  [ARN_Doc]: http://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html
   """
 
   use ExAws.Utils,
@@ -91,15 +93,16 @@ defmodule ExAws.ElasticLoadBalancing do
 
   ## Examples:
 
-        iex> ExAws.ElasticLoadBalancing.add_listener_certificates("my_load_balancer", 
-        ...>  [%{certificate_arn: "test_arn", is_default: true}, 
-        ...>   %{certificate_arn: "other_arn"}])
+        iex> ExAws.ElasticLoadBalancing.add_listener_certificates(
+        ...> "arn:aws:elasticloadbalancing:us-east-1:12345678:listener/app/my_load_balancer/50dc6c495c0c9188/f2f7dc8efc522ab2", 
+        ...>  [%{certificate_arn: "arn:aws:acm:us-east-1:12345678:certificate/test-arn", is_default: true}, 
+        ...>   %{certificate_arn: "arn:aws:acm:us-east-1:12345678:certificate/other_arn"}])
         %ExAws.Operation.Query{action: :add_listener_certificates,
         params: %{"Action" => "AddListenerCertificates", 
-        "Certificate.1.CertificateArn" => "test_arn",
+        "Certificate.1.CertificateArn" => "arn:aws:acm:us-east-1:12345678:certificate/test-arn",
         "Certificate.1.IsDefault" => true,
-        "Certificate.2.CertificateArn" => "other_arn",
-        "ListenerArn" => "my_load_balancer",
+        "Certificate.2.CertificateArn" => "arn:aws:acm:us-east-1:12345678:certificate/other_arn",
+        "ListenerArn" => "arn:aws:elasticloadbalancing:us-east-1:12345678:listener/app/my_load_balancer/50dc6c495c0c9188/f2f7dc8efc522ab2",
         "Version" => "2015-12-01"}, 
         parser: &ExAws.Utils.identity/2, path: "/", service: :elastic_load_balancing}
 
@@ -122,13 +125,16 @@ defmodule ExAws.ElasticLoadBalancing do
   To list the current tags for your resources, use `describe_tags/1`. To remove tags from 
   your resources, use `remove_tags/1`.
 
-   ## Examples:
+  ## Examples:
 
-        iex> ExAws.ElasticLoadBalancing.add_tags(["test1", "test2"], ["hello": "test"])
+        iex> ExAws.ElasticLoadBalancing.add_tags(
+        ...> ["arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/my-load-balancer", 
+        ...> "arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/my-load-balancer2"], 
+        ...> ["hello": "test"])
         %ExAws.Operation.Query{action: :add_tags,
         params: %{"Action" => "AddTags", 
-        "ResourceArn.1" => "test1",
-        "ResourceArn.2" => "test2", 
+        "ResourceArn.1" => "arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/my-load-balancer",
+        "ResourceArn.2" => "arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/my-load-balancer2", 
         "Tag.1.Key" => "hello", "Tag.1.Value" => "test",
         "Version" => "2015-12-01"}, 
         parser: &ExAws.Utils.identity/2, path: "/", service: :elastic_load_balancing}
@@ -166,14 +172,16 @@ defmodule ExAws.ElasticLoadBalancing do
   * [Listeners for Your Network Load Balancers](http://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-listeners.html) 
   in the *Network Load Balancers Guide*
 
-   ## Examples:
+  ## Examples:
 
-        iex> ExAws.ElasticLoadBalancing.create_listener("test_arn", "HTTP", 80, 
-        ...>  [%{type: "forward", target_group_arn: "target_arn"}])
+        iex> ExAws.ElasticLoadBalancing.create_listener(
+        ...> "arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/my-load-balancer", 
+        ...> "HTTP", 80, [%{type: "forward", target_group_arn: "target_arn"}])
         %ExAws.Operation.Query{action: :create_listener,
         params: %{"Action" => "CreateListener",
         "Action.1.TargetGroupArn" => "target_arn", "Action.1.Type" => "forward",
-        "LoadBalancerArn" => "test_arn", "Port" => 80, "Protocol" => "HTTP",
+        "LoadBalancerArn" => "arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/my-load-balancer", 
+        "Port" => 80, "Protocol" => "HTTP",
         "Version" => "2015-12-01"}, 
         parser: &ExAws.Utils.identity/2, path: "/", service: :elastic_load_balancing}
   """
@@ -484,6 +492,13 @@ defmodule ExAws.ElasticLoadBalancing do
   in the *Application Load Balancer Guide*
   * [Limits for Your Network Load Balancers](http://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-limits.html)
   in the *Network Load Balancers Guide*.
+  
+  ## Examples:
+
+        iex> ExAws.ElasticLoadBalancing.describe_account_limits()
+        %ExAws.Operation.Query{action: :describe_account_limits,
+        params: %{"Action" => "DescribeAccountLimits", "Version" => "2015-12-01"},
+        parser: &ExAws.Utils.identity/2, path: "/", service: :elastic_load_balancing}
   """
   @type describe_account_limits_opts :: [
           marker: binary,
@@ -498,6 +513,15 @@ defmodule ExAws.ElasticLoadBalancing do
 
   @doc """
   Describes the certificates for the specified secure listener.
+
+  ## Examples:
+
+        iex> ExAws.ElasticLoadBalancing.describe_listener_certificates("listener_arn");
+        %ExAws.Operation.Query{action: :describe_listener_certificates,
+        params: %{"Action" => "DescribeListenerCertificates",
+        "ListenerArn" => "listener_arn",
+        "Version" => "2015-12-01"}, 
+        parser: &ExAws.Utils.identity/2, path: "/", service: :elastic_load_balancing}        
   """
   @type describe_listener_certificates_opts :: [
           marker: binary,
@@ -519,6 +543,13 @@ defmodule ExAws.ElasticLoadBalancing do
   specified Application Load Balancer or Network Load Balancer. 
 
   You must specify either a load balancer or one or more listeners.
+
+  ## Example
+
+      iex> ExAws.ElasticLoadBalancing.describe_listeners()
+      %ExAws.Operation.Query{action: :describe_listeners,
+      params: %{"Action" => "DescribeListeners", "Version" => "2015-12-01"},
+      parser: &ExAws.Utils.identity/2, path: "/", service: :elastic_load_balancing}
   """
   @type describe_listeners_opts :: [
           listener_arns: [binary, ...],
@@ -535,6 +566,16 @@ defmodule ExAws.ElasticLoadBalancing do
   @doc """
   Describes the attributes for the specified Application Load 
   Balancer or Network Load Balancer.
+
+  ## Examples:
+
+        iex> ExAws.ElasticLoadBalancing.describe_load_balancer_attributes(
+        ...> "load_balancer_arn")
+        %ExAws.Operation.Query{action: :describe_load_balancer_attributes,
+        params: %{"Action" => "DescribeLoadBalancerAttributes",
+        "LoadBalancerArn" => "load_balancer_arn",
+        "Version" => "2015-12-01"}, 
+        parser: &ExAws.Utils.identity/2, path: "/", service: :elastic_load_balancing}
   """
   @spec describe_load_balancer_attributes(load_balancer_arn :: binary) ::
           ExAws.Operation.Query.t()
@@ -589,6 +630,19 @@ defmodule ExAws.ElasticLoadBalancing do
   Describes the specified rules or the rules for the specified listener. 
 
   You must specify either a listener or one or more rules.
+
+  ## Examples:
+
+      iex> ExAws.ElasticLoadBalancing.describe_rules()
+      %ExAws.Operation.Query{action: :describe_rules,
+      params: %{"Action" => "DescribeRules", "Version" => "2015-12-01"},
+      parser: &ExAws.Utils.identity/2, path: "/", service: :elastic_load_balancing}
+
+      iex> ExAws.ElasticLoadBalancing.describe_rules([listener_arn: "listener_arn", rules_arn: "rules_arn"])
+      %ExAws.Operation.Query{action: :describe_rules,
+      params: %{"Action" => "DescribeRules", "ListenerArn" => "listener_arn",
+      "RulesArn" => "rules_arn", "Version" => "2015-12-01"},
+      parser: &ExAws.Utils.identity/2, path: "/", service: :elastic_load_balancing}
   """
   @type describe_rules_opts :: [
           listener_arn: binary,
@@ -608,6 +662,19 @@ defmodule ExAws.ElasticLoadBalancing do
   More information:
   * [Security Policies](http://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-https-listener.html#describe-ssl-policies)
   in the *Application Load Balancers Guide*.
+
+  ## Examples:
+
+       iex> ExAws.ElasticLoadBalancing.describe_ssl_policies()
+       %ExAws.Operation.Query{action: :describe_ssl_policies,
+       params: %{"Action" => "DescribeSslPolicies", "Version" => "2015-12-01"},
+       parser: &ExAws.Utils.identity/2, path: "/", service: :elastic_load_balancing}
+
+       iex> ExAws.ElasticLoadBalancing.describe_ssl_policies([ssl_policy_names: ["policy1", "policy2"]])
+       %ExAws.Operation.Query{action: :describe_ssl_policies,
+       params: %{"Action" => "DescribeSslPolicies", "SslPolicyNames.1" => "policy1",
+       "SslPolicyNames.2" => "policy2", "Version" => "2015-12-01"},
+       parser: &ExAws.Utils.identity/2, path: "/", service: :elastic_load_balancing}
   """
   @type describe_ssl_policies_opts :: [
           ssl_policy_names: [binary, ...],
@@ -625,6 +692,14 @@ defmodule ExAws.ElasticLoadBalancing do
 
   You can describe the tags for one or more Application Load Balancers, 
   Network Load Balancers, and target groups.
+
+  ## Examples:
+
+      iex> ExAws.ElasticLoadBalancing.describe_tags(["resource_arn1", "resource_arn2"])
+      %ExAws.Operation.Query{action: :describe_tags,
+      params: %{"Action" => "DescribeTags", "ResourceArn.1" => "resource_arn1",
+      "ResourceArn.2" => "resource_arn2", "Version" => "2015-12-01"},
+      parser: &ExAws.Utils.identity/2, path: "/", service: :elastic_load_balancing}
   """
   @spec describe_tags(resource_arns :: [binary, ...]) :: ExAws.Operation.Query.t()
   def describe_tags(resource_arns, opts \\ []) do
@@ -634,6 +709,15 @@ defmodule ExAws.ElasticLoadBalancing do
 
   @doc """
   Describes the attributes for the specified target group.
+
+  ## Examples:
+
+      iex> ExAws.ElasticLoadBalancing.describe_target_group_attributes(["target_group_arn1", "target_group_arn2"])
+      %ExAws.Operation.Query{action: :describe_target_group_attributes,
+      params: %{"Action" => "DescribeTargetGroupAttributes",
+      "TargetGroupArn.1" => "target_group_arn1",
+      "TargetGroupArn.2" => "target_group_arn2", "Version" => "2015-12-01"},
+      parser: &ExAws.Utils.identity/2, path: "/", service: :elastic_load_balancing}
   """
   @spec describe_target_group_attributes(target_group_arn :: binary) :: ExAws.Operation.Query.t()
   def describe_target_group_attributes(target_group_arn, opts \\ []) do
@@ -650,6 +734,22 @@ defmodule ExAws.ElasticLoadBalancing do
   of one or more target groups. To describe the targets for a 
   target group, use `describe_target_health/1`. To describe the attributes 
   of a target group, use `describe_target_group_attributes/1`.
+
+  ## Examples:
+
+      iex> ExAws.ElasticLoadBalancing.describe_target_groups()
+      %ExAws.Operation.Query{action: :describe_target_groups,
+      params: %{"Action" => "DescribeTargetGroups", "Version" => "2015-12-01"},
+      parser: &ExAws.Utils.identity/2, path: "/", service: :elastic_load_balancing}
+
+      iex> ExAws.ElasticLoadBalancing.describe_target_groups([load_balancer_arn: "load_balancer_arn", 
+      ...> target_group_arns: ["target_group_arn1", "target_group_arn2"]])
+      %ExAws.Operation.Query{action: :describe_target_groups,
+      params: %{"Action" => "DescribeTargetGroups",
+      "LoadBalancerArn" => "load_balancer_arn",
+      "TargetGroupArns.1" => "target_group_arn1",
+      "TargetGroupArns.2" => "target_group_arn2", "Version" => "2015-12-01"},
+      parser: &ExAws.Utils.identity/2, path: "/", service: :elastic_load_balancing}
   """
   @type describe_target_groups_opts :: [
           load_balancer_arn: binary,
