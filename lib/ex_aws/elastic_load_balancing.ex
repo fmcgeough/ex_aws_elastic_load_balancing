@@ -549,9 +549,33 @@ defmodule ExAws.ElasticLoadBalancing do
 
   To describe the listeners for a load balancer, use `describe_listeners/1`.
   To describe the attributes for a load balancer, use `describe_load_balancer_attributes/1`.
+  
+  The options that can be passed into `describe_load_balancers/1` allow load_balancer_arns or names
+  (there would not be a reason ordinarily to specify both). Elastic Load Balancing provides 
+  two versions of ARNS (one for Classic and one for Application Load Balancer). The syntax for 
+  each is below:
+
+  Classic Load Balancer ARN Syntax:
+      
+      arn:aws:elasticloadbalancing:region:account-id:loadbalancer/name
+  
+  Application Load Balancer ARN Syntax:
+
+      arn:aws:elasticloadbalancing:region:account-id:loadbalancer/app/load-balancer-name/load-balancer-id
+      arn:aws:elasticloadbalancing:region:account-id:listener/app/load-balancer-name/load-balancer-id/listener-id
+      arn:aws:elasticloadbalancing:region:account-id:listener-rule/app/load-balancer-name/load-balancer-id/listener-id/rule-id
+      arn:aws:elasticloadbalancing:region:account-id:targetgroup/target-group-name/target-group-id
+
+  ## Examples:
+
+      iex> ExAws.ElasticLoadBalancing.describe_load_balancers
+      %ExAws.Operation.Query{action: :describe_load_balancers,
+      params: %{"Action" => "DescribeLoadBalancers", "Version" => "2015-12-01"},
+      parser: &ExAws.Utils.identity/2, path: "/", service: :elastic_load_balancing}
   """
   @type describe_load_balancers_opts :: [
           load_balancer_arns: [binary, ...],
+          names: [binary, ...],
           marker: binary,
           page_size: integer
         ]
