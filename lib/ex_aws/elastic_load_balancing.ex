@@ -223,6 +223,36 @@ defmodule ExAws.ElasticLoadBalancing do
   in the *Application Load Balancers Guide* 
   * [Limits for Your Network Load Balancer](http://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-limits.html)
   in the *Network Load Balancers Guide* 
+
+  ## Examples:
+
+        iex> ExAws.ElasticLoadBalancing.create_load_balancer("Loader")        
+        %ExAws.Operation.Query{action: :create_load_balancer,
+        params: %{"Action" => "CreateLoadBalancer", 
+        "Name" => "Loader",
+        "Version" => "2015-12-01"}, 
+        parser: &ExAws.Utils.identity/2, path: "/", service: :elastic_load_balancing}
+
+        iex> ExAws.ElasticLoadBalancing.create_load_balancer("Loader", 
+        ...> [schema: "internet-facing", 
+        ...> subnet_mappings: [%{subnet_id: "1.2.3.4", allocation_id: "i2234342"}],
+        ...> subnets: ["1.2.3.4", "5.6.7.8"],
+        ...> security_groups: ["Secure123", "Secure456"],
+        ...> type: "application", ip_address_type: "ipv4"]) 
+        %ExAws.Operation.Query{action: :create_load_balancer,
+        params: %{"Action" => "CreateLoadBalancer", 
+        "IpAddressType" => "ipv4",
+        "Name" => "Loader", 
+        "Schema" => "internet-facing",
+        "SecurityGroupId.1" => "Secure123", "SecurityGroupId.2" => "Secure456",
+        "SubnetMappings.1.AllocationId" => "i2234342",
+        "SubnetMappings.1.SubnetId" => "1.2.3.4", 
+        "Subnets.1" => "1.2.3.4",
+        "Subnets.2" => "5.6.7.8", 
+        "Type" => "application",
+        "Version" => "2015-12-01"}, 
+        parser: &ExAws.Utils.identity/2, path: "/", service: :elastic_load_balancing}
+
   """
   @type create_load_balancer_opts :: [
           subnets: [binary, ...],
