@@ -94,15 +94,15 @@ defmodule ExAws.ElasticLoadBalancing do
   ## Examples:
 
         iex> ExAws.ElasticLoadBalancing.add_listener_certificates(
-        ...> "arn:aws:elasticloadbalancing:us-east-1:12345678:listener/app/my_load_balancer/50dc6c495c0c9188/f2f7dc8efc522ab2", 
-        ...>  [%{certificate_arn: "arn:aws:acm:us-east-1:12345678:certificate/test-arn", is_default: true}, 
-        ...>   %{certificate_arn: "arn:aws:acm:us-east-1:12345678:certificate/other_arn"}])
+        ...> "listener_arn", 
+        ...>  [%{certificate_arn: "certificate1_arn", is_default: true}, 
+        ...>   %{certificate_arn: "certificate2_arn"}])
         %ExAws.Operation.Query{action: :add_listener_certificates,
         params: %{"Action" => "AddListenerCertificates", 
-        "Certificate.1.CertificateArn" => "arn:aws:acm:us-east-1:12345678:certificate/test-arn",
+        "Certificate.1.CertificateArn" => "certificate1_arn",
         "Certificate.1.IsDefault" => true,
-        "Certificate.2.CertificateArn" => "arn:aws:acm:us-east-1:12345678:certificate/other_arn",
-        "ListenerArn" => "arn:aws:elasticloadbalancing:us-east-1:12345678:listener/app/my_load_balancer/50dc6c495c0c9188/f2f7dc8efc522ab2",
+        "Certificate.2.CertificateArn" => "certificate2_arn",
+        "ListenerArn" => "listener_arn",
         "Version" => "2015-12-01"}, 
         parser: &ExAws.Utils.identity/2, path: "/", service: :elastic_load_balancing}
 
@@ -127,23 +127,20 @@ defmodule ExAws.ElasticLoadBalancing do
 
   ## Examples:
 
-        iex> ExAws.ElasticLoadBalancing.add_tags(
-        ...> ["arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/my-load-balancer", 
-        ...> "arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/my-load-balancer2"], 
-        ...> ["hello": "test"])
+        iex> ExAws.ElasticLoadBalancing.add_tags(["resource_arn1", "resource_arn2"], ["hello": "test"])
         %ExAws.Operation.Query{action: :add_tags,
         params: %{"Action" => "AddTags", 
-        "ResourceArn.1" => "arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/my-load-balancer",
-        "ResourceArn.2" => "arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/my-load-balancer2", 
+        "ResourceArn.1" => "resource_arn1",
+        "ResourceArn.2" => "resource_arn2", 
         "Tag.1.Key" => "hello", "Tag.1.Value" => "test",
         "Version" => "2015-12-01"}, 
         parser: &ExAws.Utils.identity/2, path: "/", service: :elastic_load_balancing}
 
-        iex> ExAws.ElasticLoadBalancing.add_tags(["test1", "test2"], [{:hello, "test"}])
+        iex> ExAws.ElasticLoadBalancing.add_tags(["resource_arn1", "resource_arn2"], [{:hello, "test"}])
         %ExAws.Operation.Query{action: :add_tags,
         params: %{"Action" => "AddTags", 
-        "ResourceArn.1" => "test1",
-        "ResourceArn.2" => "test2", 
+        "ResourceArn.1" => "resource_arn1",
+        "ResourceArn.2" => "resource_arn2", 
         "Tag.1.Key" => "hello", "Tag.1.Value" => "test",
         "Version" => "2015-12-01"}, 
         parser: &ExAws.Utils.identity/2, path: "/", service: :elastic_load_balancing}
@@ -175,12 +172,12 @@ defmodule ExAws.ElasticLoadBalancing do
   ## Examples:
 
         iex> ExAws.ElasticLoadBalancing.create_listener(
-        ...> "arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/my-load-balancer", 
+        ...> "load_balancer_arn", 
         ...> "HTTP", 80, [%{type: "forward", target_group_arn: "target_arn"}])
         %ExAws.Operation.Query{action: :create_listener,
         params: %{"Action" => "CreateListener",
         "Action.1.TargetGroupArn" => "target_arn", "Action.1.Type" => "forward",
-        "LoadBalancerArn" => "arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/my-load-balancer", 
+        "LoadBalancerArn" => "load_balancer_arn", 
         "Port" => 80, "Protocol" => "HTTP",
         "Version" => "2015-12-01"}, 
         parser: &ExAws.Utils.identity/2, path: "/", service: :elastic_load_balancing}
@@ -326,6 +323,14 @@ defmodule ExAws.ElasticLoadBalancing do
   in the *Application Load Balancers Guide* 
   * [Target Groups for Your Network Load Balancers](http://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-target-groups.html)
   in the *Network Load Balancers Guide*.
+
+  ## Examples:
+
+      iex> ExAws.ElasticLoadBalancing.create_target_group("target_group_name", "vpc_id")
+      %ExAws.Operation.Query{action: :create_target_group,
+      params: %{"Action" => "CreateTargetGroup", "Name" => "target_group_name",
+        "Version" => "2015-12-01", "VpcId" => "vpc_id"},
+      parser: &ExAws.Utils.identity/2, path: "/", service: :elastic_load_balancing}
   """
   @type create_target_group_opts :: [
           protocol: binary,
@@ -359,10 +364,10 @@ defmodule ExAws.ElasticLoadBalancing do
 
   ## Examples:
 
-        iex> ExAws.ElasticLoadBalancing.delete_listener("my_balancer_listener")
+        iex> ExAws.ElasticLoadBalancing.delete_listener("listener_arn")
         %ExAws.Operation.Query{action: :delete_listener,
         params: %{"Action" => "DeleteListener", 
-        "ListenerArn" => "my_balancer_listener",
+        "ListenerArn" => "listener_arn",
         "Version" => "2015-12-01"}, 
         parser: &ExAws.Utils.identity/2, path: "/", service: :elastic_load_balancing}
 
@@ -388,10 +393,10 @@ defmodule ExAws.ElasticLoadBalancing do
 
   ## Examples:
 
-        iex> ExAws.ElasticLoadBalancing.delete_load_balancer("my_load_balancer")
+        iex> ExAws.ElasticLoadBalancing.delete_load_balancer("load_balancer_arn")
         %ExAws.Operation.Query{action: :delete_load_balancer,
         params: %{"Action" => "DeleteLoadBalancer", 
-        "LoadBalancerArn" => "my_load_balancer",
+        "LoadBalancerArn" => "load_balancer_arn",
         "Version" => "2015-12-01"}, 
         parser: &ExAws.Utils.identity/2, path: "/", service: :elastic_load_balancing}
 
@@ -407,10 +412,10 @@ defmodule ExAws.ElasticLoadBalancing do
 
   ## Examples:
 
-        iex> ExAws.ElasticLoadBalancing.delete_rule("my_balancer_rule")
+        iex> ExAws.ElasticLoadBalancing.delete_rule("rule_arn")
         %ExAws.Operation.Query{action: :delete_rule,
         params: %{"Action" => "DeleteRule", 
-        "RuleArn" => "my_balancer_rule",
+        "RuleArn" => "rule_arn",
         "Version" => "2015-12-01"}, 
         parser: &ExAws.Utils.identity/2, path: "/", service: :elastic_load_balancing}
 
@@ -430,10 +435,10 @@ defmodule ExAws.ElasticLoadBalancing do
 
   ## Examples:
 
-        iex> ExAws.ElasticLoadBalancing.delete_target_group("my_target_group")
+        iex> ExAws.ElasticLoadBalancing.delete_target_group("target_group_arn")
         %ExAws.Operation.Query{action: :delete_target_group,
         params: %{"Action" => "DeleteTargetGroup", 
-        "TargetGroupArn" => "my_target_group",
+        "TargetGroupArn" => "target_group_arn",
         "Version" => "2015-12-01"}, 
         parser: &ExAws.Utils.identity/2, path: "/", service: :elastic_load_balancing}
 
@@ -452,12 +457,12 @@ defmodule ExAws.ElasticLoadBalancing do
 
   ## Examples:
 
-        iex> ExAws.ElasticLoadBalancing.deregister_targets("my_target_group", 
+        iex> ExAws.ElasticLoadBalancing.deregister_targets("target_group_arn", 
         ...> [%{id: "test", port: 8080, availability_zone: "us-east-1"},
         ...>  %{id: "test2", port: 8088, availability_zone: "us-east-1"}])
         %ExAws.Operation.Query{action: :deregister_targets,
             params: %{"Action" => "DeregisterTargets",
-              "TargetGroupArn" => "my_target_group",
+              "TargetGroupArn" => "target_group_arn",
               "Targets.1.AvailabilityZone" => "us-east-1",
               "Targets.1.Id" => "test", "Targets.1.Port" => 8080,
               "Targets.2.AvailabilityZone" => "us-east-1",
@@ -465,12 +470,10 @@ defmodule ExAws.ElasticLoadBalancing do
               "Version" => "2015-12-01"}, parser: &ExAws.Utils.identity/2,
             path: "/", service: :elastic_load_balancing}
 
-        iex> ExAws.ElasticLoadBalancing.deregister_targets(
-        ...> "arn:aws:elasticloadbalancing:us-west-2:123456789012:targetgroup/my-targets/73e2d6bc24d8a067",
-        ...> [%{id: "i-0f76fade435676abd"}])
+        iex> ExAws.ElasticLoadBalancing.deregister_targets("target_group_arn", [%{id: "i-0f76fade435676abd"}])
         %ExAws.Operation.Query{action: :deregister_targets,
             params: %{"Action" => "DeregisterTargets",
-              "TargetGroupArn" => "arn:aws:elasticloadbalancing:us-west-2:123456789012:targetgroup/my-targets/73e2d6bc24d8a067",
+              "TargetGroupArn" => "target_group_arn",
               "Targets.1.Id" => "i-0f76fade435676abd", 
               "Version" => "2015-12-01"}, parser: &ExAws.Utils.identity/2,
             path: "/", service: :elastic_load_balancing}
@@ -785,6 +788,22 @@ defmodule ExAws.ElasticLoadBalancing do
   However, changing the protocol from HTTPS to HTTP removes the security 
   policy and SSL certificate properties. If you change the protocol from 
   HTTP to HTTPS, you must add the security policy and server certificate.
+
+  ## Examples:
+
+      iex> ExAws.ElasticLoadBalancing.modify_listener("listener_arn")
+      %ExAws.Operation.Query{action: :modify_listener,
+      params: %{"Action" => "ModifyListener", "ListenerArn" => "listener_arn",
+      "Version" => "2015-12-01"}, 
+      parser: &ExAws.Utils.identity/2, path: "/", service: :elastic_load_balancing}
+
+      iex> ExAws.ElasticLoadBalancing.modify_listener("listener_arn", 
+      ...> [port: 80, protocol: "HTTP", certificates: ["certificate1", "certificate2"]])
+      %ExAws.Operation.Query{action: :modify_listener,
+      params: %{"Action" => "ModifyListener", "Certificate.1" => "certificate1",
+      "Certificate.2" => "certificate2", "ListenerArn" => "listener_arn",
+      "Port" => 80, "Protocol" => "HTTP", "Version" => "2015-12-01"},
+      parser: &ExAws.Utils.identity/2, path: "/", service: :elastic_load_balancing}
   """
   @type modify_listener_opts :: [
           port: integer,
@@ -839,6 +858,23 @@ defmodule ExAws.ElasticLoadBalancing do
   the targets in the specified target group.
 
   To monitor the health of the targets, use `describe_target_health/1`.
+
+  Examples:
+
+      iex> ExAws.ElasticLoadBalancing.modify_target_group("target_group_arn")
+      %ExAws.Operation.Query{action: :modify_target_group,
+      params: %{"Action" => "ModifyTargetGroup",
+        "TargetGroupArn" => "target_group_arn", "Version" => "2015-12-01"},
+      parser: &ExAws.Utils.identity/2, path: "/", service: :elastic_load_balancing}
+
+      iex> ExAws.ElasticLoadBalancing.modify_target_group("target_group_arn",
+      ...> [heath_check_port: 8088, health_check_protocol: "HTTP", health_check_path: "/"])
+      %ExAws.Operation.Query{action: :modify_target_group,
+      params: %{"Action" => "ModifyTargetGroup", "HealthCheckPath" => "/",
+      "HealthCheckProtocol" => "HTTP", "HeathCheckPort" => 8088,
+      "TargetGroupArn" => "target_group_arn", "Version" => "2015-12-01"},
+      parser: &ExAws.Utils.identity/2, path: "/", service: :elastic_load_balancing}
+
   """
   @type modify_target_group_opts :: [
           health_check_protocol: binary,
@@ -862,6 +898,16 @@ defmodule ExAws.ElasticLoadBalancing do
 
   @doc """
   Modifies the specified attributes of the specified target group.
+
+  ## Examples:
+
+      iex> ExAws.ElasticLoadBalancing.modify_target_group_attributes("target_group_arn",
+      ...> [{:hello, "test"}])
+      %ExAws.Operation.Query{action: :modify_target_group_attributes,
+      params: %{"Action" => "ModifyTargetGroupAttributes",
+      "Attribute.1.Key" => "hello", "Attribute.1.Value" => "test",
+      "TargetGroupArn" => "target_group_arn", "Version" => "2015-12-01"},
+      parser: &ExAws.Utils.identity/2, path: "/", service: :elastic_load_balancing}
   """
   @spec modify_target_group_attributes(
           target_group_arn :: binary,
@@ -891,6 +937,15 @@ defmodule ExAws.ElasticLoadBalancing do
   these types by IP address.
 
   To remove a target from a target group, use `deregister_targets/1`.
+
+  ## Examples:
+
+      iex> ExAws.ElasticLoadBalancing.register_targets("target_group_arn", ["target1", "target2"])
+      %ExAws.Operation.Query{action: :register_targets,
+      params: %{"Action" => "RegisterTargets",
+      "TargetGroupArn" => "target_group_arn", "Targets.1" => "target1",
+      "Targets.2" => "target2", "Version" => "2015-12-01"},
+      parser: &ExAws.Utils.identity/2, path: "/", service: :elastic_load_balancing}
   """
   @spec register_targets(target_group_arn :: binary, targets :: [target_description, ...]) ::
           ExAws.Operation.Query.t()
@@ -905,12 +960,24 @@ defmodule ExAws.ElasticLoadBalancing do
   You can't remove the default certificate for a listener. To replace 
   the default certificate, call `modify_listener/1`. To list the certificates 
   for your listener, use `describe_listener_certificates/1`.
+
+  ## Examples:
+
+      iex> ExAws.ElasticLoadBalancing.remove_listener_certificates("listener_arn", 
+      ...> [%{certificate_arn: "certificate1_arn", is_default: true}, %{certificate_arn: "certificate2_arn"}])
+      %ExAws.Operation.Query{action: :remove_listener_certificates,
+      params: %{"Action" => "RemoveListenerCertificates",
+      "Certificate.1.CertificateArn" => "certificate1_arn",
+      "Certificate.1.IsDefault" => true,
+      "Certificate.2.CertificateArn" => "certificate2_arn",
+      "ListenerArn" => "listener_arn", "Version" => "2015-12-01"},
+      parser: &ExAws.Utils.identity/2, path: "/", service: :elastic_load_balancing}
   """
   @spec remove_listener_certificates(listener_arn :: binary, certificates :: [certificate, ...]) ::
           ExAws.Operation.Query.t()
   def remove_listener_certificates(listener_arn, certificates, opts \\ []) do
     [{:listener_arn, listener_arn}, {:certificates, certificates} | opts]
-    opts |> build_request(:remove_listener_certificates)
+    |> build_request(:remove_listener_certificates)
   end
 
   @doc """
@@ -918,6 +985,15 @@ defmodule ExAws.ElasticLoadBalancing do
   resource.
 
   To list the current tags for your resources, use `describe_tags/1`.
+
+  ## Examples:
+
+      iex> ExAws.ElasticLoadBalancing.remove_tags(["resource_arn1", "resource_arn2"], ["tag1", "tag2"])
+      %ExAws.Operation.Query{action: :remove_tags,
+      params: %{"Action" => "RemoveTags", "ResourceArn.1" => "resource_arn1",
+      "ResourceArn.2" => "resource_arn2", "TagsKeys.1" => "tag1",
+      "TagsKeys.2" => "tag2", "Version" => "2015-12-01"},
+      parser: &ExAws.Utils.identity/2, path: "/", service: :elastic_load_balancing}
   """
   @spec remove_tags(resource_arns :: [binary, ...], tag_keys :: [binary, ...]) ::
           ExAws.Operation.Query.t()
@@ -931,6 +1007,14 @@ defmodule ExAws.ElasticLoadBalancing do
   Application Load Balancer or Network Load Balancer.
 
   *Note: Network Load Balancers must use `ipv4`*.
+
+  ## Examples:
+
+      iex> ExAws.ElasticLoadBalancing.set_ip_address_type("load_balancer_arn", "ipv4")
+      %ExAws.Operation.Query{action: :set_ip_address_type,
+      params: %{"Action" => "SetIpAddressType", "IpAddressType" => "ipv4",
+      "LoadBalancerArn" => "load_balancer_arn", "Version" => "2015-12-01"},
+      parser: &ExAws.Utils.identity/2, path: "/", service: :elastic_load_balancing}
   """
   @spec set_ip_address_type(load_balancer_arn :: binary, ip_address_type :: binary) ::
           ExAws.Operation.Query.t()
@@ -945,6 +1029,14 @@ defmodule ExAws.ElasticLoadBalancing do
   You can reorder the rules as long as there are no priority conflicts 
   in the new order. Any existing rules that you do not specify retain 
   their current priority.
+
+  ## Examples:
+
+      iex> ExAws.ElasticLoadBalancing.set_rule_priorities([1,2,3])
+      %ExAws.Operation.Query{action: :set_rule_priorities,
+      params: %{"Action" => "SetRulePriorities", "RulePriorities.1" => 1,
+      "RulePriorities.2" => 2, "RulePriorities.3" => 3, "Version" => "2015-12-01"},
+      parser: &ExAws.Utils.identity/2, path: "/", service: :elastic_load_balancing}
   """
   @spec set_rule_priorities(rule_priorities :: [integer, ...]) :: ExAws.Operation.Query.t()
   def set_rule_priorities(rule_priorities, opts \\ []) do
@@ -960,6 +1052,16 @@ defmodule ExAws.ElasticLoadBalancing do
   groups. 
 
   *Note: You can't specify a security group for a Network Load Balancer*.
+
+  ## Examples:
+
+      iex>  ExAws.ElasticLoadBalancing.set_security_groups("load_balancer_arn", ["security_group1", "security_group2"])
+      %ExAws.Operation.Query{action: :set_security_groups,
+      params: %{"Action" => "SetSecurityGroups",
+        "LoadBalancerArn" => "load_balancer_arn",
+        "SecurityGroupId.1" => "security_group1",
+        "SecurityGroupId.2" => "security_group2", "Version" => "2015-12-01"},
+      parser: &ExAws.Utils.identity/2, path: "/", service: :elastic_load_balancing}
   """
   @spec set_security_groups(load_balancer_arn :: binary, security_groups :: [binary, ...]) ::
           ExAws.Operation.Query.t()
@@ -975,6 +1077,15 @@ defmodule ExAws.ElasticLoadBalancing do
   The specified subnets replace the previously enabled subnets. 
 
   *Note: You can't change the subnets for a Network Load Balancer*.
+
+  ## Examples:
+
+      iex>  ExAws.ElasticLoadBalancing.set_subnets("load_balancer_arn", ["subnet1", "subnet2"])
+      %ExAws.Operation.Query{action: :set_subnets,
+      params: %{"Action" => "SetSubnets", "LoadBalancerArn" => "load_balancer_arn",
+        "Subnets.1" => "subnet1", "Subnets.2" => "subnet2",
+        "Version" => "2015-12-01"}, parser: &ExAws.Utils.identity/2, path: "/",
+      service: :elastic_load_balancing}
   """
   @type set_subnets_opts :: [
           subnet_mappings: [subnet_mapping, ...]
@@ -1017,6 +1128,12 @@ defmodule ExAws.ElasticLoadBalancing do
 
   defp format_param({:certificates, certificates}) do
     certificates |> format(prefix: "Certificate")
+  end
+
+  defp format_param({:attributes, attributes}) do
+    attributes
+    |> Enum.map(fn {key, value} -> [key: maybe_stringify(key), value: value] end)
+    |> format(prefix: "Attribute")    
   end
 
   defp format_param({:tags, tags}) do
