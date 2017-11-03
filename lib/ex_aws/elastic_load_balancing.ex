@@ -32,26 +32,9 @@ defmodule ExAws.ElasticLoadBalancing do
           target_group_arn: binary
         ]
 
-  @type add_tags_input :: [
-          resource_arns: [binary, ...],
-          tags: [tag, ...]
-        ]
-
   @type certificate :: [
           certificate_arn: binary,
           is_default: boolean
-        ]
-
-  @type limit :: [
-          name: binary,
-          max: binary
-        ]
-
-  @type target_group :: [
-          target_group_arn: binary,
-          target_group_name: binary,
-          protocol: binary,
-          port: integer
         ]
 
   @type target_description :: [
@@ -60,22 +43,9 @@ defmodule ExAws.ElasticLoadBalancing do
           availability_zone: binary
         ]
 
-  @type load_balancer_address :: [
-          ip_address: binary,
-          allocation_id: binary
-        ]
-
   @type rule_condition :: [
           field: binary,
           values: [binary, ...]
-        ]
-
-  @type rule :: [
-          rule_arn: binary,
-          priority: binary,
-          conditions: [rule_condition, ...],
-          actions: [action, ...],
-          is_default: boolean
         ]
 
   @type subnet_mapping :: [
