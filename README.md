@@ -21,4 +21,4 @@ end
 Elastic Load Balancing protocol: "query". So every function in the API 
 returns a `%ExAws.Operation.Query{}` struct.
 
-All the unit tests are implemented as using [DocTest](https://hexdocs.pm/ex_unit/ExUnit.DocTest.html).
+All the unit tests are implemented using [DocTest](https://hexdocs.pm/ex_unit/ExUnit.DocTest.html).
