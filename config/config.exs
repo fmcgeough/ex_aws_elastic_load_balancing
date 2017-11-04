@@ -10,11 +10,11 @@ use Mix.Config
 
 # You can configure your application as:
 #
-#     config :ex_aws_elb, key: :value
+#     config :ex_aws_elasticloadbalancing, key: :value
 #
 # and access this configuration in your application as:
 #
-#     Application.get_env(:ex_aws_elb, :key)
+#     Application.get_env(:ex_aws_elasticloadbalancing, :key)
 #
 # You can also configure a 3rd-party app:
 #
