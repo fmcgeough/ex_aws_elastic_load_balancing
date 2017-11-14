@@ -31,14 +31,7 @@ defmodule ExAws.ElasticLoadBalancing.Mixfile do
       {:sweet_xml, ">= 0.0.0", only: [:dev, :test]},
       {:poison, ">= 0.0.0", only: [:dev, :test]},
       {:ex_doc, "~> 0.16", only: [:dev, :test]},
-      ex_aws(),
+      {:ex_aws, "~> 2.0"}
     ]
-  end
-
-  defp ex_aws() do
-    case System.get_env("AWS") do
-      "LOCAL" -> {:ex_aws, path: "../ex_aws"}
-      _ -> {:ex_aws, github: "ex-aws/ex_aws", branch: "v2"}
-    end
   end
 end

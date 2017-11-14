@@ -4,8 +4,8 @@ Service module for https://github.com/ex-aws/ex_aws
 
 ## Installation
 
-The package can be installed by adding ex_aws_elastic_load_balancing to your 
-list of dependencies in mix.exs along with :ex_aws and your 
+The package can be installed by adding ex_aws_elastic_load_balancing to your
+list of dependencies in mix.exs along with :ex_aws and your
 preferred JSON codec / http client
 
 ```elixir
@@ -18,7 +18,18 @@ def deps do
   ]
 end
 ```
-Elastic Load Balancing protocol: "query". So every function in the API 
+Elastic Load Balancing protocol: "query". So every function in the API
 returns a `%ExAws.Operation.Query{}` struct.
 
 All the unit tests are implemented using [DocTest](https://hexdocs.pm/ex_unit/ExUnit.DocTest.html).
+
+Simple usage:
+
+```elixir
+iex(1)> alias ExAws.ElasticLoadBalancing
+ExAws.ElasticLoadBalancing
+iex(2)>  keys = [secret_access_key: "my_secret_keys",  access_key_id: "my_access_id", region: "us-east-1"]
+[secret_access_key: "my_secret_keys",
+ access_key_id: "my_access_id", region: "us-east-1"]
+iex(3)>  ElasticLoadBalancing.describe_load_balancers() |> ExAws.request(keys)
+```
