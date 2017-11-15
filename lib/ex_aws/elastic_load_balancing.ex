@@ -2,17 +2,17 @@ defmodule ExAws.ElasticLoadBalancing do
   @moduledoc """
   Operations on AWS ELB (Elastic Load Balancing)
 
-  AWS Elastic Load Balancing supports three types of load balancers: Application 
-  Load Balancers, Network Load Balancers, and Classic Load Balancers. You can 
-  select a load balancer based on your application needs. 
+  AWS Elastic Load Balancing supports three types of load balancers: Application
+  Load Balancers, Network Load Balancers, and Classic Load Balancers. You can
+  select a load balancer based on your application needs.
 
-  More information: 
+  More information:
   * [Elastic Load Balancing User Guide][User_Guide]
   * [Elastic Load Balancing API][API_Doc]
   * [Amazon Resource Names (ARNs)][ARN_Doc]
 
   [User_Guide]: http://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/
-  [API_Doc]: http://docs.aws.amazon.com/elasticloadbalancing/latest/APIReference/ 
+  [API_Doc]: http://docs.aws.amazon.com/elasticloadbalancing/latest/APIReference/
   [ARN_Doc]: http://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html
   """
 
@@ -55,7 +55,7 @@ defmodule ExAws.ElasticLoadBalancing do
   @doc """
   Adds the specified certificate to the specified secure listener.
 
-  If the certificate was already added, the call is successful but the certificate 
+  If the certificate was already added, the call is successful but the certificate
   is not added again.
 
   To list the certificates for your listener, use `describe_listener_certificates/1`.
@@ -64,16 +64,16 @@ defmodule ExAws.ElasticLoadBalancing do
   ## Examples:
 
         iex> ExAws.ElasticLoadBalancing.add_listener_certificates(
-        ...> "listener_arn", 
-        ...>  [%{certificate_arn: "certificate1_arn", is_default: true}, 
+        ...> "listener_arn",
+        ...>  [%{certificate_arn: "certificate1_arn", is_default: true},
         ...>   %{certificate_arn: "certificate2_arn"}])
         %ExAws.Operation.Query{action: :add_listener_certificates,
-        params: %{"Action" => "AddListenerCertificates", 
+        params: %{"Action" => "AddListenerCertificates",
         "Certificate.1.CertificateArn" => "certificate1_arn",
         "Certificate.1.IsDefault" => true,
         "Certificate.2.CertificateArn" => "certificate2_arn",
         "ListenerArn" => "listener_arn",
-        "Version" => "2015-12-01"}, 
+        "Version" => "2015-12-01"},
         parser: &ExAws.Utils.identity/2, path: "/", service: :elasticloadbalancing}
 
   """
@@ -85,34 +85,34 @@ defmodule ExAws.ElasticLoadBalancing do
   end
 
   @doc """
-  Adds the specified tags to the specified Elastic Load Balancing resource. 
+  Adds the specified tags to the specified Elastic Load Balancing resource.
 
   You can tag your Application Load Balancers, Network Load Balancers, and your target groups.
 
-  Each tag consists of a key and an optional value. If a resource already has a tag with the same 
+  Each tag consists of a key and an optional value. If a resource already has a tag with the same
   key, `add_tags/1` updates its value.
 
-  To list the current tags for your resources, use `describe_tags/1`. To remove tags from 
+  To list the current tags for your resources, use `describe_tags/1`. To remove tags from
   your resources, use `remove_tags/1`.
 
   ## Examples:
 
         iex> ExAws.ElasticLoadBalancing.add_tags(["resource_arn1", "resource_arn2"], ["hello": "test"])
         %ExAws.Operation.Query{action: :add_tags,
-        params: %{"Action" => "AddTags", 
+        params: %{"Action" => "AddTags",
         "ResourceArn.1" => "resource_arn1",
-        "ResourceArn.2" => "resource_arn2", 
+        "ResourceArn.2" => "resource_arn2",
         "Tag.1.Key" => "hello", "Tag.1.Value" => "test",
-        "Version" => "2015-12-01"}, 
+        "Version" => "2015-12-01"},
         parser: &ExAws.Utils.identity/2, path: "/", service: :elasticloadbalancing}
 
         iex> ExAws.ElasticLoadBalancing.add_tags(["resource_arn1", "resource_arn2"], [{:hello, "test"}])
         %ExAws.Operation.Query{action: :add_tags,
-        params: %{"Action" => "AddTags", 
+        params: %{"Action" => "AddTags",
         "ResourceArn.1" => "resource_arn1",
-        "ResourceArn.2" => "resource_arn2", 
+        "ResourceArn.2" => "resource_arn2",
         "Tag.1.Key" => "hello", "Tag.1.Value" => "test",
-        "Version" => "2015-12-01"}, 
+        "Version" => "2015-12-01"},
         parser: &ExAws.Utils.identity/2, path: "/", service: :elasticloadbalancing}
 
   """
@@ -123,33 +123,33 @@ defmodule ExAws.ElasticLoadBalancing do
   end
 
   @doc """
-  Creates a listener for the specified Application Load Balancer 
+  Creates a listener for the specified Application Load Balancer
   or Network Load Balancer.
 
   You can create up to 10 listeners per load balancer.
 
-  To update a listener, use `modify_listener/1`. When you are finished with a 
-  listener, you can delete it using `delete_listener/1`. If you are finished 
-  with both the listener and the load balancer, you can delete them both 
+  To update a listener, use `modify_listener/1`. When you are finished with a
+  listener, you can delete it using `delete_listener/1`. If you are finished
+  with both the listener and the load balancer, you can delete them both
   using `delete_load_balancer/1`.
 
   More information:
   * [Listeners for Your Application Load Balancers](http://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-listeners.html)
   in the *Application Load Balancers Guide*
-  * [Listeners for Your Network Load Balancers](http://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-listeners.html) 
+  * [Listeners for Your Network Load Balancers](http://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-listeners.html)
   in the *Network Load Balancers Guide*
 
   ## Examples:
 
         iex> ExAws.ElasticLoadBalancing.create_listener(
-        ...> "load_balancer_arn", 
+        ...> "load_balancer_arn",
         ...> "HTTP", 80, [%{type: "forward", target_group_arn: "target_arn"}])
         %ExAws.Operation.Query{action: :create_listener,
         params: %{"Action" => "CreateListener",
         "Action.1.TargetGroupArn" => "target_arn", "Action.1.Type" => "forward",
-        "LoadBalancerArn" => "load_balancer_arn", 
+        "LoadBalancerArn" => "load_balancer_arn",
         "Port" => 80, "Protocol" => "HTTP",
-        "Version" => "2015-12-01"}, 
+        "Version" => "2015-12-01"},
         parser: &ExAws.Utils.identity/2, path: "/", service: :elasticloadbalancing}
   """
   @type create_listener_opts :: [
@@ -182,50 +182,50 @@ defmodule ExAws.ElasticLoadBalancing do
   @doc """
   Creates an Application Load Balancer or a Network Load Balancer.
 
-  When you create a load balancer, you can specify security groups, subnets, 
+  When you create a load balancer, you can specify security groups, subnets,
   IP address type, and tags. Otherwise, you could do so later using set_security_groups,
-  set_subnets, set_ip_address_type, and add_tags. 
+  set_subnets, set_ip_address_type, and add_tags.
 
-  To create listeners for your load balancer, use `create_listener/1`. To describe your 
-  current load balancers, see `describe_load_balancer/1`. When you are finished with a 
+  To create listeners for your load balancer, use `create_listener/1`. To describe your
+  current load balancers, see `describe_load_balancer/1`. When you are finished with a
   load balancer, you can delete it using `delete_load_balancer/1`.
 
-  You can create up to 20 load balancers per region per account. You can request an 
-  increase for the number of load balancers for your account. 
+  You can create up to 20 load balancers per region per account. You can request an
+  increase for the number of load balancers for your account.
 
   More information:
   * [Limits for Your Application Load Balancer](http://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-limits.html)
-  in the *Application Load Balancers Guide* 
+  in the *Application Load Balancers Guide*
   * [Limits for Your Network Load Balancer](http://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-limits.html)
-  in the *Network Load Balancers Guide* 
+  in the *Network Load Balancers Guide*
 
   ## Examples:
 
-        iex> ExAws.ElasticLoadBalancing.create_load_balancer("Loader")        
+        iex> ExAws.ElasticLoadBalancing.create_load_balancer("Loader")
         %ExAws.Operation.Query{action: :create_load_balancer,
-        params: %{"Action" => "CreateLoadBalancer", 
+        params: %{"Action" => "CreateLoadBalancer",
         "Name" => "Loader",
-        "Version" => "2015-12-01"}, 
+        "Version" => "2015-12-01"},
         parser: &ExAws.Utils.identity/2, path: "/", service: :elasticloadbalancing}
 
-        iex> ExAws.ElasticLoadBalancing.create_load_balancer("Loader", 
-        ...> [schema: "internet-facing", 
+        iex> ExAws.ElasticLoadBalancing.create_load_balancer("Loader",
+        ...> [schema: "internet-facing",
         ...> subnet_mappings: [%{subnet_id: "1.2.3.4", allocation_id: "i2234342"}],
         ...> subnets: ["1.2.3.4", "5.6.7.8"],
         ...> security_groups: ["Secure123", "Secure456"],
-        ...> type: "application", ip_address_type: "ipv4"]) 
+        ...> type: "application", ip_address_type: "ipv4"])
         %ExAws.Operation.Query{action: :create_load_balancer,
-        params: %{"Action" => "CreateLoadBalancer", 
+        params: %{"Action" => "CreateLoadBalancer",
         "IpAddressType" => "ipv4",
-        "Name" => "Loader", 
+        "Name" => "Loader",
         "Schema" => "internet-facing",
         "SecurityGroupId.1" => "Secure123", "SecurityGroupId.2" => "Secure456",
         "SubnetMappings.1.AllocationId" => "i2234342",
-        "SubnetMappings.1.SubnetId" => "1.2.3.4", 
+        "SubnetMappings.1.SubnetId" => "1.2.3.4",
         "Subnets.1" => "1.2.3.4",
-        "Subnets.2" => "5.6.7.8", 
+        "Subnets.2" => "5.6.7.8",
         "Type" => "application",
-        "Version" => "2015-12-01"}, 
+        "Version" => "2015-12-01"},
         parser: &ExAws.Utils.identity/2, path: "/", service: :elasticloadbalancing}
 
   """
@@ -247,19 +247,19 @@ defmodule ExAws.ElasticLoadBalancing do
   end
 
   @doc """
-  Creates a rule for the specified listener. 
+  Creates a rule for the specified listener.
 
-  The listener must be associated with an Application Load Balancer. Rules are 
-  evaluated in priority order, from the lowest value to the highest value. When 
-  the condition for a rule is met, the specified action is taken. If no conditions 
-  are met, the action for the default rule is taken. 
+  The listener must be associated with an Application Load Balancer. Rules are
+  evaluated in priority order, from the lowest value to the highest value. When
+  the condition for a rule is met, the specified action is taken. If no conditions
+  are met, the action for the default rule is taken.
 
   More information:
   * [Listener Rules](http://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-listeners.html#listener-rules)
-  *Application Load Balancers Guide* 
+  *Application Load Balancers Guide*
 
-  To view your current rules, use `describe_rules/1`. To update a rule, use 
-  `modify_rule/1`. To set the priorities of your rules, use `set_rule_priorities/1`. 
+  To view your current rules, use `describe_rules/1`. To update a rule, use
+  `modify_rule/1`. To set the priorities of your rules, use `set_rule_priorities/1`.
   To delete a rule, use `delete_rule/1`.
   """
   @spec create_rule(
@@ -268,9 +268,9 @@ defmodule ExAws.ElasticLoadBalancing do
           priority :: integer,
           actions :: [action, ...]
         ) :: ExAws.Operation.Query.t()
-  def create_rule(listener_arm, conditions, priority, actions, opts \\ []) do
+  def create_rule(listener_arn, conditions, priority, actions, opts \\ []) do
     [
-      {:listener_arm, listener_arm},
+      {:listener_arn, listener_arn},
       {:conditions, conditions},
       {:priority, priority},
       {:actions, actions} | opts
@@ -281,16 +281,16 @@ defmodule ExAws.ElasticLoadBalancing do
   @doc """
   Creates a target group.
 
-  To register targets with the target group, use `register_targets/1`. To 
-  update the health check settings for the target group, use 
-  `modify_target_group/1`. To monitor the health of targets in the target group, 
-  use `describe_target_health/1`. To route traffic to the targets in a target group, 
+  To register targets with the target group, use `register_targets/1`. To
+  update the health check settings for the target group, use
+  `modify_target_group/1`. To monitor the health of targets in the target group,
+  use `describe_target_health/1`. To route traffic to the targets in a target group,
   specify the target group in an action using `create_listener/1` or `create_rule/1`.
-  To delete a target group, use `delete_target_group/1`. 
+  To delete a target group, use `delete_target_group/1`.
 
   More information:
   * [Target Groups for Your Application Load Balancers](http://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-target-groups.html)
-  in the *Application Load Balancers Guide* 
+  in the *Application Load Balancers Guide*
   * [Target Groups for Your Network Load Balancers](http://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-target-groups.html)
   in the *Network Load Balancers Guide*.
 
@@ -329,16 +329,16 @@ defmodule ExAws.ElasticLoadBalancing do
   @doc """
   Deletes the specified listener.
 
-  Alternatively, your listener is deleted when you delete the load balancer 
+  Alternatively, your listener is deleted when you delete the load balancer
   it is attached to using `delete_load_balancer/1`.
 
   ## Examples:
 
         iex> ExAws.ElasticLoadBalancing.delete_listener("listener_arn")
         %ExAws.Operation.Query{action: :delete_listener,
-        params: %{"Action" => "DeleteListener", 
+        params: %{"Action" => "DeleteListener",
         "ListenerArn" => "listener_arn",
-        "Version" => "2015-12-01"}, 
+        "Version" => "2015-12-01"},
         parser: &ExAws.Utils.identity/2, path: "/", service: :elasticloadbalancing}
 
   """
@@ -349,25 +349,25 @@ defmodule ExAws.ElasticLoadBalancing do
   end
 
   @doc """
-  Deletes the specified Application Load Balancer or Network Load Balancer 
+  Deletes the specified Application Load Balancer or Network Load Balancer
   and its attached listeners.
 
-  You can't delete a load balancer if deletion protection is enabled. 
-  If the load balancer does not exist or has already been deleted, 
+  You can't delete a load balancer if deletion protection is enabled.
+  If the load balancer does not exist or has already been deleted,
   the call succeeds.
 
-  Deleting a load balancer does not affect its registered targets. For 
-  example, your EC2 instances continue to run and are still registered 
-  to their target groups. If you no longer need these EC2 instances, 
+  Deleting a load balancer does not affect its registered targets. For
+  example, your EC2 instances continue to run and are still registered
+  to their target groups. If you no longer need these EC2 instances,
   you can stop or terminate them.
 
   ## Examples:
 
         iex> ExAws.ElasticLoadBalancing.delete_load_balancer("load_balancer_arn")
         %ExAws.Operation.Query{action: :delete_load_balancer,
-        params: %{"Action" => "DeleteLoadBalancer", 
+        params: %{"Action" => "DeleteLoadBalancer",
         "LoadBalancerArn" => "load_balancer_arn",
-        "Version" => "2015-12-01"}, 
+        "Version" => "2015-12-01"},
         parser: &ExAws.Utils.identity/2, path: "/", service: :elasticloadbalancing}
 
   """
@@ -384,9 +384,9 @@ defmodule ExAws.ElasticLoadBalancing do
 
         iex> ExAws.ElasticLoadBalancing.delete_rule("rule_arn")
         %ExAws.Operation.Query{action: :delete_rule,
-        params: %{"Action" => "DeleteRule", 
+        params: %{"Action" => "DeleteRule",
         "RuleArn" => "rule_arn",
-        "Version" => "2015-12-01"}, 
+        "Version" => "2015-12-01"},
         parser: &ExAws.Utils.identity/2, path: "/", service: :elasticloadbalancing}
 
   """
@@ -399,17 +399,17 @@ defmodule ExAws.ElasticLoadBalancing do
   @doc """
   Deletes the specified target group.
 
-  You can delete a target group if it is not referenced by any 
-  actions. Deleting a target group also deletes any associated 
+  You can delete a target group if it is not referenced by any
+  actions. Deleting a target group also deletes any associated
   health checks.
 
   ## Examples:
 
         iex> ExAws.ElasticLoadBalancing.delete_target_group("target_group_arn")
         %ExAws.Operation.Query{action: :delete_target_group,
-        params: %{"Action" => "DeleteTargetGroup", 
+        params: %{"Action" => "DeleteTargetGroup",
         "TargetGroupArn" => "target_group_arn",
-        "Version" => "2015-12-01"}, 
+        "Version" => "2015-12-01"},
         parser: &ExAws.Utils.identity/2, path: "/", service: :elasticloadbalancing}
 
   """
@@ -420,14 +420,14 @@ defmodule ExAws.ElasticLoadBalancing do
   end
 
   @doc """
-  Deregisters the specified targets from the specified target group. 
+  Deregisters the specified targets from the specified target group.
 
-  After the targets are deregistered, they no longer receive traffic 
+  After the targets are deregistered, they no longer receive traffic
   from the load balancer.
 
   ## Examples:
 
-        iex> ExAws.ElasticLoadBalancing.deregister_targets("target_group_arn", 
+        iex> ExAws.ElasticLoadBalancing.deregister_targets("target_group_arn",
         ...> [%{id: "test", port: 8080, availability_zone: "us-east-1"},
         ...>  %{id: "test2", port: 8088, availability_zone: "us-east-1"}])
         %ExAws.Operation.Query{action: :deregister_targets,
@@ -444,10 +444,10 @@ defmodule ExAws.ElasticLoadBalancing do
         %ExAws.Operation.Query{action: :deregister_targets,
             params: %{"Action" => "DeregisterTargets",
               "TargetGroupArn" => "target_group_arn",
-              "Targets.1.Id" => "i-0f76fade435676abd", 
+              "Targets.1.Id" => "i-0f76fade435676abd",
               "Version" => "2015-12-01"}, parser: &ExAws.Utils.identity/2,
             path: "/", service: :elasticloadbalancing}
-        
+
   """
   @spec deregister_targets(target_group_arn :: binary, targets :: [target_description, ...]) ::
           ExAws.Operation.Query.t()
@@ -457,7 +457,7 @@ defmodule ExAws.ElasticLoadBalancing do
   end
 
   @doc """
-  Describes the current Elastic Load Balancing resource limits 
+  Describes the current Elastic Load Balancing resource limits
   for your AWS account.
 
   More information:
@@ -465,7 +465,7 @@ defmodule ExAws.ElasticLoadBalancing do
   in the *Application Load Balancer Guide*
   * [Limits for Your Network Load Balancers](http://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-limits.html)
   in the *Network Load Balancers Guide*.
-  
+
   ## Examples:
 
         iex> ExAws.ElasticLoadBalancing.describe_account_limits()
@@ -493,8 +493,8 @@ defmodule ExAws.ElasticLoadBalancing do
         %ExAws.Operation.Query{action: :describe_listener_certificates,
         params: %{"Action" => "DescribeListenerCertificates",
         "ListenerArn" => "listener_arn",
-        "Version" => "2015-12-01"}, 
-        parser: &ExAws.Utils.identity/2, path: "/", service: :elasticloadbalancing}        
+        "Version" => "2015-12-01"},
+        parser: &ExAws.Utils.identity/2, path: "/", service: :elasticloadbalancing}
   """
   @type describe_listener_certificates_opts :: [
           marker: binary,
@@ -503,7 +503,7 @@ defmodule ExAws.ElasticLoadBalancing do
         ]
   @spec describe_listener_certificates(listener_arn :: binary) :: ExAws.Operation.Query.t()
   @spec describe_listener_certificates(
-          listener_arm :: binary,
+          listener_arn :: binary,
           opts :: describe_listener_certificates_opts
         ) :: ExAws.Operation.Query.t()
   def describe_listener_certificates(listener_arn, opts \\ []) do
@@ -512,8 +512,8 @@ defmodule ExAws.ElasticLoadBalancing do
   end
 
   @doc """
-  Describes the specified listeners or the listeners for the 
-  specified Application Load Balancer or Network Load Balancer. 
+  Describes the specified listeners or the listeners for the
+  specified Application Load Balancer or Network Load Balancer.
 
   You must specify either a load balancer or one or more listeners.
 
@@ -537,7 +537,7 @@ defmodule ExAws.ElasticLoadBalancing do
   end
 
   @doc """
-  Describes the attributes for the specified Application Load 
+  Describes the attributes for the specified Application Load
   Balancer or Network Load Balancer.
 
   ## Examples:
@@ -547,7 +547,7 @@ defmodule ExAws.ElasticLoadBalancing do
         %ExAws.Operation.Query{action: :describe_load_balancer_attributes,
         params: %{"Action" => "DescribeLoadBalancerAttributes",
         "LoadBalancerArn" => "load_balancer_arn",
-        "Version" => "2015-12-01"}, 
+        "Version" => "2015-12-01"},
         parser: &ExAws.Utils.identity/2, path: "/", service: :elasticloadbalancing}
   """
   @spec describe_load_balancer_attributes(load_balancer_arn :: binary) ::
@@ -558,21 +558,21 @@ defmodule ExAws.ElasticLoadBalancing do
   end
 
   @doc """
-  Describes the specified load balancers or all of your 
+  Describes the specified load balancers or all of your
   load balancers.
 
   To describe the listeners for a load balancer, use `describe_listeners/1`.
   To describe the attributes for a load balancer, use `describe_load_balancer_attributes/1`.
-  
+
   The options that can be passed into `describe_load_balancers/1` allow load_balancer_arns or names
-  (there would not be a reason ordinarily to specify both). Elastic Load Balancing provides 
-  two versions of ARNS (one for Classic and one for Application Load Balancer). The syntax for 
+  (there would not be a reason ordinarily to specify both). Elastic Load Balancing provides
+  two versions of ARNS (one for Classic and one for Application Load Balancer). The syntax for
   each is below:
 
   Classic Load Balancer ARN Syntax:
-      
+
       arn:aws:elasticloadbalancing:region:account-id:loadbalancer/name
-  
+
   Application Load Balancer ARN Syntax:
 
       arn:aws:elasticloadbalancing:region:account-id:loadbalancer/app/load-balancer-name/load-balancer-id
@@ -600,7 +600,7 @@ defmodule ExAws.ElasticLoadBalancing do
   end
 
   @doc """
-  Describes the specified rules or the rules for the specified listener. 
+  Describes the specified rules or the rules for the specified listener.
 
   You must specify either a listener or one or more rules.
 
@@ -661,9 +661,9 @@ defmodule ExAws.ElasticLoadBalancing do
   end
 
   @doc """
-  Describes the tags for the specified resources. 
+  Describes the tags for the specified resources.
 
-  You can describe the tags for one or more Application Load Balancers, 
+  You can describe the tags for one or more Application Load Balancers,
   Network Load Balancers, and target groups.
 
   ## Examples:
@@ -699,13 +699,13 @@ defmodule ExAws.ElasticLoadBalancing do
   end
 
   @doc """
-  Describes the specified target groups or all of your target groups. 
+  Describes the specified target groups or all of your target groups.
 
-  By default, all target groups are described. Alternatively, you can 
-  specify one of the following to filter the results: the ARN of the 
-  load balancer, the names of one or more target groups, or the ARNs 
-  of one or more target groups. To describe the targets for a 
-  target group, use `describe_target_health/1`. To describe the attributes 
+  By default, all target groups are described. Alternatively, you can
+  specify one of the following to filter the results: the ARN of the
+  load balancer, the names of one or more target groups, or the ARNs
+  of one or more target groups. To describe the targets for a
+  target group, use `describe_target_health/1`. To describe the attributes
   of a target group, use `describe_target_group_attributes/1`.
 
   ## Examples:
@@ -715,7 +715,7 @@ defmodule ExAws.ElasticLoadBalancing do
       params: %{"Action" => "DescribeTargetGroups", "Version" => "2015-12-01"},
       parser: &ExAws.Utils.identity/2, path: "/", service: :elasticloadbalancing}
 
-      iex> ExAws.ElasticLoadBalancing.describe_target_groups([load_balancer_arn: "load_balancer_arn", 
+      iex> ExAws.ElasticLoadBalancing.describe_target_groups([load_balancer_arn: "load_balancer_arn",
       ...> target_group_arns: ["target_group_arn1", "target_group_arn2"]])
       %ExAws.Operation.Query{action: :describe_target_groups,
       params: %{"Action" => "DescribeTargetGroups",
@@ -754,9 +754,9 @@ defmodule ExAws.ElasticLoadBalancing do
   @doc """
   Modifies the specified properties of the specified listener.
 
-  Any properties that you do not specify retain their current values. 
-  However, changing the protocol from HTTPS to HTTP removes the security 
-  policy and SSL certificate properties. If you change the protocol from 
+  Any properties that you do not specify retain their current values.
+  However, changing the protocol from HTTPS to HTTP removes the security
+  policy and SSL certificate properties. If you change the protocol from
   HTTP to HTTPS, you must add the security policy and server certificate.
 
   ## Examples:
@@ -764,10 +764,10 @@ defmodule ExAws.ElasticLoadBalancing do
       iex> ExAws.ElasticLoadBalancing.modify_listener("listener_arn")
       %ExAws.Operation.Query{action: :modify_listener,
       params: %{"Action" => "ModifyListener", "ListenerArn" => "listener_arn",
-      "Version" => "2015-12-01"}, 
+      "Version" => "2015-12-01"},
       parser: &ExAws.Utils.identity/2, path: "/", service: :elasticloadbalancing}
 
-      iex> ExAws.ElasticLoadBalancing.modify_listener("listener_arn", 
+      iex> ExAws.ElasticLoadBalancing.modify_listener("listener_arn",
       ...> [port: 80, protocol: "HTTP", certificates: ["certificate1", "certificate2"]])
       %ExAws.Operation.Query{action: :modify_listener,
       params: %{"Action" => "ModifyListener", "Certificate.1" => "certificate1",
@@ -791,11 +791,11 @@ defmodule ExAws.ElasticLoadBalancing do
   end
 
   @doc """
-  Modifies the specified attributes of the specified Application Load Balancer 
+  Modifies the specified attributes of the specified Application Load Balancer
   or Network Load Balancer.
 
-  If any of the specified attributes can't be modified as requested, the call 
-  fails. Any existing attributes that you do not modify retain their current 
+  If any of the specified attributes can't be modified as requested, the call
+  fails. Any existing attributes that you do not modify retain their current
   values.
   """
   @spec modify_load_balancer_attributes(
@@ -824,7 +824,7 @@ defmodule ExAws.ElasticLoadBalancing do
   end
 
   @doc """
-  Modifies the health checks used when evaluating the health state of 
+  Modifies the health checks used when evaluating the health state of
   the targets in the specified target group.
 
   To monitor the health of the targets, use `describe_target_health/1`.
@@ -891,19 +891,19 @@ defmodule ExAws.ElasticLoadBalancing do
   @doc """
   Registers the specified targets with the specified target group.
 
-  You can register targets by instance ID or by IP address. If the 
-  target is an EC2 instance, it must be in the `running` state when you 
+  You can register targets by instance ID or by IP address. If the
+  target is an EC2 instance, it must be in the `running` state when you
   register it.
 
-  By default, the load balancer routes requests to registered targets using 
-  the protocol and port for the target group. Alternatively, you can override 
-  the port for a target when you register it. You can register each EC2 
-  instance or IP address with the same target group multiple times using 
+  By default, the load balancer routes requests to registered targets using
+  the protocol and port for the target group. Alternatively, you can override
+  the port for a target when you register it. You can register each EC2
+  instance or IP address with the same target group multiple times using
   different ports.
 
-  With a Network Load Balancer, you cannot register instances by instance ID 
-  if they have the following instance types: C1, CC1, CC2, CG1, CG2, CR1, 
-  CS1, G1, G2, HI1, HS1, M1, M2, M3, and T1. You can register instances of 
+  With a Network Load Balancer, you cannot register instances by instance ID
+  if they have the following instance types: C1, CC1, CC2, CG1, CG2, CR1,
+  CS1, G1, G2, HI1, HS1, M1, M2, M3, and T1. You can register instances of
   these types by IP address.
 
   To remove a target from a target group, use `deregister_targets/1`.
@@ -927,13 +927,13 @@ defmodule ExAws.ElasticLoadBalancing do
   @doc """
   Removes the specified certificate from the specified secure listener.
 
-  You can't remove the default certificate for a listener. To replace 
-  the default certificate, call `modify_listener/1`. To list the certificates 
+  You can't remove the default certificate for a listener. To replace
+  the default certificate, call `modify_listener/1`. To list the certificates
   for your listener, use `describe_listener_certificates/1`.
 
   ## Examples:
 
-      iex> ExAws.ElasticLoadBalancing.remove_listener_certificates("listener_arn", 
+      iex> ExAws.ElasticLoadBalancing.remove_listener_certificates("listener_arn",
       ...> [%{certificate_arn: "certificate1_arn", is_default: true}, %{certificate_arn: "certificate2_arn"}])
       %ExAws.Operation.Query{action: :remove_listener_certificates,
       params: %{"Action" => "RemoveListenerCertificates",
@@ -951,7 +951,7 @@ defmodule ExAws.ElasticLoadBalancing do
   end
 
   @doc """
-  Removes the specified tags from the specified Elastic Load Balancing 
+  Removes the specified tags from the specified Elastic Load Balancing
   resource.
 
   To list the current tags for your resources, use `describe_tags/1`.
@@ -973,7 +973,7 @@ defmodule ExAws.ElasticLoadBalancing do
   end
 
   @doc """
-  Sets the type of IP addresses used by the subnets of the specified 
+  Sets the type of IP addresses used by the subnets of the specified
   Application Load Balancer or Network Load Balancer.
 
   *Note: Network Load Balancers must use `ipv4`*.
@@ -996,8 +996,8 @@ defmodule ExAws.ElasticLoadBalancing do
   @doc """
   Sets the priorities of the specified rules.
 
-  You can reorder the rules as long as there are no priority conflicts 
-  in the new order. Any existing rules that you do not specify retain 
+  You can reorder the rules as long as there are no priority conflicts
+  in the new order. Any existing rules that you do not specify retain
   their current priority.
 
   ## Examples:
@@ -1015,11 +1015,11 @@ defmodule ExAws.ElasticLoadBalancing do
   end
 
   @doc """
-  Associates the specified security groups with the specified Application 
-  Load Balancer. 
+  Associates the specified security groups with the specified Application
+  Load Balancer.
 
-  The specified security groups override the previously associated security 
-  groups. 
+  The specified security groups override the previously associated security
+  groups.
 
   *Note: You can't specify a security group for a Network Load Balancer*.
 
@@ -1041,10 +1041,10 @@ defmodule ExAws.ElasticLoadBalancing do
   end
 
   @doc """
-  Enables the Availability Zone for the specified subnets for the specified 
-  Application Load Balancer. 
+  Enables the Availability Zone for the specified subnets for the specified
+  Application Load Balancer.
 
-  The specified subnets replace the previously enabled subnets. 
+  The specified subnets replace the previously enabled subnets.
 
   *Note: You can't change the subnets for a Network Load Balancer*.
 
@@ -1103,7 +1103,7 @@ defmodule ExAws.ElasticLoadBalancing do
   defp format_param({:attributes, attributes}) do
     attributes
     |> Enum.map(fn {key, value} -> [key: maybe_stringify(key), value: value] end)
-    |> format(prefix: "Attribute")    
+    |> format(prefix: "Attribute")
   end
 
   defp format_param({:tags, tags}) do
