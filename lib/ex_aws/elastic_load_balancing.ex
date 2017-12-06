@@ -100,18 +100,18 @@ defmodule ExAws.ElasticLoadBalancing do
         iex> ExAws.ElasticLoadBalancing.add_tags(["resource_arn1", "resource_arn2"], ["hello": "test"])
         %ExAws.Operation.Query{action: :add_tags,
         params: %{"Action" => "AddTags",
-        "ResourceArn.1" => "resource_arn1",
-        "ResourceArn.2" => "resource_arn2",
-        "Tag.1.Key" => "hello", "Tag.1.Value" => "test",
+        "ResourceArns.member.1" => "resource_arn1",
+        "ResourceArns.member.2" => "resource_arn2",
+        "Tags.member.1.Key" => "hello", "Tags.member.1.Value" => "test",
         "Version" => "2015-12-01"},
         parser: &ExAws.Utils.identity/2, path: "/", service: :elasticloadbalancing}
 
         iex> ExAws.ElasticLoadBalancing.add_tags(["resource_arn1", "resource_arn2"], [{:hello, "test"}])
         %ExAws.Operation.Query{action: :add_tags,
         params: %{"Action" => "AddTags",
-        "ResourceArn.1" => "resource_arn1",
-        "ResourceArn.2" => "resource_arn2",
-        "Tag.1.Key" => "hello", "Tag.1.Value" => "test",
+        "ResourceArns.member.1" => "resource_arn1",
+        "ResourceArns.member.2" => "resource_arn2",
+        "Tags.member.1.Key" => "hello", "Tags.member.1.Value" => "test",
         "Version" => "2015-12-01"},
         parser: &ExAws.Utils.identity/2, path: "/", service: :elasticloadbalancing}
 
@@ -670,8 +670,8 @@ defmodule ExAws.ElasticLoadBalancing do
 
       iex> ExAws.ElasticLoadBalancing.describe_tags(["resource_arn1", "resource_arn2"])
       %ExAws.Operation.Query{action: :describe_tags,
-      params: %{"Action" => "DescribeTags", "ResourceArn.1" => "resource_arn1",
-      "ResourceArn.2" => "resource_arn2", "Version" => "2015-12-01"},
+      params: %{"Action" => "DescribeTags", "ResourceArns.member.1" => "resource_arn1",
+      "ResourceArns.member.2" => "resource_arn2", "Version" => "2015-12-01"},
       parser: &ExAws.Utils.identity/2, path: "/", service: :elasticloadbalancing}
   """
   @spec describe_tags(resource_arns :: [binary, ...]) :: ExAws.Operation.Query.t()
@@ -960,9 +960,9 @@ defmodule ExAws.ElasticLoadBalancing do
 
       iex> ExAws.ElasticLoadBalancing.remove_tags(["resource_arn1", "resource_arn2"], ["tag1", "tag2"])
       %ExAws.Operation.Query{action: :remove_tags,
-      params: %{"Action" => "RemoveTags", "ResourceArn.1" => "resource_arn1",
-      "ResourceArn.2" => "resource_arn2", "TagsKeys.1" => "tag1",
-      "TagsKeys.2" => "tag2", "Version" => "2015-12-01"},
+      params: %{"Action" => "RemoveTags", "ResourceArns.member.1" => "resource_arn1",
+      "ResourceArns.member.2" => "resource_arn2", "Tags.member.Keys.1" => "tag1",
+      "Tags.member.Keys.2" => "tag2", "Version" => "2015-12-01"},
       parser: &ExAws.Utils.identity/2, path: "/", service: :elasticloadbalancing}
   """
   @spec remove_tags(resource_arns :: [binary, ...], tag_keys :: [binary, ...]) ::
@@ -1109,11 +1109,15 @@ defmodule ExAws.ElasticLoadBalancing do
   defp format_param({:tags, tags}) do
     tags
     |> Enum.map(fn {key, value} -> [key: maybe_stringify(key), value: value] end)
-    |> format(prefix: "Tag")
+    |> format(prefix: "Tags.member")
   end
 
   defp format_param({:resource_arns, resource_arns}) do
-    resource_arns |> format(prefix: "ResourceArn")
+    resource_arns |> format(prefix: "ResourceArns.member")
+  end
+
+  def format_param({:tags_keys}, tag_keys) do
+    tag_keys |> format(prefix: "TagKeys.member")
   end
 
   defp format_param({:security_groups, security_groups}) do
