@@ -611,15 +611,15 @@ defmodule ExAws.ElasticLoadBalancing do
       params: %{"Action" => "DescribeRules", "Version" => "2015-12-01"},
       parser: &ExAws.Utils.identity/2, path: "/", service: :elasticloadbalancing}
 
-      iex> ExAws.ElasticLoadBalancing.describe_rules([listener_arn: "listener_arn", rules_arn: "rules_arn"])
+      iex> ExAws.ElasticLoadBalancing.describe_rules([listener_arn: "listener_arn", rule_arns: ["rule_arns"]])
       %ExAws.Operation.Query{action: :describe_rules,
       params: %{"Action" => "DescribeRules", "ListenerArn" => "listener_arn",
-      "RulesArn" => "rules_arn", "Version" => "2015-12-01"},
+      "RulesArn" => "rule_arns", "Version" => "2015-12-01"},
       parser: &ExAws.Utils.identity/2, path: "/", service: :elasticloadbalancing}
   """
   @type describe_rules_opts :: [
           listener_arn: binary,
-          rules_arn: binary,
+          rule_arns: [binary, ...],
           marker: binary,
           page_size: integer
         ]
@@ -1096,32 +1096,80 @@ defmodule ExAws.ElasticLoadBalancing do
     }
   end
 
-  defp format_param({:certificates, certificates}) do
-    certificates |> format(prefix: "Certificate")
+  defp format_param({:actions, actions}) do
+    actions |> format(prefix: "Actions.member")
   end
 
   defp format_param({:attributes, attributes}) do
     attributes
     |> Enum.map(fn {key, value} -> [key: maybe_stringify(key), value: value] end)
-    |> format(prefix: "Attribute")
+    |> format(prefix: "Attributes.member")
+  end
+
+  defp format_param({:certificates, certificates}) do
+    certificates |> format(prefix: "Certificates.member")
+  end
+
+  defp format_param({:conditions, conditions}) do
+    conditions |> format(prefix: "Conditions.member")
+  end
+
+  defp format_param({:default_actions, actions}) do
+    actions |> format(prefix: "DefaultActions.member")
+  end
+
+  defp format_param({:listener_arns, listener_arns}) do
+    listener_arns |> format(prefix: "ListenerArns.member")
+  end
+
+  defp format_param({:load_balancer_arns, load_balancer_arns}) do
+    load_balancer_arns |> format(prefix: "LoadBalancerArns.member")
+  end
+
+  defp format_param({:names, names}) do
+    names |> format(prefix: "Names.member")
+  end
+
+  defp format_param({:resource_arns, resource_arns}) do
+    resource_arns |> format(prefix: "ResourceArns.member")
+  end
+
+  defp format_param({:rule_arns, rule_arns}) do
+    rule_arns |> format(prefix: "RuleArns.member")
+  end
+
+  defp format_param({:rule_priorities, rule_priorities}) do
+    rule_priorities |> format(prefix: "RulePriorities.member")
+  end
+
+  defp format_param({:security_groups, security_groups}) do
+    security_groups |> format(prefix: "SecurityGroups.member")
+  end
+
+  defp format_param({:subnets, subnets}) do
+    subnets |> format(prefix: "Subnets.member")
+  end
+
+  defp format_param({:subnet_mappings, subnet_mappings}) do
+    subnet_mappings |> format(prefix: "SubnetMappings.member")
   end
 
   defp format_param({:tags, tags}) do
     tags
     |> Enum.map(fn {key, value} -> [key: maybe_stringify(key), value: value] end)
-    |> format(prefix: "Tag")
+    |> format(prefix: "Tags.member")
   end
 
-  defp format_param({:resource_arns, resource_arns}) do
-    resource_arns |> format(prefix: "ResourceArn")
+  defp format_param({:tag_keys, tag_keys}) do
+    tag_keys |> format(prefix: "TagKeys.member")
   end
 
-  defp format_param({:security_groups, security_groups}) do
-    security_groups |> format(prefix: "SecurityGroupId")
+  defp format_param({:targets, targets}) do
+    targets |> format(prefix: "Targets.member")
   end
 
-  defp format_param({:default_actions, actions}) do
-    actions |> format(prefix: "Action")
+  defp format_param({:target_group_arns, target_group_arns}) do
+    target_group_arns |> format(prefix: "TargetGroupArns.member")
   end
 
   defp format_param({key, parameters}) do
