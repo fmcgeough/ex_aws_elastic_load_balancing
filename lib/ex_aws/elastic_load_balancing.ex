@@ -69,11 +69,10 @@ defmodule ExAws.ElasticLoadBalancing do
         ...>   %{certificate_arn: "certificate2_arn"}])
         %ExAws.Operation.Query{action: :add_listener_certificates,
         params: %{"Action" => "AddListenerCertificates",
-        "Certificate.1.CertificateArn" => "certificate1_arn",
-        "Certificate.1.IsDefault" => true,
-        "Certificate.2.CertificateArn" => "certificate2_arn",
-        "ListenerArn" => "listener_arn",
-        "Version" => "2015-12-01"},
+        "Certificates.member.1.CertificateArn" => "certificate1_arn",
+        "Certificates.member.1.IsDefault" => true,
+        "Certificates.member.2.CertificateArn" => "certificate2_arn",
+        "ListenerArn" => "listener_arn", "Version" => "2015-12-01"},
         parser: &ExAws.Utils.identity/2, path: "/", service: :elasticloadbalancing}
 
   """
@@ -146,11 +145,11 @@ defmodule ExAws.ElasticLoadBalancing do
         ...> "HTTP", 80, [%{type: "forward", target_group_arn: "target_arn"}])
         %ExAws.Operation.Query{action: :create_listener,
         params: %{"Action" => "CreateListener",
-        "Action.1.TargetGroupArn" => "target_arn", "Action.1.Type" => "forward",
-        "LoadBalancerArn" => "load_balancer_arn",
-        "Port" => 80, "Protocol" => "HTTP",
-        "Version" => "2015-12-01"},
-        parser: &ExAws.Utils.identity/2, path: "/", service: :elasticloadbalancing}
+        "DefaultActions.member.1.TargetGroupArn" => "target_arn",
+        "DefaultActions.member.1.Type" => "forward",
+        "LoadBalancerArn" => "load_balancer_arn", "Port" => 80, "Protocol" => "HTTP",
+        "Version" => "2015-12-01"}, parser: &ExAws.Utils.identity/2, path: "/",
+        service: :elasticloadbalancing}
   """
   @type create_listener_opts :: [
           ssl_policy: binary,
@@ -215,17 +214,14 @@ defmodule ExAws.ElasticLoadBalancing do
         ...> security_groups: ["Secure123", "Secure456"],
         ...> type: "application", ip_address_type: "ipv4"])
         %ExAws.Operation.Query{action: :create_load_balancer,
-        params: %{"Action" => "CreateLoadBalancer",
-        "IpAddressType" => "ipv4",
-        "Name" => "Loader",
-        "Schema" => "internet-facing",
-        "SecurityGroupId.1" => "Secure123", "SecurityGroupId.2" => "Secure456",
-        "SubnetMappings.1.AllocationId" => "i2234342",
-        "SubnetMappings.1.SubnetId" => "1.2.3.4",
-        "Subnets.1" => "1.2.3.4",
-        "Subnets.2" => "5.6.7.8",
-        "Type" => "application",
-        "Version" => "2015-12-01"},
+        params: %{"Action" => "CreateLoadBalancer", "IpAddressType" => "ipv4",
+        "Name" => "Loader", "Schema" => "internet-facing",
+        "SecurityGroups.member.1" => "Secure123",
+        "SecurityGroups.member.2" => "Secure456",
+        "SubnetMappings.member.1.AllocationId" => "i2234342",
+        "SubnetMappings.member.1.SubnetId" => "1.2.3.4",
+        "Subnets.member.1" => "1.2.3.4", "Subnets.member.2" => "5.6.7.8",
+        "Type" => "application", "Version" => "2015-12-01"},
         parser: &ExAws.Utils.identity/2, path: "/", service: :elasticloadbalancing}
 
   """
@@ -431,22 +427,21 @@ defmodule ExAws.ElasticLoadBalancing do
         ...> [%{id: "test", port: 8080, availability_zone: "us-east-1"},
         ...>  %{id: "test2", port: 8088, availability_zone: "us-east-1"}])
         %ExAws.Operation.Query{action: :deregister_targets,
-            params: %{"Action" => "DeregisterTargets",
-              "TargetGroupArn" => "target_group_arn",
-              "Targets.1.AvailabilityZone" => "us-east-1",
-              "Targets.1.Id" => "test", "Targets.1.Port" => 8080,
-              "Targets.2.AvailabilityZone" => "us-east-1",
-              "Targets.2.Id" => "test2", "Targets.2.Port" => 8088,
-              "Version" => "2015-12-01"}, parser: &ExAws.Utils.identity/2,
-            path: "/", service: :elasticloadbalancing}
+        params: %{"Action" => "DeregisterTargets",
+        "TargetGroupArn" => "target_group_arn",
+        "Targets.member.1.AvailabilityZone" => "us-east-1",
+        "Targets.member.1.Id" => "test", "Targets.member.1.Port" => 8080,
+        "Targets.member.2.AvailabilityZone" => "us-east-1",
+        "Targets.member.2.Id" => "test2", "Targets.member.2.Port" => 8088,
+        "Version" => "2015-12-01"}, parser: &ExAws.Utils.identity/2, path: "/",
+        service: :elasticloadbalancing}
 
         iex> ExAws.ElasticLoadBalancing.deregister_targets("target_group_arn", [%{id: "i-0f76fade435676abd"}])
         %ExAws.Operation.Query{action: :deregister_targets,
-            params: %{"Action" => "DeregisterTargets",
-              "TargetGroupArn" => "target_group_arn",
-              "Targets.1.Id" => "i-0f76fade435676abd",
-              "Version" => "2015-12-01"}, parser: &ExAws.Utils.identity/2,
-            path: "/", service: :elasticloadbalancing}
+        params: %{"Action" => "DeregisterTargets",
+          "TargetGroupArn" => "target_group_arn",
+          "Targets.member.1.Id" => "i-0f76fade435676abd", "Version" => "2015-12-01"},
+        parser: &ExAws.Utils.identity/2, path: "/", service: :elasticloadbalancing}
 
   """
   @spec deregister_targets(target_group_arn :: binary, targets :: [target_description, ...]) ::
@@ -614,7 +609,7 @@ defmodule ExAws.ElasticLoadBalancing do
       iex> ExAws.ElasticLoadBalancing.describe_rules([listener_arn: "listener_arn", rule_arns: ["rule_arns"]])
       %ExAws.Operation.Query{action: :describe_rules,
       params: %{"Action" => "DescribeRules", "ListenerArn" => "listener_arn",
-      "RulesArn" => "rule_arns", "Version" => "2015-12-01"},
+      "RuleArns.member.1" => "rule_arns", "Version" => "2015-12-01"},
       parser: &ExAws.Utils.identity/2, path: "/", service: :elasticloadbalancing}
   """
   @type describe_rules_opts :: [
@@ -719,11 +714,12 @@ defmodule ExAws.ElasticLoadBalancing do
       ...> target_group_arns: ["target_group_arn1", "target_group_arn2"]])
       %ExAws.Operation.Query{action: :describe_target_groups,
       params: %{"Action" => "DescribeTargetGroups",
-      "LoadBalancerArn" => "load_balancer_arn",
-      "TargetGroupArns.1" => "target_group_arn1",
-      "TargetGroupArns.2" => "target_group_arn2", "Version" => "2015-12-01"},
-      parser: &ExAws.Utils.identity/2, path: "/", service: :elasticloadbalancing}
-  """
+        "LoadBalancerArn" => "load_balancer_arn",
+        "TargetGroupArns.member.1" => "target_group_arn1",
+        "TargetGroupArns.member.2" => "target_group_arn2",
+        "Version" => "2015-12-01"}, parser: &ExAws.Utils.identity/2, path: "/",
+      service: :elasticloadbalancing}
+ """
   @type describe_target_groups_opts :: [
           load_balancer_arn: binary,
           target_group_arns: [binary, ...],
@@ -770,9 +766,10 @@ defmodule ExAws.ElasticLoadBalancing do
       iex> ExAws.ElasticLoadBalancing.modify_listener("listener_arn",
       ...> [port: 80, protocol: "HTTP", certificates: ["certificate1", "certificate2"]])
       %ExAws.Operation.Query{action: :modify_listener,
-      params: %{"Action" => "ModifyListener", "Certificate.1" => "certificate1",
-      "Certificate.2" => "certificate2", "ListenerArn" => "listener_arn",
-      "Port" => 80, "Protocol" => "HTTP", "Version" => "2015-12-01"},
+      params: %{"Action" => "ModifyListener",
+        "Certificates.member.1" => "certificate1",
+        "Certificates.member.2" => "certificate2", "ListenerArn" => "listener_arn",
+        "Port" => 80, "Protocol" => "HTTP", "Version" => "2015-12-01"},
       parser: &ExAws.Utils.identity/2, path: "/", service: :elasticloadbalancing}
   """
   @type modify_listener_opts :: [
@@ -875,7 +872,7 @@ defmodule ExAws.ElasticLoadBalancing do
       ...> [{:hello, "test"}])
       %ExAws.Operation.Query{action: :modify_target_group_attributes,
       params: %{"Action" => "ModifyTargetGroupAttributes",
-      "Attribute.1.Key" => "hello", "Attribute.1.Value" => "test",
+      "Attributes.member.1.Key" => "hello", "Attributes.member.1.Value" => "test",
       "TargetGroupArn" => "target_group_arn", "Version" => "2015-12-01"},
       parser: &ExAws.Utils.identity/2, path: "/", service: :elasticloadbalancing}
   """
@@ -913,8 +910,8 @@ defmodule ExAws.ElasticLoadBalancing do
       iex> ExAws.ElasticLoadBalancing.register_targets("target_group_arn", ["target1", "target2"])
       %ExAws.Operation.Query{action: :register_targets,
       params: %{"Action" => "RegisterTargets",
-      "TargetGroupArn" => "target_group_arn", "Targets.1" => "target1",
-      "Targets.2" => "target2", "Version" => "2015-12-01"},
+        "TargetGroupArn" => "target_group_arn", "Targets.member.1" => "target1",
+        "Targets.member.2" => "target2", "Version" => "2015-12-01"},
       parser: &ExAws.Utils.identity/2, path: "/", service: :elasticloadbalancing}
   """
   @spec register_targets(target_group_arn :: binary, targets :: [target_description, ...]) ::
@@ -937,9 +934,9 @@ defmodule ExAws.ElasticLoadBalancing do
       ...> [%{certificate_arn: "certificate1_arn", is_default: true}, %{certificate_arn: "certificate2_arn"}])
       %ExAws.Operation.Query{action: :remove_listener_certificates,
       params: %{"Action" => "RemoveListenerCertificates",
-      "Certificate.1.CertificateArn" => "certificate1_arn",
-      "Certificate.1.IsDefault" => true,
-      "Certificate.2.CertificateArn" => "certificate2_arn",
+      "Certificates.member.1.CertificateArn" => "certificate1_arn",
+      "Certificates.member.1.IsDefault" => true,
+      "Certificates.member.2.CertificateArn" => "certificate2_arn",
       "ListenerArn" => "listener_arn", "Version" => "2015-12-01"},
       parser: &ExAws.Utils.identity/2, path: "/", service: :elasticloadbalancing}
   """
@@ -960,9 +957,9 @@ defmodule ExAws.ElasticLoadBalancing do
 
       iex> ExAws.ElasticLoadBalancing.remove_tags(["resource_arn1", "resource_arn2"], ["tag1", "tag2"])
       %ExAws.Operation.Query{action: :remove_tags,
-      params: %{"Action" => "RemoveTags", "ResourceArns.member.1" => "resource_arn1",
-      "ResourceArns.member.2" => "resource_arn2", "Tags.member.Keys.1" => "tag1",
-      "Tags.member.Keys.2" => "tag2", "Version" => "2015-12-01"},
+      params: %{"Action" => "RemoveTags",
+      "ResourceArns.member.1" => "resource_arn1", "ResourceArns.member.2" => "resource_arn2",
+      "TagsKeys.1" => "tag1", "TagsKeys.2" => "tag2", "Version" => "2015-12-01"},
       parser: &ExAws.Utils.identity/2, path: "/", service: :elasticloadbalancing}
   """
   @spec remove_tags(resource_arns :: [binary, ...], tag_keys :: [binary, ...]) ::
@@ -1004,9 +1001,10 @@ defmodule ExAws.ElasticLoadBalancing do
 
       iex> ExAws.ElasticLoadBalancing.set_rule_priorities([1,2,3])
       %ExAws.Operation.Query{action: :set_rule_priorities,
-      params: %{"Action" => "SetRulePriorities", "RulePriorities.1" => 1,
-      "RulePriorities.2" => 2, "RulePriorities.3" => 3, "Version" => "2015-12-01"},
-      parser: &ExAws.Utils.identity/2, path: "/", service: :elasticloadbalancing}
+      params: %{"Action" => "SetRulePriorities", "RulePriorities.member.1" => 1,
+      "RulePriorities.member.2" => 2, "RulePriorities.member.3" => 3,
+      "Version" => "2015-12-01"}, parser: &ExAws.Utils.identity/2, path: "/",
+      service: :elasticloadbalancing}
   """
   @spec set_rule_priorities(rule_priorities :: [integer, ...]) :: ExAws.Operation.Query.t()
   def set_rule_priorities(rule_priorities, opts \\ []) do
@@ -1029,8 +1027,8 @@ defmodule ExAws.ElasticLoadBalancing do
       %ExAws.Operation.Query{action: :set_security_groups,
       params: %{"Action" => "SetSecurityGroups",
         "LoadBalancerArn" => "load_balancer_arn",
-        "SecurityGroupId.1" => "security_group1",
-        "SecurityGroupId.2" => "security_group2", "Version" => "2015-12-01"},
+        "SecurityGroups.member.1" => "security_group1",
+        "SecurityGroups.member.2" => "security_group2", "Version" => "2015-12-01"},
       parser: &ExAws.Utils.identity/2, path: "/", service: :elasticloadbalancing}
   """
   @spec set_security_groups(load_balancer_arn :: binary, security_groups :: [binary, ...]) ::
@@ -1053,7 +1051,7 @@ defmodule ExAws.ElasticLoadBalancing do
       iex>  ExAws.ElasticLoadBalancing.set_subnets("load_balancer_arn", ["subnet1", "subnet2"])
       %ExAws.Operation.Query{action: :set_subnets,
       params: %{"Action" => "SetSubnets", "LoadBalancerArn" => "load_balancer_arn",
-        "Subnets.1" => "subnet1", "Subnets.2" => "subnet2",
+        "Subnets.member.1" => "subnet1", "Subnets.member.2" => "subnet2",
         "Version" => "2015-12-01"}, parser: &ExAws.Utils.identity/2, path: "/",
       service: :elasticloadbalancing}
   """
