@@ -1090,7 +1090,8 @@ defmodule ExAws.ElasticLoadBalancing do
               |> Map.put("Action", action_string)
               |> Map.put("Version", @version),
       service: :elasticloadbalancing,
-      action: action
+      action: action,
+      parser: &ExAws.ElasticLoadBalancing.Parsers.parse/2
     }
   end
 
