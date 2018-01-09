@@ -1,5 +1,5 @@
 if Code.ensure_loaded?(SweetXml) do
-  defmodule ExAws.ElasticLoadBalancing.Parsers do
+  defmodule ExAws.ElasticLoadBalancingV2.Parsers do
     use ExAws.Operation.Query.Parser
 
     def parse({:ok, %{body: xml} = resp}, :describe_load_balancers) do
@@ -37,7 +37,7 @@ if Code.ensure_loaded?(SweetXml) do
         scheme: ~x"./Scheme/text()"s
       ]
     end
-    
+
   end
 else
   defmodule ExAws.Cloudwatch.Parsers do
