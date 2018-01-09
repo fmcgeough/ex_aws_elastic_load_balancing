@@ -47,8 +47,8 @@ defmodule ExAws.ElasticLoadBalancing do
 
       iex> ExAws.ElasticLoadBalancing.describe_load_balancers
       %ExAws.Operation.Query{action: :describe_load_balancers,
-      params: %{"Action" => "DescribeLoadBalancers", "Version" => "2015-12-01"},
-      parser: &ExAws.Utils.identity/2, path: "/", service: :elasticloadbalancing}
+      params: %{"Action" => "DescribeLoadBalancers", "Version" => "2012-06-01"},
+      parser: &ExAws.ElasticLoadBalancing.Parsers.parse/2, path: "/", service: :elasticloadbalancing}
   """
   @type describe_load_balancers_opts :: [
     load_balancer_names: [binary, ...],
