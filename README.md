@@ -23,6 +23,11 @@ returns a `%ExAws.Operation.Query{}` struct.
 
 All the unit tests are implemented using [DocTest](https://hexdocs.pm/ex_unit/ExUnit.DocTest.html).
 
+AWS Elastic Load Balancing consists of two different API's that are grouped under the general
+heading of "Elastic Load Balancing". Both are included in this library. ExAws.ElasticLoadBalancing
+is used for dealing with what Amazon calls "Classic" Load Balancers. ExAws.ElasticLoadBalancingV2
+is used for dealing with Application or Network Load Balancers.
+
 Simple usage:
 
 ```elixir
