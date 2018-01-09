@@ -1,4 +1,4 @@
-defmodule ExAws.ElasticLoadBalancingV2V2 do
+defmodule ExAws.ElasticLoadBalancingV2 do
   @moduledoc """
   Operations on AWS ELB (Elastic Load Balancing) V2 API
 
