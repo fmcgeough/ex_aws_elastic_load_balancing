@@ -34,7 +34,8 @@ if Code.ensure_loaded?(SweetXml) do
         ],
         security_groups: ~x"./SecurityGroups/member/text()"ls,
         created_time: ~x"./CreatedTime/text()"s,
-        scheme: ~x"./Scheme/text()"s
+        scheme: ~x"./Scheme/text()"s,
+        load_balancer_arn: ~x"./LoadBalancerArn/text()"s
       ]
     end
 
