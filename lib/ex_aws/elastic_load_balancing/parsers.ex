@@ -74,7 +74,7 @@ if Code.ensure_loaded?(SweetXml) do
 
   end
 else
-  defmodule ExAws.Cloudwatch.Parsers do
+  defmodule ExAws.ElasticLoadBalancing.Parsers do
     def parse(val, _), do: val
   end
 end
