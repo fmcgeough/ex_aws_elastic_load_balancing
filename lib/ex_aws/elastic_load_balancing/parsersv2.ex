@@ -10,6 +10,19 @@ if Code.ensure_loaded?(SweetXml) do
           load_balancers: load_balancers_xml_description(),
           request_id: ~x"./ResponseMetadata/RequestId/text()"s
         )
+
+      {:ok, Map.put(resp, :body, parsed_body)}
+    end
+
+    def parse({:ok, %{body: xml} = resp}, :describe_target_groups) do
+      parsed_body =
+        xml
+        |> SweetXml.xpath(
+          ~x"//DescribeTargetGroupsResponse",
+          target_groups: target_groups_xml_description(),
+          request_id: ~x"./ResponseMetadata/RequestId/text()"s
+        )
+
       {:ok, Map.put(resp, :body, parsed_body)}
     end
 
@@ -39,6 +52,26 @@ if Code.ensure_loaded?(SweetXml) do
       ]
     end
 
+    def target_groups_xml_description do
+      [
+        ~x"./DescribeTargetGroupsResult/TargetGroups/member"l,
+        target_group_arn: ~x"./TargetGroupArn/text()"s,
+        health_check_timeout_secs: ~x"./HealthCheckTimeoutSeconds/text()"s,
+        health_check_port: ~x"./HealthCheckPort/text()"s,
+        target_type: ~x"./TargetType/text()"s,
+        http_code: ~x"./Matcher/HttpCode/text()"s,
+        target_group_name: ~x"./TargetGroupName/text()"s,
+        health_check_protocol: ~x"./HealthCheckProtocol/text()"s,
+        health_check_path: ~x"./HealthCheckPath/text()"s,
+        protocol: ~x"./Protocol/text()"s,
+        port: ~x"./Port/text()"s,
+        vpc_id: ~x"./VpcId/text()"s,
+        healthy_threshold_count: ~x"./HealthyThresholdCount/text()"s,
+        healthy_inteval_seconds: ~x"./HealthCheckIntervalSeconds/text()"s,
+        load_balancer_arn: ~x"./LoadBalancerArns/member/text()"s,
+        unhealthy_threshold_count: ~x"./UnhealthyThresholdCount/text()"s
+      ]
+    end
   end
 else
   defmodule ExAws.ElasticLoadBalancingV2.Parsers do
