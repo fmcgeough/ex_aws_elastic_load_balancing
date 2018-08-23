@@ -38,6 +38,18 @@ if Code.ensure_loaded?(SweetXml) do
       {:ok, Map.put(resp, :body, parsed_body)}
     end
 
+    def parse({:ok, %{body: xml} = resp}, :describe_account_limits) do
+      parsed_body =
+        xml
+        |> SweetXml.xpath(
+          ~x"//DescribeAccountLimitsResponse",
+          account_limits: account_limits_xml_description(),
+          request_id: ~x"./ResponseMetadata/RequestId/text()"s
+        )
+
+      {:ok, Map.put(resp, :body, parsed_body)}
+    end
+
     def parse(val, _), do: val
 
     defp load_balancers_xml_description do
@@ -64,7 +76,7 @@ if Code.ensure_loaded?(SweetXml) do
       ]
     end
 
-    def target_groups_xml_description do
+    defp target_groups_xml_description do
       [
         ~x"./DescribeTargetGroupsResult/TargetGroups/member"l,
         target_group_arn: ~x"./TargetGroupArn/text()"s,
@@ -85,7 +97,7 @@ if Code.ensure_loaded?(SweetXml) do
       ]
     end
 
-    def target_health_xml_description do
+    defp target_health_xml_description do
       [
         ~x"./DescribeTargetHealthResult/TargetHealthDescriptions/member"l,
         health_check_port: ~x"./HealthCheckPort/text()"s,
@@ -96,6 +108,14 @@ if Code.ensure_loaded?(SweetXml) do
           availability_zone: ~x"./AvailabilityZone/text()"s,
           id: ~x"./Id/text()"s
         ]
+      ]
+    end
+
+    defp account_limits_xml_description do
+      [
+        ~x"./DescribeAccountLimitsResult/Limits/member"l,
+        name: ~x"./Name/text()"s,
+        max: ~x"./Max/text()"s
       ]
     end
   end
