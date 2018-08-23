@@ -50,6 +50,18 @@ if Code.ensure_loaded?(SweetXml) do
       {:ok, Map.put(resp, :body, parsed_body)}
     end
 
+    def parse({:ok, %{body: xml} = resp}, :describe_load_balancer_attributes) do
+      parsed_body =
+        xml
+        |> SweetXml.xpath(
+          ~x"//DescribeLoadBalancerAttributesResponse",
+          attributes: load_balancer_attribute_xml_description(),
+          request_id: ~x"./ResponseMetadata/RequestId/text()"s
+        )
+
+      {:ok, Map.put(resp, :body, parsed_body)}
+    end
+
     def parse(val, _), do: val
 
     defp load_balancers_xml_description do
@@ -116,6 +128,14 @@ if Code.ensure_loaded?(SweetXml) do
         ~x"./DescribeAccountLimitsResult/Limits/member"l,
         name: ~x"./Name/text()"s,
         max: ~x"./Max/text()"s
+      ]
+    end
+
+    defp load_balancer_attribute_xml_description do
+      [
+        ~x"./DescribeLoadBalancerAttributesResult/Attributes/member"l,
+        key: ~x"./Key/text()"s,
+        value: ~x"./Value/text()"s
       ]
     end
   end
