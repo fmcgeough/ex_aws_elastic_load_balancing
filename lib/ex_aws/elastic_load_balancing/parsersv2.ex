@@ -26,6 +26,18 @@ if Code.ensure_loaded?(SweetXml) do
       {:ok, Map.put(resp, :body, parsed_body)}
     end
 
+    def parse({:ok, %{body: xml} = resp}, :describe_target_health) do
+      parsed_body =
+        xml
+        |> SweetXml.xpath(
+          ~x"//DescribeTargetHealthResponse",
+          target_health_descriptions: target_health_xml_description(),
+          request_id: ~x"./ResponseMetadata/RequestId/text()"s
+        )
+
+      {:ok, Map.put(resp, :body, parsed_body)}
+    end
+
     def parse(val, _), do: val
 
     defp load_balancers_xml_description do
@@ -70,6 +82,20 @@ if Code.ensure_loaded?(SweetXml) do
         healthy_inteval_seconds: ~x"./HealthCheckIntervalSeconds/text()"s,
         load_balancer_arn: ~x"./LoadBalancerArns/member/text()"s,
         unhealthy_threshold_count: ~x"./UnhealthyThresholdCount/text()"s
+      ]
+    end
+
+    def target_health_xml_description do
+      [
+        ~x"./DescribeTargetHealthResult/TargetHealthDescriptions/member"l,
+        health_check_port: ~x"./HealthCheckPort/text()"s,
+        target_health: ~x"./TargetHealth/State/text()"s,
+        targets: [
+          ~x"./Target"l,
+          port: ~x"./Port/text()"s,
+          availability_zone: ~x"./AvailabilityZone/text()"s,
+          id: ~x"./Id/text()"s
+        ]
       ]
     end
   end
