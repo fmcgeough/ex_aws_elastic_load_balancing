@@ -124,4 +124,32 @@ defmodule ExAws.ElasticLoadBalancingV2.ParsersTest do
       assert expected == body
     end
   end
+
+  describe "modify_load_balancer_attributes parser" do
+    test "parses ModifyLoadBalancerAttributesResponse" do
+      xml = """
+      <ModifyLoadBalancerAttributesResponse xmlns=\"http://elasticloadbalancing.amazonaws.com/doc/2015-12-01/\">\n  <ModifyLoadBalancerAttributesResult>\n    <Attributes>\n      <member>\n        <Value>61</Value>\n        <Key>idle_timeout.timeout_seconds</Key>\n      </member>\n      <member>\n        <Value/>\n        <Key>access_logs.s3.bucket</Key>\n      </member>\n      <member>\n        <Value>true</Value>\n        <Key>deletion_protection.enabled</Key>\n      </member>\n      <member>\n        <Value>true</Value>\n        <Key>routing.http2.enabled</Key>\n      </member>\n      <member>\n        <Value>false</Value>\n        <Key>access_logs.s3.enabled</Key>\n      </member>\n      <member>\n        <Value/>\n        <Key>access_logs.s3.prefix</Key>\n      </member>\n    </Attributes>\n  </ModifyLoadBalancerAttributesResult>\n  <ResponseMetadata>\n    <RequestId>dfc9d754-a7bb-11e8-9b83-879645239b41</RequestId>\n  </ResponseMetadata>\n</ModifyLoadBalancerAttributesResponse>\n
+      """
+
+      expected = %{
+        request_id: "dfc9d754-a7bb-11e8-9b83-879645239b41",
+        attributes: [
+          %{key: "idle_timeout.timeout_seconds", value: "61"},
+          %{key: "access_logs.s3.bucket", value: ""},
+          %{key: "deletion_protection.enabled", value: "true"},
+          %{key: "routing.http2.enabled", value: "true"},
+          %{key: "access_logs.s3.enabled", value: "false"},
+          %{key: "access_logs.s3.prefix", value: ""}
+        ]
+      }
+
+      {:ok, %{body: body}} =
+        ExAws.ElasticLoadBalancingV2.Parsers.parse(
+          {:ok, %{body: xml}},
+          :modify_load_balancer_attributes
+        )
+
+      assert expected == body
+    end
+  end
 end
