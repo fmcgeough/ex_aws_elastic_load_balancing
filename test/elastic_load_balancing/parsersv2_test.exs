@@ -152,4 +152,44 @@ defmodule ExAws.ElasticLoadBalancingV2.ParsersTest do
       assert expected == body
     end
   end
+
+  describe "register_targets parser" do
+    test "parses RegisterTargetsResponse" do
+      xml = """
+      <RegisterTargetsResponse xmlns=\"http://elasticloadbalancing.amazonaws.com/doc/2015-12-01/\">\n  <RegisterTargetsResult/>\n  <ResponseMetadata>\n    <RequestId>2f8a12e4-a7bf-11e8-b126-a7ebc8b8f129</RequestId>\n  </ResponseMetadata>\n</RegisterTargetsResponse>\n
+      """
+
+      expected = %{
+        request_id: "2f8a12e4-a7bf-11e8-b126-a7ebc8b8f129"
+      }
+
+      {:ok, %{body: body}} =
+        ExAws.ElasticLoadBalancingV2.Parsers.parse(
+          {:ok, %{body: xml}},
+          :register_targets
+        )
+
+      assert expected == body
+    end
+  end
+
+  describe "deregister_targets parser" do
+    test "parses DeregisterTargetsResponse" do
+      xml = """
+      <DeregisterTargetsResponse xmlns=\"http://elasticloadbalancing.amazonaws.com/doc/2015-12-01/\">\n  <DeregisterTargetsResult/>\n  <ResponseMetadata>\n    <RequestId>6e3ddc79-a7bf-11e8-89ee-bf5fc4f54dab</RequestId>\n  </ResponseMetadata>\n</DeregisterTargetsResponse>\n
+      """
+
+      expected = %{
+        request_id: "6e3ddc79-a7bf-11e8-89ee-bf5fc4f54dab"
+      }
+
+      {:ok, %{body: body}} =
+        ExAws.ElasticLoadBalancingV2.Parsers.parse(
+          {:ok, %{body: xml}},
+          :deregister_targets
+        )
+
+      assert expected == body
+    end
+  end
 end

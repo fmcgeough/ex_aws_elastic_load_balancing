@@ -74,6 +74,28 @@ if Code.ensure_loaded?(SweetXml) do
       {:ok, Map.put(resp, :body, parsed_body)}
     end
 
+    def parse({:ok, %{body: xml} = resp}, :register_targets) do
+      parsed_body =
+        xml
+        |> SweetXml.xpath(
+          ~x"//RegisterTargetsResponse",
+          request_id: ~x"./ResponseMetadata/RequestId/text()"s
+        )
+
+      {:ok, Map.put(resp, :body, parsed_body)}
+    end
+
+    def parse({:ok, %{body: xml} = resp}, :deregister_targets) do
+      parsed_body =
+        xml
+        |> SweetXml.xpath(
+          ~x"//DeregisterTargetsResponse",
+          request_id: ~x"./ResponseMetadata/RequestId/text()"s
+        )
+
+      {:ok, Map.put(resp, :body, parsed_body)}
+    end
+
     def parse(val, _), do: val
 
     defp load_balancers_xml_description do
