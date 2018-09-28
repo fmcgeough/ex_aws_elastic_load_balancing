@@ -8,7 +8,8 @@ if Code.ensure_loaded?(SweetXml) do
         |> SweetXml.xpath(
           ~x"//DescribeLoadBalancersResponse",
           load_balancers: load_balancers_xml_description(),
-          request_id: ~x"./ResponseMetadata/RequestId/text()"s
+          request_id: ~x"./ResponseMetadata/RequestId/text()"s,
+          next_marker: ~x"./DescribeLoadBalancersResult/NextMarker/text()"S
         )
 
       {:ok, Map.put(resp, :body, parsed_body)}
@@ -20,7 +21,8 @@ if Code.ensure_loaded?(SweetXml) do
         |> SweetXml.xpath(
           ~x"//DescribeTargetGroupsResponse",
           target_groups: target_groups_xml_description(),
-          request_id: ~x"./ResponseMetadata/RequestId/text()"s
+          request_id: ~x"./ResponseMetadata/RequestId/text()"s,
+          next_marker: ~x"./DescribeTargetGroupsResult/NextMarker/text()"s
         )
 
       {:ok, Map.put(resp, :body, parsed_body)}
