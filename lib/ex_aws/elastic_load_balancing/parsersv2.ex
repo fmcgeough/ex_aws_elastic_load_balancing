@@ -20,11 +20,8 @@ if Code.ensure_loaded?(SweetXml) do
         xml
         |> SweetXml.xpath(
           ~x"//DescribeTagsResponse",
-          tags: [
-            ~x"./DescribeTagsResult/TagDescriptions/member/Tags/member"l,
-            key: ~x"./Key/text()"s,
-            value: ~x"./Value/text()"s
-          ]
+          tag_descriptions: load_balancer_tags_description(),
+          request_id: ~x"./ResponseMetadata/RequestId/text()"s
         )
 
       {:ok, Map.put(resp, :body, parsed_body)}
@@ -66,6 +63,18 @@ if Code.ensure_loaded?(SweetXml) do
         created_time: ~x"./CreatedTime/text()"s,
         scheme: ~x"./Scheme/text()"s,
         load_balancer_arn: ~x"./LoadBalancerArn/text()"s
+      ]
+    end
+
+    defp load_balancer_tags_description do
+      [
+        ~x"./DescribeTagsResult/TagDescriptions/member"l,
+        resource_arn: ~x"./ResourceArn/text()"s,
+        tags: [
+          ~x"./Tags/member"l,
+          key: ~x"./Key/text()"s,
+          value: ~x"./Value/text()"s
+        ]
       ]
     end
 
