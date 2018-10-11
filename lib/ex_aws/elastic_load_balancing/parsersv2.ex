@@ -15,6 +15,21 @@ if Code.ensure_loaded?(SweetXml) do
       {:ok, Map.put(resp, :body, parsed_body)}
     end
 
+    def parse({:ok, %{body: xml} = resp}, :describe_tags) do
+      parsed_body =
+        xml
+        |> SweetXml.xpath(
+          ~x"//DescribeTagsResponse",
+          tags: [
+            ~x"./DescribeTagsResult/TagDescriptions/member/Tags/member"l,
+            key: ~x"./Key/text()"s,
+            value: ~x"./Value/text()"s
+          ]
+        )
+
+      {:ok, Map.put(resp, :body, parsed_body)}
+    end
+
     def parse({:ok, %{body: xml} = resp}, :describe_target_groups) do
       parsed_body =
         xml
