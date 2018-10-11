@@ -97,7 +97,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
 
   ## Examples:
 
-        iex> ExAws.ElasticLoadBalancingV2.add_tags(["resource_arn1", "resource_arn2"], ["hello": "test"])
+        iex> ExAws.ElasticLoadBalancingV2.add_tags(["resource_arn1", "resource_arn2"], [hello: "test"])
         %ExAws.Operation.Query{action: :add_tags,
         params: %{"Action" => "AddTags",
         "ResourceArns.member.1" => "resource_arn1",
@@ -695,32 +695,32 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   end
 
   @doc """
-  Describes the specified target groups or all of your target groups.
+   Describes the specified target groups or all of your target groups.
 
-  By default, all target groups are described. Alternatively, you can
-  specify one of the following to filter the results: the ARN of the
-  load balancer, the names of one or more target groups, or the ARNs
-  of one or more target groups. To describe the targets for a
-  target group, use `describe_target_health/1`. To describe the attributes
-  of a target group, use `describe_target_group_attributes/1`.
+   By default, all target groups are described. Alternatively, you can
+   specify one of the following to filter the results: the ARN of the
+   load balancer, the names of one or more target groups, or the ARNs
+   of one or more target groups. To describe the targets for a
+   target group, use `describe_target_health/1`. To describe the attributes
+   of a target group, use `describe_target_group_attributes/1`.
 
-  ## Examples:
+   ## Examples:
 
-      iex> ExAws.ElasticLoadBalancingV2.describe_target_groups()
-      %ExAws.Operation.Query{action: :describe_target_groups,
-      params: %{"Action" => "DescribeTargetGroups", "Version" => "2015-12-01"},
-      parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2, path: "/", service: :elasticloadbalancing}
+       iex> ExAws.ElasticLoadBalancingV2.describe_target_groups()
+       %ExAws.Operation.Query{action: :describe_target_groups,
+       params: %{"Action" => "DescribeTargetGroups", "Version" => "2015-12-01"},
+       parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2, path: "/", service: :elasticloadbalancing}
 
-      iex> ExAws.ElasticLoadBalancingV2.describe_target_groups([load_balancer_arn: "load_balancer_arn",
-      ...> target_group_arns: ["target_group_arn1", "target_group_arn2"]])
-      %ExAws.Operation.Query{action: :describe_target_groups,
-      params: %{"Action" => "DescribeTargetGroups",
-        "LoadBalancerArn" => "load_balancer_arn",
-        "TargetGroupArns.member.1" => "target_group_arn1",
-        "TargetGroupArns.member.2" => "target_group_arn2",
-        "Version" => "2015-12-01"}, parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2, path: "/",
-      service: :elasticloadbalancing}
- """
+       iex> ExAws.ElasticLoadBalancingV2.describe_target_groups([load_balancer_arn: "load_balancer_arn",
+       ...> target_group_arns: ["target_group_arn1", "target_group_arn2"]])
+       %ExAws.Operation.Query{action: :describe_target_groups,
+       params: %{"Action" => "DescribeTargetGroups",
+         "LoadBalancerArn" => "load_balancer_arn",
+         "TargetGroupArns.member.1" => "target_group_arn1",
+         "TargetGroupArns.member.2" => "target_group_arn2",
+         "Version" => "2015-12-01"}, parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2, path: "/",
+       service: :elasticloadbalancing}
+  """
   @type describe_target_groups_opts :: [
           load_balancer_arn: binary,
           target_group_arns: [binary, ...],
@@ -1086,10 +1086,11 @@ defmodule ExAws.ElasticLoadBalancingV2 do
 
     %ExAws.Operation.Query{
       path: "/",
-      params: params
-              |> filter_nil_params
-              |> Map.put("Action", action_string)
-              |> Map.put("Version", @version),
+      params:
+        params
+        |> filter_nil_params
+        |> Map.put("Action", action_string)
+        |> Map.put("Version", @version),
       service: :elasticloadbalancing,
       action: action,
       parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
