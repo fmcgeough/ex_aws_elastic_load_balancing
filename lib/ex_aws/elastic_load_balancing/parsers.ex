@@ -15,6 +15,18 @@ if Code.ensure_loaded?(SweetXml) do
       {:ok, Map.put(resp, :body, parsed_body)}
     end
 
+    def parse({:ok, %{body: xml} = resp}, :describe_tags) do
+      parsed_body =
+        xml
+        |> SweetXml.xpath(
+          ~x"//DescribeTagsResponse",
+          tag_descriptions: load_balancer_tags_description(),
+          request_id: ~x"./ResponseMetadata/RequestId/text()"s
+        )
+
+      {:ok, Map.put(resp, :body, parsed_body)}
+    end
+
     def parse(val, _), do: val
 
     defp load_balancers_xml_description do
@@ -71,6 +83,18 @@ if Code.ensure_loaded?(SweetXml) do
           target: ~x"./Target/text()"s
         ],
         subnets: ~x"./Subnets/member/text()"ls
+      ]
+    end
+
+    defp load_balancer_tags_description() do
+      [
+        ~x"./DescribeTagsResult/TagDescriptions/member"l,
+        load_balancer_name: ~x"./LoadBalancerName/text()"s,
+        tags: [
+          ~x"./Tags/member"l,
+          key: ~x"./Key/text()"s,
+          value: ~x"./Value/text()"s
+        ]
       ]
     end
   end

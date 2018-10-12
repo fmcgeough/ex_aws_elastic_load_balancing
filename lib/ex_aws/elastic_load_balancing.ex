@@ -17,7 +17,8 @@ defmodule ExAws.ElasticLoadBalancing do
   use ExAws.Utils,
     format_type: :xml,
     non_standard_keys: %{}
-  #version of the AWS API
+
+  # version of the AWS API
   @version "2012-06-01"
 
   @doc """
@@ -51,15 +52,44 @@ defmodule ExAws.ElasticLoadBalancing do
       parser: &ExAws.ElasticLoadBalancing.Parsers.parse/2, path: "/", service: :elasticloadbalancing}
   """
   @type describe_load_balancers_opts :: [
-    load_balancer_names: [binary, ...],
-    starting_token: binary,
-    max_items: integer,
-    page_size: integer
-  ]
+          load_balancer_names: [binary, ...],
+          starting_token: binary,
+          max_items: integer,
+          page_size: integer
+        ]
   @spec describe_load_balancers() :: ExAws.Operation.Query.t()
   @spec describe_load_balancers(opts :: describe_load_balancers_opts) :: ExAws.Operation.Query.t()
   def describe_load_balancers(opts \\ []) do
     opts |> build_request(:describe_load_balancers)
+  end
+
+  @doc """
+  DescribeTags API operation for Elastic Load Balancing.
+
+  Describes the tags associated with the specified load balancers.
+
+  A list of load balancer names is a required parameter
+
+  ## Examples:
+
+    iex(1)> ExAws.ElasticLoadBalancing.describe_tags(["load_balancer_name1", "load_balancer_name2"])
+    %ExAws.Operation.Query{
+      action: :describe_tags,
+      params: %{
+        "Action" => "DescribeTags",
+        "LoadBalancerNames.member.1" => "load_balancer_name1",
+        "LoadBalancerNames.member.2" => "load_balancer_name2",
+        "Version" => "2012-06-01"
+      },
+      parser: &ExAws.ElasticLoadBalancing.Parsers.parse/2,
+      path: "/",
+      service: :elasticloadbalancing
+    }
+  """
+  @spec describe_tags(load_balancer_names :: [binary, ...]) :: ExAws.Operation.Query.t()
+  def describe_tags(load_balancer_names) do
+    [{:load_balancer_names, load_balancer_names}]
+    |> build_request(:describe_tags)
   end
 
   defp build_request(opts, action) do
@@ -73,10 +103,11 @@ defmodule ExAws.ElasticLoadBalancing do
 
     %ExAws.Operation.Query{
       path: "/",
-      params: params
-              |> filter_nil_params
-              |> Map.put("Action", action_string)
-              |> Map.put("Version", @version),
+      params:
+        params
+        |> filter_nil_params
+        |> Map.put("Action", action_string)
+        |> Map.put("Version", @version),
       service: :elasticloadbalancing,
       action: action,
       parser: &ExAws.ElasticLoadBalancing.Parsers.parse/2
