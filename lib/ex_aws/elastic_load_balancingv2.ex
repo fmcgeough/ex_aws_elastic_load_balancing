@@ -5,7 +5,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   AWS Elastic Load Balancing supports three types of load balancers: Application
   Load Balancers (ALB), Network Load Balancers (NLB), and Classic Load Balancers. You can
   select a load balancer based on your application needs. This API covers the
-  ALB and NLB. Classic Load Balancers are covered by the ElasticLoadBalancing module.
+  ALB and NLB. Classic Load Balancers are covered by the `ExAws.ElasticLoadBalancing` module.
 
   More information:
   * [Elastic Load Balancing User Guide][User_Guide]

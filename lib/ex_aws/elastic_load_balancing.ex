@@ -3,7 +3,8 @@ defmodule ExAws.ElasticLoadBalancing do
   Operations on AWS ElasticLoadBalancing
 
   AWS ElasticLoadBalancing provides a reliable, scalable, and flexible monitoring solution
-  for your AWS resources.
+  for your AWS resources. This module provides functionality for only classic load balancers.
+  See `ExAws.ElasticLoadBalancingV2` for the API for application and network load balancers.
 
   More information:
   * [Elastic Load Balancing User Guide][User_Guide]
@@ -72,19 +73,19 @@ defmodule ExAws.ElasticLoadBalancing do
 
   ## Examples:
 
-    iex(1)> ExAws.ElasticLoadBalancing.describe_tags(["load_balancer_name1", "load_balancer_name2"])
-    %ExAws.Operation.Query{
-      action: :describe_tags,
-      params: %{
-        "Action" => "DescribeTags",
-        "LoadBalancerNames.member.1" => "load_balancer_name1",
-        "LoadBalancerNames.member.2" => "load_balancer_name2",
-        "Version" => "2012-06-01"
-      },
-      parser: &ExAws.ElasticLoadBalancing.Parsers.parse/2,
-      path: "/",
-      service: :elasticloadbalancing
-    }
+      iex(1)> ExAws.ElasticLoadBalancing.describe_tags(["load_balancer_name1", "load_balancer_name2"])
+      %ExAws.Operation.Query{
+        action: :describe_tags,
+        params: %{
+          "Action" => "DescribeTags",
+          "LoadBalancerNames.member.1" => "load_balancer_name1",
+          "LoadBalancerNames.member.2" => "load_balancer_name2",
+          "Version" => "2012-06-01"
+        },
+        parser: &ExAws.ElasticLoadBalancing.Parsers.parse/2,
+        path: "/",
+        service: :elasticloadbalancing
+      }
   """
   @spec describe_tags(load_balancer_names :: [binary, ...]) :: ExAws.Operation.Query.t()
   def describe_tags(load_balancer_names) do
