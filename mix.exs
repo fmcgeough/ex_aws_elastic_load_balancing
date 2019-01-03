@@ -13,6 +13,7 @@ defmodule ExAws.ElasticLoadBalancing.Mixfile do
       deps: deps(),
       source_url: "https://github.com/fmcgeough/ex_aws_elastic_load_balancing",
       homepage_url: "https://github.com/fmcgeough/ex_aws_elastic_load_balancing",
+      package: package(),
       docs: [
         main: "readme",
         extras: ["README.md"],
@@ -39,6 +40,15 @@ defmodule ExAws.ElasticLoadBalancing.Mixfile do
       {:poison, ">= 1.2.0", optional: true},
       {:ex_doc, "~> 0.19.2", only: [:dev, :test]},
       {:ex_aws, "~> 2.0"}
+    ]
+  end
+
+  defp package do
+    [
+      description: "AWS Elastic Load Balancing service for ex_aws",
+      maintainers: ["Frank McGeough"],
+      licenses: ["MIT"],
+      links: %{github: "https://github.com/fmcgeough/ex_aws_elastic_load_balancing"}
     ]
   end
 end
