@@ -1081,18 +1081,19 @@ defmodule ExAws.ElasticLoadBalancing do
 
   ## Parameters:
 
-    * load_balancer_name (`String`) - the name of the load balancer
+    * load_balancer_names (`List` of `String`) - the name of the load balancer. You can
+    specify a maximum of one load balancer name
 
     * tag_keys (`List` of `t:tag_key_only/0`) - the keys for the tags to remove
 
   ## Examples:
 
-        iex> ExAws.ElasticLoadBalancing.remove_tags("mylb", [%{key: "department"}, %{key: "project"}])
+        iex> ExAws.ElasticLoadBalancing.remove_tags(["mylb"], [%{key: "department"}, %{key: "project"}])
         %ExAws.Operation.Query{
           action: :remove_tags,
           params: %{
             "Action" => "RemoveTags",
-            "LoadBalancerName" => "mylb",
+            "LoadBalancerNames.member.1" => "mylb",
             "Tags.member.1.Key" => "department",
             "Tags.member.2.Key" => "project",
             "Version" => "2012-06-01"
@@ -1102,10 +1103,10 @@ defmodule ExAws.ElasticLoadBalancing do
           service: :elasticloadbalancing
         }
   """
-  @spec remove_tags(load_balancer_name :: binary, tag_keys :: [tag_key_only, ...]) ::
+  @spec remove_tags(load_balancer_names :: [binary, ...], tag_keys :: [tag_key_only, ...]) ::
           ExAws.Operation.Query.t()
   def remove_tags(load_balancer_name, tag_keys) do
-    [{:load_balancer_name, load_balancer_name}, {:tags, tag_keys}]
+    [{:load_balancer_names, load_balancer_name}, {:tags, tag_keys}]
     |> build_request(:remove_tags)
   end
 
