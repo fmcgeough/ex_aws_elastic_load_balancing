@@ -187,7 +187,7 @@ defmodule ExAws.ElasticLoadBalancing do
 
     * load_balancer_name (`String`) - the name of the load balancer
 
-    * subnets (`List` of `String`) - The IDs of the subnets to add. You can add only
+    * subnets (`List` of `String`) - the IDs of the subnets to add. You can add only
     one subnet per Availability Zone.
 
   ## Examples:
@@ -759,6 +759,8 @@ defmodule ExAws.ElasticLoadBalancing do
       }
 
   """
+  @spec describe_load_balancer_attributes(load_balancer_name :: binary) ::
+          ExAws.Operation.Query.t()
   def describe_load_balancer_attributes(load_balancer_name) do
     [{:load_balancer_name, load_balancer_name}]
     |> build_request(:describe_load_balancer_attributes)
@@ -789,9 +791,10 @@ defmodule ExAws.ElasticLoadBalancing do
   can be used only with layer 7 listeners, some policies can be used only with layer 4
   listeners, and some policies can be used only with your EC2 instances.
 
-  You can use create_load_balancer_policy to create a policy configuration for any of these
-  policy types. Then, depending on the policy type, use either set_load_balancer_policies_of_listener
-  or set_load_balancer_policies_for_backend_server to set the policy.
+  You can use `create_load_balancer_policy/4` to create a policy configuration for any of these
+  policy types. Then, depending on the policy type, use either
+  `set_load_balancer_policies_of_listener/3` or
+  `set_load_balancer_policies_for_backend_server/3` to set the policy.
   """
   @spec describe_load_balancer_policy_types() :: ExAws.Operation.Query.t()
   @spec describe_load_balancer_policy_types(opts :: describe_load_balancer_policy_types_opts) ::
@@ -802,10 +805,10 @@ defmodule ExAws.ElasticLoadBalancing do
   end
 
   @doc """
-  Describes the specified load balancers or all of your
-  load balancers.
+  Describes the specified the load balancers
 
-  To describe the listeners for a load balancer, use `describe_listeners/1`.
+  If no load balancers are specified, the call describes all of your load balancers.
+
   To describe the attributes for a load balancer, use `describe_load_balancer_attributes/1`.
 
   The options that can be passed into `describe_load_balancers/1` allow load_balancer_arns or names
@@ -826,10 +829,14 @@ defmodule ExAws.ElasticLoadBalancing do
 
   ## Examples:
 
-      iex> ExAws.ElasticLoadBalancing.describe_load_balancers
-      %ExAws.Operation.Query{action: :describe_load_balancers,
-      params: %{"Action" => "DescribeLoadBalancers", "Version" => "2012-06-01"},
-      parser: &ExAws.ElasticLoadBalancing.Parsers.parse/2, path: "/", service: :elasticloadbalancing}
+      iex> ExAws.ElasticLoadBalancing.describe_load_balancers()
+      %ExAws.Operation.Query{
+        action: :describe_load_balancers,
+        params: %{"Action" => "DescribeLoadBalancers", "Version" => "2012-06-01"},
+        parser: &ExAws.ElasticLoadBalancing.Parsers.parse/2,
+        path: "/",
+        service: :elasticloadbalancing
+      }
   """
   @spec describe_load_balancers() :: ExAws.Operation.Query.t()
   @spec describe_load_balancers(opts :: describe_load_balancers_opts) :: ExAws.Operation.Query.t()
@@ -838,11 +845,12 @@ defmodule ExAws.ElasticLoadBalancing do
   end
 
   @doc """
-  DescribeTags API operation for Elastic Load Balancing.
+  Describes the tags associated with the specified load balancers
 
-  Describes the tags associated with the specified load balancers.
+  ## Parameters:
 
-  A list of load balancer names is a required parameter
+    * load_balancer_names (`List` of `String`) - the names of the load balancers. Minimum number of 1 item.
+    Maximum number of 20 items
 
   ## Examples:
 
@@ -953,7 +961,7 @@ defmodule ExAws.ElasticLoadBalancing do
   Adds the specified Availability Zones to the set of Availability Zones for the specified
   load balancer in EC2-Classic or a default VPC.
 
-  For load balancers in a non-default VPC, use AttachLoadBalancerToSubnets.
+  For load balancers in a non-default VPC, use `attach_load_balancer_to_subnets/2`.
 
   The load balancer evenly distributes requests across all its registered Availability Zones
   that contain instances. For more information, see [Add or Remove Availability Zones]((https://amzn.to/2WtKE8q))
@@ -1023,16 +1031,16 @@ defmodule ExAws.ElasticLoadBalancing do
   in a VPC with ClassicLink enabled, you can link the EC2-Classic instances to that
   VPC and then register the linked EC2-Classic instances with the load balancer in the VPC.
 
-  Note that RegisterInstanceWithLoadBalancer completes when the request has been registered.
+  Note that `register_instances_with_load_balancer/2` completes when the request has been registered.
   Instance registration takes a little time to complete. To check the state of the registered
-  instances, use DescribeLoadBalancers or DescribeInstanceHealth.
+  instances, use `describe_load_balancers/1` or `describe_instance_health/2`.
 
   After the instance is registered, it starts receiving traffic and requests from the load
   balancer. Any instance that is not in one of the Availability Zones registered for the load
   balancer is moved to the OutOfService state. If an Availability Zone is added to the load
   balancer later, any instances registered with the load balancer move to the InService state.
 
-  To deregister instances from a load balancer, use DeregisterInstancesFromLoadBalancer.
+  To deregister instances from a load balancer, use `deregister_instances_from_load_balancer/2`.
 
   For more information, see [Register or De-Register EC2 Instances](https://amzn.to/2urqjVB)
   in the Classic Load Balancers Guide.
@@ -1161,10 +1169,10 @@ defmodule ExAws.ElasticLoadBalancing do
   At this time, only the back-end server authentication policy type can be applied
   to the instance ports; this policy type is composed of multiple public key policies.
 
-  Each time you use SetLoadBalancerPoliciesForBackendServer to enable the policies, use
+  Each time you use `set_load_balancer_policies_for_backend_server/3` to enable the policies, use
   the PolicyNames parameter to list the policies that you want to enable.
 
-  You can use DescribeLoadBalancers or DescribeLoadBalancerPolicies to verify that the
+  You can use `describe_load_balancers/1` or `describe_load_balancer_policies/1` to verify that the
   policy is associated with the EC2 instance.
 
   For more information about enabling back-end instance authentication, see
