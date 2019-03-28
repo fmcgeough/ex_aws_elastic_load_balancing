@@ -27,7 +27,125 @@ if Code.ensure_loaded?(SweetXml) do
       {:ok, Map.put(resp, :body, parsed_body)}
     end
 
+    def parse({:ok, %{body: xml} = resp}, :describe_account_limits) do
+      parsed_body =
+        xml
+        |> SweetXml.xpath(
+          ~x"//DescribeAccountLimitsResponse",
+          limits: account_limits_xml(),
+          request_id: ~x"./ResponseMetadata/RequestId/text()"s
+        )
+
+      {:ok, Map.put(resp, :body, parsed_body)}
+    end
+
+    def parse({:ok, %{body: xml} = resp}, :describe_instance_health) do
+      parsed_body =
+        xml
+        |> SweetXml.xpath(
+          ~x"//DescribeInstanceHealthResponse",
+          instance_states: instances_health_xml(),
+          request_id: ~x"./ResponseMetadata/RequestId/text()"s
+        )
+
+      {:ok, Map.put(resp, :body, parsed_body)}
+    end
+
+    def parse({:ok, %{body: xml} = resp}, :describe_load_balancer_attributes) do
+      parsed_body =
+        xml
+        |> SweetXml.xpath(
+          ~x"//DescribeLoadBalancerAttributesResponse",
+          attributes: attributes_xml(),
+          request_id: ~x"./ResponseMetadata/RequestId/text()"s
+        )
+
+      {:ok, Map.put(resp, :body, parsed_body)}
+    end
+
+    def parse({:ok, %{body: xml} = resp}, :describe_load_balancer_policies) do
+      parsed_body =
+        xml
+        |> SweetXml.xpath(
+          ~x"//DescribeLoadBalancerPoliciesResponse",
+          attributes: balancer_policies_xml(),
+          request_id: ~x"./ResponseMetadata/RequestId/text()"s
+        )
+
+      {:ok, Map.put(resp, :body, parsed_body)}
+    end
+
+    def parse({:ok, %{body: xml} = resp}, :describe_load_balancer_policy_types) do
+      parsed_body =
+        xml
+        |> SweetXml.xpath(
+          ~x"//DescribeLoadBalancerPolicyTypesResponse",
+          attributes: policy_types_xml(),
+          request_id: ~x"./ResponseMetadata/RequestId/text()"s
+        )
+
+      {:ok, Map.put(resp, :body, parsed_body)}
+    end
+
     def parse(val, _), do: val
+
+    defp policy_types_xml do
+      [
+        ~x"./DescribeLoadBalancerPolicyTypesResult/PolicyTypeDescriptions/member"l,
+        description: ~x"./Description/text()"s,
+        policy_type_name: ~x"./PolicyTypeName/text()"s,
+        policy_attribute_descriptions: [
+          ~x"./PolicyAttributeTypeDescriptions/member"l,
+          atttribute_name: ~x"./AttributeName/text()"s,
+          attribute_type: ~x"./AttributeType/text()"s,
+          cardinality: ~x"./Cardinality/text()"s
+        ]
+      ]
+    end
+
+    defp balancer_policies_xml do
+      [
+        ~x"./DescribeLoadBalancerPoliciesResult/PolicyDescriptions/member"l,
+        policy_type_name: ~x"./PolicyTypeName/text()"s,
+        attribute_descriptions: [
+          ~x"./PolicyAttributeDescriptions/member"l,
+          attribute_value: ~x"./AttributeValue/text()"s,
+          attribute_name: ~x"./AttributeName/text()"s
+        ]
+      ]
+    end
+
+    defp attributes_xml do
+      [
+        ~x"./DescribeLoadBalancerAttributesResult/LoadBalancerAttributes"l,
+        connection_settings_idle_timeout: ~x"./ConnectionSettings/IdleTimeout/text()"s,
+        cross_zone_load_balancing_enabled: ~x"./CrossZoneLoadBalancing/Enabled/text()"s,
+        connection_draining_enabled: ~x"./ConnectionDraining/Enabled/text()"s,
+        connection_draining_timeout: ~x"./ConnectionDraining/Timeout/text()"i,
+        access_log_emit_interval: ~x"./AccessLog/EmitInterval/text()"i,
+        access_log_enabled: ~x"./AccessLog/Enabled/text()"s,
+        access_log_s3_bucket_prefix: ~x"./AccessLog/S3BucketPrefix/text()"s,
+        access_log_s3_bucket_name: ~x"./AccessLog/S3BucketName/text()"s
+      ]
+    end
+
+    defp account_limits_xml do
+      [
+        ~x"./DescribeAccountLimitsResult/Limits/member"l,
+        name: ~x"./Name/text()"s,
+        max: ~x"./Max/text()"i
+      ]
+    end
+
+    defp instances_health_xml do
+      [
+        ~x"./DescribeInstanceHealthResult/InstanceStates/member"l,
+        description: ~x"./Description/text()"s,
+        instance_id: ~x"./InstanceId/text()"s,
+        state: ~x"./State/text()"s,
+        reason_code: ~x"./ReasonCode/text()"s
+      ]
+    end
 
     defp load_balancers_xml_description do
       [
