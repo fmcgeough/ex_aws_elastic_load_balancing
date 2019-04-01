@@ -24,7 +24,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   # version of the AWS API
   @version "2015-12-01"
 
-  @type tag :: {key :: atom, value :: binary}
+  @type tag :: {key :: atom, value :: binary} | %{key: binary, value: binary}
   @type load_balancer_attribute :: {key :: atom, value :: binary}
   @type target_group_attribute :: {key :: atom, value :: binary}
 
@@ -96,6 +96,15 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   your resources, use `remove_tags/1`.
 
   ## Examples:
+
+        iex> ExAws.ElasticLoadBalancingV2.add_tags(["resource_arn1", "resource_arn2"], [%{key: "hello", value: "test"}])
+        %ExAws.Operation.Query{action: :add_tags,
+        params: %{"Action" => "AddTags",
+        "ResourceArns.member.1" => "resource_arn1",
+        "ResourceArns.member.2" => "resource_arn2",
+        "Tags.member.1.Key" => "hello", "Tags.member.1.Value" => "test",
+        "Version" => "2015-12-01"},
+        parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2, path: "/", service: :elasticloadbalancing}
 
         iex> ExAws.ElasticLoadBalancingV2.add_tags(["resource_arn1", "resource_arn2"], [hello: "test"])
         %ExAws.Operation.Query{action: :add_tags,
@@ -1157,7 +1166,16 @@ defmodule ExAws.ElasticLoadBalancingV2 do
 
   defp format_param({:tags, tags}) do
     tags
-    |> Enum.map(fn {key, value} -> [key: maybe_stringify(key), value: value] end)
+    |> Enum.map(fn tag ->
+      case is_map(tag) do
+        true ->
+          tag
+
+        false ->
+          {key, value} = tag
+          %{key: maybe_stringify(key), value: value}
+      end
+    end)
     |> format(prefix: "Tags.member")
   end
 
