@@ -21,6 +21,8 @@ defmodule ExAws.ElasticLoadBalancingV2 do
     format_type: :xml,
     non_standard_keys: %{}
 
+  alias ExAws.ElasticLoadBalancingV2.Parsers, as: V2Parser
+
   # version of the AWS API
   @version "2015-12-01"
 
@@ -1102,7 +1104,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         |> Map.put("Version", @version),
       service: :elasticloadbalancing,
       action: action,
-      parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+      parser: &V2Parser.parse/2
     }
   end
 

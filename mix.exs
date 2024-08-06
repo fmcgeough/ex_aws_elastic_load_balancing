@@ -1,7 +1,8 @@
 defmodule ExAws.ElasticLoadBalancing.Mixfile do
   use Mix.Project
 
-  @version "2.1.1"
+  @source_url "https://github.com/fmcgeough/ex_aws_elastic_load_balancing"
+  @version "2.2.1"
 
   def project do
     [
@@ -11,14 +12,11 @@ defmodule ExAws.ElasticLoadBalancing.Mixfile do
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      source_url: "https://github.com/fmcgeough/ex_aws_elastic_load_balancing",
-      homepage_url: "https://github.com/fmcgeough/ex_aws_elastic_load_balancing",
+      description: "AWS Elastic Load Balancing service for ex_aws",
+      source_url: @source_url,
+      homepage_url: @source_url,
       package: package(),
-      docs: [
-        main: "readme",
-        extras: ["README.md"],
-        source_ref: "v#{@version}"
-      ]
+      docs: docs()
     ]
   end
 
@@ -38,17 +36,28 @@ defmodule ExAws.ElasticLoadBalancing.Mixfile do
       {:sweet_xml, "~> 0.6", optional: true},
       {:hackney, "1.6.3 or 1.6.5 or 1.7.1 or 1.8.6 or ~> 1.9", only: [:dev, :test]},
       {:poison, ">= 1.2.0", optional: true},
-      {:ex_doc, "~> 0.19.2", only: [:dev, :test]},
-      {:ex_aws, "~> 2.0"}
+      {:ex_doc, "~> 0.34.2", only: [:dev, :test]},
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:ex_aws, "~> 2.5"},
+      {:dialyxir, "~> 1.4.3", only: [:dev, :test], runtime: false}
     ]
   end
 
   defp package do
     [
-      description: "AWS Elastic Load Balancing service for ex_aws",
       maintainers: ["Frank McGeough"],
       licenses: ["MIT"],
-      links: %{github: "https://github.com/fmcgeough/ex_aws_elastic_load_balancing"}
+      links: %{"GitHub" => @source_url}
+    ]
+  end
+
+  defp docs do
+    [
+      name: "ExAws.CloudTrail",
+      canonical: "http://hexdocs.pm/ex_aws_elastic_load_balancing",
+      source_url: @source_url,
+      main: "readme",
+      extras: ["README.md", "CHANGELOG.md": [title: "Changelog"], LICENSE: [title: "License"]]
     ]
   end
 end
