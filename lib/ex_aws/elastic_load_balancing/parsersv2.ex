@@ -117,8 +117,7 @@ if Code.ensure_loaded?(SweetXml) do
         ~x"./DescribeLoadBalancersResult/LoadBalancers/member"l,
         load_balancer_name: ~x"./LoadBalancerName/text()"s,
         dns_name: ~x"./DNSName/text()"s,
-        canonical_hosted_zone_name: ~x"./CanonicalHostedZoneName/text()"s,
-        canonical_hosted_zone_name_id: ~x"./CanonicalHostedZoneNameID/text()"s,
+        canonical_hosted_zone_id: ~x"./CanonicalHostedZoneId/text()"s,
         availability_zones: [
           ~x"./AvailabilityZones/member"l,
           subnet_id: ~x"./SubnetId/text()"s,
