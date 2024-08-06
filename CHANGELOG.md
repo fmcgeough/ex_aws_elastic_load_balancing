@@ -1,3 +1,7 @@
+v2.2.2
+
+* Bug Fix: Typespec for target_description modified
+
 v2.2.1
 
 * Bug Fix: CanonicalHostedZoneId support added to ExAws.ElasticLoadBalancingV2.Parsers

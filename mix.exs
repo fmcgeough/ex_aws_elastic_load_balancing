@@ -2,7 +2,7 @@ defmodule ExAws.ElasticLoadBalancing.Mixfile do
   use Mix.Project
 
   @source_url "https://github.com/fmcgeough/ex_aws_elastic_load_balancing"
-  @version "2.2.1"
+  @version "2.2.2"
 
   def project do
     [

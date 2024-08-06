@@ -40,11 +40,13 @@ defmodule ExAws.ElasticLoadBalancingV2 do
           is_default: boolean
         ]
 
-  @type target_description :: [
-          id: binary,
-          port: integer,
-          availability_zone: binary
-        ]
+  @type target_description :: %{
+          required(:id) => binary,
+          optional(:port) => integer,
+          optional(:availability_zone) => binary
+        }
+
+  @type target_descriptions :: [target_description()]
 
   @type rule_condition :: [
           field: binary,
@@ -456,7 +458,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2, path: "/", service: :elasticloadbalancing}
 
   """
-  @spec deregister_targets(target_group_arn :: binary, targets :: [target_description, ...]) ::
+  @spec deregister_targets(target_group_arn :: binary, targets :: target_descriptions) ::
           ExAws.Operation.Query.t()
   def deregister_targets(target_group_arn, targets, opts \\ []) do
     [{:target_group_arn, target_group_arn}, {:targets, targets} | opts]
@@ -748,9 +750,8 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   @doc """
   Describes the health of the specified targets or all of your targets.
   """
-  @type describe_target_health_opts :: [
-          targets: [target_description, ...]
-        ]
+  @type describe_target_health_opts :: [targets: target_descriptions]
+
   @spec describe_target_health(target_group_arn :: binary) :: ExAws.Operation.Query.t()
   @spec describe_target_health(target_group_arn :: binary, opts :: describe_target_health_opts) ::
           ExAws.Operation.Query.t()
@@ -926,7 +927,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         "Targets.member.2" => "target2", "Version" => "2015-12-01"},
       parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2, path: "/", service: :elasticloadbalancing}
   """
-  @spec register_targets(target_group_arn :: binary, targets :: [target_description, ...]) ::
+  @spec register_targets(target_group_arn :: binary, targets :: target_descriptions) ::
           ExAws.Operation.Query.t()
   def register_targets(target_group_arn, targets, opts \\ []) do
     [{:target_group_arn, target_group_arn}, {:targets, targets} | opts]
