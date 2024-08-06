@@ -2,6 +2,8 @@ defmodule ExAws.ElasticLoadBalancingV2.ParsersTest do
   use ExUnit.Case
   doctest ExAws.ElasticLoadBalancingV2.Parsers
 
+  alias ExAws.ElasticLoadBalancingV2.Parsers, as: V2Parser
+
   describe "describe_target_health parser" do
     test "parses DescribeTargetHealthResponse" do
       xml = """
@@ -54,7 +56,7 @@ defmodule ExAws.ElasticLoadBalancingV2.ParsersTest do
       }
 
       {:ok, %{body: body}} =
-        ExAws.ElasticLoadBalancingV2.Parsers.parse(
+        V2Parser.parse(
           {:ok, %{body: xml}},
           :describe_target_health
         )
@@ -88,7 +90,7 @@ defmodule ExAws.ElasticLoadBalancingV2.ParsersTest do
       }
 
       {:ok, %{body: body}} =
-        ExAws.ElasticLoadBalancingV2.Parsers.parse(
+        V2Parser.parse(
           {:ok, %{body: xml}},
           :describe_account_limits
         )
@@ -116,7 +118,7 @@ defmodule ExAws.ElasticLoadBalancingV2.ParsersTest do
       }
 
       {:ok, %{body: body}} =
-        ExAws.ElasticLoadBalancingV2.Parsers.parse(
+        V2Parser.parse(
           {:ok, %{body: xml}},
           :describe_load_balancer_attributes
         )
@@ -144,7 +146,7 @@ defmodule ExAws.ElasticLoadBalancingV2.ParsersTest do
       }
 
       {:ok, %{body: body}} =
-        ExAws.ElasticLoadBalancingV2.Parsers.parse(
+        V2Parser.parse(
           {:ok, %{body: xml}},
           :modify_load_balancer_attributes
         )
@@ -164,7 +166,7 @@ defmodule ExAws.ElasticLoadBalancingV2.ParsersTest do
       }
 
       {:ok, %{body: body}} =
-        ExAws.ElasticLoadBalancingV2.Parsers.parse(
+        V2Parser.parse(
           {:ok, %{body: xml}},
           :register_targets
         )
@@ -184,7 +186,7 @@ defmodule ExAws.ElasticLoadBalancingV2.ParsersTest do
       }
 
       {:ok, %{body: body}} =
-        ExAws.ElasticLoadBalancingV2.Parsers.parse(
+        V2Parser.parse(
           {:ok, %{body: xml}},
           :deregister_targets
         )

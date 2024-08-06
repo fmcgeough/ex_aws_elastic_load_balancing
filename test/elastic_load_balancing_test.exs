@@ -2,6 +2,8 @@ defmodule ExAws.ElasticLoadBalancingTest do
   use ExUnit.Case
   doctest ExAws.ElasticLoadBalancing
 
+  alias ExAws.ElasticLoadBalancing.Parsers, as: V1Parser
+
   test "modify_load_balancer_attributes Enable Cross-Zone Load Balancing" do
     op =
       ExAws.ElasticLoadBalancing.modify_load_balancer_attributes("mylb",
@@ -16,7 +18,7 @@ defmodule ExAws.ElasticLoadBalancingTest do
                "LoadBalancerName" => "mylb",
                "Version" => "2012-06-01"
              },
-             parser: &ExAws.ElasticLoadBalancing.Parsers.parse/2,
+             parser: &V1Parser.parse/2,
              path: "/",
              service: :elasticloadbalancing
            }
@@ -42,7 +44,7 @@ defmodule ExAws.ElasticLoadBalancingTest do
                "LoadBalancerName" => "mylb",
                "Version" => "2012-06-01"
              },
-             parser: &ExAws.ElasticLoadBalancing.Parsers.parse/2,
+             parser: &V1Parser.parse/2,
              path: "/",
              service: :elasticloadbalancing
            }
@@ -64,7 +66,7 @@ defmodule ExAws.ElasticLoadBalancingTest do
                "LoadBalancerName" => "mylb",
                "Version" => "2012-06-01"
              },
-             parser: &ExAws.ElasticLoadBalancing.Parsers.parse/2,
+             parser: &V1Parser.parse/2,
              path: "/",
              service: :elasticloadbalancing
            }
@@ -84,7 +86,7 @@ defmodule ExAws.ElasticLoadBalancingTest do
                "LoadBalancerName" => "mylb",
                "Version" => "2012-06-01"
              },
-             parser: &ExAws.ElasticLoadBalancing.Parsers.parse/2,
+             parser: &V1Parser.parse/2,
              path: "/",
              service: :elasticloadbalancing
            }
@@ -115,7 +117,7 @@ defmodule ExAws.ElasticLoadBalancingTest do
                "LoadBalancerName" => "mylb",
                "Version" => "2012-06-01"
              },
-             parser: &ExAws.ElasticLoadBalancing.Parsers.parse/2,
+             parser: &V1Parser.parse/2,
              path: "/",
              service: :elasticloadbalancing
            }
@@ -148,7 +150,7 @@ defmodule ExAws.ElasticLoadBalancingTest do
                "LoadBalancerName" => "mylb",
                "Version" => "2012-06-01"
              },
-             parser: &ExAws.ElasticLoadBalancing.Parsers.parse/2,
+             parser: &V1Parser.parse/2,
              path: "/",
              service: :elasticloadbalancing
            }
@@ -181,7 +183,7 @@ defmodule ExAws.ElasticLoadBalancingTest do
                "Subnets.member.1" => "subnet-6dec9f03",
                "Version" => "2012-06-01"
              },
-             parser: &ExAws.ElasticLoadBalancing.Parsers.parse/2,
+             parser: &V1Parser.parse/2,
              path: "/",
              service: :elasticloadbalancing
            }
@@ -216,7 +218,7 @@ defmodule ExAws.ElasticLoadBalancingTest do
                "Subnets.member.1" => "subnet-9edc97f0",
                "Version" => "2012-06-01"
              },
-             parser: &ExAws.ElasticLoadBalancing.Parsers.parse/2,
+             parser: &V1Parser.parse/2,
              path: "/",
              service: :elasticloadbalancing
            }

@@ -1,5 +1,7 @@
 if Code.ensure_loaded?(SweetXml) do
   defmodule ExAws.ElasticLoadBalancing.Parsers do
+    @moduledoc false
+
     use ExAws.Operation.Query.Parser
 
     def parse({:ok, %{body: xml} = resp}, :describe_load_balancers) do
@@ -204,7 +206,7 @@ if Code.ensure_loaded?(SweetXml) do
       ]
     end
 
-    defp load_balancer_tags_description() do
+    defp load_balancer_tags_description do
       [
         ~x"./DescribeTagsResult/TagDescriptions/member"l,
         load_balancer_name: ~x"./LoadBalancerName/text()"s,
@@ -218,6 +220,8 @@ if Code.ensure_loaded?(SweetXml) do
   end
 else
   defmodule ExAws.ElasticLoadBalancing.Parsers do
+    @moduledoc false
+
     def parse(val, _), do: val
   end
 end

@@ -19,6 +19,8 @@ defmodule ExAws.ElasticLoadBalancing do
     format_type: :xml,
     non_standard_keys: %{ssl_certificate_id: "SSLCertificateId"}
 
+  alias ExAws.ElasticLoadBalancing.Parsers, as: V1Parser
+
   # version of the AWS API
   @version "2012-06-01"
 
@@ -964,7 +966,7 @@ defmodule ExAws.ElasticLoadBalancing do
   For load balancers in a non-default VPC, use `attach_load_balancer_to_subnets/2`.
 
   The load balancer evenly distributes requests across all its registered Availability Zones
-  that contain instances. For more information, see [Add or Remove Availability Zones]((https://amzn.to/2WtKE8q))
+  that contain instances. For more information, see Add or Remove Availability Zones
   in the Classic Load Balancers Guide.
 
   ## Parameters:
@@ -1293,7 +1295,7 @@ defmodule ExAws.ElasticLoadBalancing do
         |> Map.put("Version", @version),
       service: :elasticloadbalancing,
       action: action,
-      parser: &ExAws.ElasticLoadBalancing.Parsers.parse/2
+      parser: &V1Parser.parse/2
     }
   end
 
