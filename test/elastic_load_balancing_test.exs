@@ -101,9 +101,7 @@ defmodule ExAws.ElasticLoadBalancingTest do
     }
 
     op =
-      ExAws.ElasticLoadBalancing.create_load_balancer("mylb", [listener],
-        availability_zones: ["us-east-1"]
-      )
+      ExAws.ElasticLoadBalancing.create_load_balancer("mylb", [listener], availability_zones: ["us-east-1"])
 
     assert op == %ExAws.Operation.Query{
              action: :create_load_balancer,
@@ -133,9 +131,7 @@ defmodule ExAws.ElasticLoadBalancingTest do
     }
 
     op =
-      ExAws.ElasticLoadBalancing.create_load_balancer("mylb", [listener],
-        availability_zones: ["us-east-1c"]
-      )
+      ExAws.ElasticLoadBalancing.create_load_balancer("mylb", [listener], availability_zones: ["us-east-1c"])
 
     assert op == %ExAws.Operation.Query{
              action: :create_load_balancer,
