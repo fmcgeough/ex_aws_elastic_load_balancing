@@ -437,26 +437,40 @@ defmodule ExAws.ElasticLoadBalancingV2 do
 
   ## Examples:
 
-        iex> ExAws.ElasticLoadBalancingV2.deregister_targets("target_group_arn",
-        ...> [%{id: "test", port: 8080, availability_zone: "us-east-1"},
-        ...>  %{id: "test2", port: 8088, availability_zone: "us-east-1"}])
-        %ExAws.Operation.Query{action: :deregister_targets,
-        params: %{"Action" => "DeregisterTargets",
-        "TargetGroupArn" => "target_group_arn",
-        "Targets.member.1.AvailabilityZone" => "us-east-1",
-        "Targets.member.1.Id" => "test", "Targets.member.1.Port" => 8080,
-        "Targets.member.2.AvailabilityZone" => "us-east-1",
-        "Targets.member.2.Id" => "test2", "Targets.member.2.Port" => 8088,
-        "Version" => "2015-12-01"}, parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2, path: "/",
-        service: :elasticloadbalancing}
+        iex>  targets = [%{id: "test"}, %{id: "test2", port: 8088, availablility_zone: "us-east-1"}]
+        [%{id: "test"}, %{id: "test2", port: 8088, availablility_zone: "us-east-1"}]
+        iex> ExAws.ElasticLoadBalancingV2.deregister_targets("target_group_arn", targets)
+        %ExAws.Operation.Query{
+          path: "/",
+          params: %{
+            "Action" => "DeregisterTargets",
+            "TargetGroupArn" => "target_group_arn",
+            "Targets.member.1.Id" => "test",
+            "Targets.member.2.AvailablilityZone" => "us-east-1",
+            "Targets.member.2.Id" => "test2",
+            "Targets.member.2.Port" => 8088,
+            "Version" => "2015-12-01"
+          },
+          content_encoding: "identity",
+          service: :elasticloadbalancing,
+          action: :deregister_targets,
+          parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+        }
 
         iex> ExAws.ElasticLoadBalancingV2.deregister_targets("target_group_arn", [%{id: "i-0f76fade435676abd"}])
-        %ExAws.Operation.Query{action: :deregister_targets,
-        params: %{"Action" => "DeregisterTargets",
-          "TargetGroupArn" => "target_group_arn",
-          "Targets.member.1.Id" => "i-0f76fade435676abd", "Version" => "2015-12-01"},
-        parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2, path: "/", service: :elasticloadbalancing}
-
+        %ExAws.Operation.Query{
+          path: "/",
+          params: %{
+            "Action" => "DeregisterTargets",
+            "TargetGroupArn" => "target_group_arn",
+            "Targets.member.1.Id" => "i-0f76fade435676abd",
+            "Version" => "2015-12-01"
+          },
+          content_encoding: "identity",
+          service: :elasticloadbalancing,
+          action: :deregister_targets,
+          parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+        }
   """
   @spec deregister_targets(target_group_arn :: binary, targets :: target_descriptions) ::
           ExAws.Operation.Query.t()
