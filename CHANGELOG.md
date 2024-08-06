@@ -1,6 +1,7 @@
 v2.2.2
 
 * Bug Fix: Typespec for target_description modified
+* Enhancement: Modify doc tests to make resulting doc more readable
 
 v2.2.1
 
