@@ -1438,16 +1438,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
 
   defp format_param({:tags, tags}) do
     tags
-    |> Enum.map(fn tag ->
-      case is_map(tag) do
-        true ->
-          tag
-
-        false ->
-          {key, value} = tag
-          %{key: maybe_stringify(key), value: value}
-      end
-    end)
+    |> Enum.map(&normalize_tag/1)
     |> format(prefix: "Tags.member")
   end
 
@@ -1466,4 +1457,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   defp format_param({key, parameters}) do
     format([{key, parameters}])
   end
+
+  defp normalize_tag(tag) when is_map(tag), do: tag
+  defp normalize_tag({key, value}), do: %{key: maybe_stringify(key), value: value}
 end
