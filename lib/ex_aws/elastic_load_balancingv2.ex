@@ -26,19 +26,34 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   # version of the AWS API
   @version "2015-12-01"
 
+  @type listener_arn :: binary
+  @type load_balancer_arn :: binary
+  @type target_group_arn :: binary
+  @type rule_arn :: binary
+
+  @type binary_list :: [binary, ...]
+  @type certificates :: [certificate, ...]
+  @type actions :: [action, ...]
+  @type rule_conditions :: [rule_condition, ...]
+
+  @type pagination_opts :: [marker: binary, page_size: integer]
+
+  @type health_check_opts :: [
+          health_check_protocol: binary,
+          health_check_port: binary,
+          health_check_path: binary,
+          health_check_interval_seconds: integer,
+          health_check_timeout_seconds: integer,
+          unhealthy_threshold_count: integer
+        ]
+
   @type tag :: {key :: atom, value :: binary} | %{key: binary, value: binary}
   @type load_balancer_attribute :: {key :: atom, value :: binary}
   @type target_group_attribute :: {key :: atom, value :: binary}
 
-  @type action :: [
-          type: binary,
-          target_group_arn: binary
-        ]
+  @type action :: [type: binary, target_group_arn: binary]
 
-  @type certificate :: [
-          certificate_arn: binary,
-          is_default: boolean
-        ]
+  @type certificate :: [certificate_arn: binary, is_default: boolean]
 
   @type target_description :: %{
           required(:id) => binary,
@@ -47,16 +62,8 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         }
 
   @type target_descriptions :: [target_description()]
-
-  @type rule_condition :: [
-          field: binary,
-          values: [binary, ...]
-        ]
-
-  @type subnet_mapping :: [
-          subnet_id: binary,
-          allocation_id: binary
-        ]
+  @type rule_condition :: [field: binary, values: binary_list]
+  @type subnet_mapping :: [subnet_id: binary, allocation_id: binary]
   @doc """
   Adds the specified certificate to the specified secure listener.
 
@@ -93,8 +100,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @spec add_listener_certificates(listener_arn :: binary, certificates :: [certificate, ...]) ::
-          ExAws.Operation.Query.t()
+  @spec add_listener_certificates(listener_arn, certificates) :: ExAws.Operation.Query.t()
   def add_listener_certificates(listener_arn, certificates, opts \\ []) do
     [{:listener_arn, listener_arn}, {:certificates, certificates} | opts]
     |> build_request(:add_listener_certificates)
@@ -164,7 +170,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @spec add_tags(resource_arns :: [binary, ...], tags :: [tag, ...]) :: ExAws.Operation.Query.t()
+  @spec add_tags(resource_arns :: binary_list, tags :: [tag, ...]) :: ExAws.Operation.Query.t()
   def add_tags(resource_arns, tags, opts \\ []) do
     [{:resource_arns, resource_arns}, {:tags, tags} | opts]
     |> build_request(:add_tags)
@@ -209,21 +215,18 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @type create_listener_opts :: [
-          ssl_policy: binary,
-          certificates: [certificate, ...]
-        ]
+  @type create_listener_opts :: [ssl_policy: binary, certificates: certificates]
   @spec create_listener(
-          load_balancer_arn :: binary,
+          load_balancer_arn,
           protocol :: binary,
           port :: integer,
-          default_actions :: [action, ...]
+          default_actions :: actions
         ) :: ExAws.Operation.Query.t()
   @spec create_listener(
-          load_balancer_arn :: binary,
+          load_balancer_arn,
           protocol :: binary,
           port :: integer,
-          default_actions :: [action, ...],
+          default_actions :: actions,
           opts :: create_listener_opts
         ) :: ExAws.Operation.Query.t()
   def create_listener(load_balancer_arn, protocol, port, default_actions, opts \\ []) do
@@ -301,9 +304,9 @@ defmodule ExAws.ElasticLoadBalancingV2 do
       }
   """
   @type create_load_balancer_opts :: [
-          subnets: [binary, ...],
+          subnets: binary_list,
           subnet_mappings: [subnet_mapping, ...],
-          security_groups: [binary, ...],
+          security_groups: binary_list,
           scheme: binary,
           tags: [tag, ...],
           type: binary,
@@ -334,10 +337,10 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   To delete a rule, use `delete_rule/1`.
   """
   @spec create_rule(
-          listener_arn :: binary,
-          conditions :: [rule_condition, ...],
+          listener_arn,
+          conditions :: rule_conditions,
           priority :: integer,
-          actions :: [action, ...]
+          actions :: actions
         ) :: ExAws.Operation.Query.t()
   def create_rule(listener_arn, conditions, priority, actions, opts \\ []) do
     [
@@ -382,22 +385,15 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @type create_target_group_opts :: [
-          protocol: binary,
-          port: integer,
-          health_check_protocol: binary,
-          health_check_port: binary,
-          health_check_path: binary,
-          # min 5, max 300
-          health_check_interval_seconds: integer,
-          # min 2, max 60
-          health_check_timeout_seconds: integer,
-          healthy_threshold_count: integer,
-          # min 2, max 60
-          unhealthy_threshold_count: integer,
-          matcher: binary,
-          target_type: binary
-        ]
+  @type create_target_group_opts ::
+          [
+            protocol: binary,
+            port: integer,
+            healthy_threshold_count: integer,
+            matcher: binary,
+            target_type: binary
+          ]
+          | health_check_opts
   @spec create_target_group(name :: binary, vpc_id :: binary) :: ExAws.Operation.Query.t()
   @spec create_target_group(name :: binary, vpc_id :: binary, opts :: create_target_group_opts) ::
           ExAws.Operation.Query.t()
@@ -428,7 +424,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
           parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
         }
   """
-  @spec delete_listener(listener_arn :: binary) :: ExAws.Operation.Query.t()
+  @spec delete_listener(listener_arn) :: ExAws.Operation.Query.t()
   def delete_listener(listener_arn, opts \\ []) do
     [{:listener_arn, listener_arn} | opts]
     |> build_request(:delete_listener)
@@ -463,7 +459,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
           parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
         }
   """
-  @spec delete_load_balancer(load_balancer_arn :: binary) :: ExAws.Operation.Query.t()
+  @spec delete_load_balancer(load_balancer_arn) :: ExAws.Operation.Query.t()
   def delete_load_balancer(load_balancer_arn, opts \\ []) do
     [{:load_balancer_arn, load_balancer_arn} | opts]
     |> build_request(:delete_load_balancer)
@@ -488,7 +484,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
           parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
         }
   """
-  @spec delete_rule(rule_arn :: binary) :: ExAws.Operation.Query.t()
+  @spec delete_rule(rule_arn) :: ExAws.Operation.Query.t()
   def delete_rule(rule_arn, opts \\ []) do
     [{:rule_arn, rule_arn} | opts]
     |> build_request(:delete_rule)
@@ -517,7 +513,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
           parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
         }
   """
-  @spec delete_target_group(target_group_arn :: binary) :: ExAws.Operation.Query.t()
+  @spec delete_target_group(target_group_arn) :: ExAws.Operation.Query.t()
   def delete_target_group(target_group_arn, opts \\ []) do
     [{:target_group_arn, target_group_arn} | opts]
     |> build_request(:delete_target_group)
@@ -566,8 +562,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
           parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
         }
   """
-  @spec deregister_targets(target_group_arn :: binary, targets :: target_descriptions) ::
-          ExAws.Operation.Query.t()
+  @spec deregister_targets(target_group_arn, target_descriptions) :: ExAws.Operation.Query.t()
   def deregister_targets(target_group_arn, targets, opts \\ []) do
     [{:target_group_arn, target_group_arn}, {:targets, targets} | opts]
     |> build_request(:deregister_targets)
@@ -595,11 +590,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
           parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
         }
   """
-  @type describe_account_limits_opts :: [
-          marker: binary,
-          # Minimum value of 1. Maximum value of 400
-          page_size: integer
-        ]
+  @type describe_account_limits_opts :: pagination_opts
   @spec describe_account_limits() :: ExAws.Operation.Query.t()
   @spec describe_account_limits(opts :: describe_account_limits_opts) :: ExAws.Operation.Query.t()
   def describe_account_limits(opts \\ []) do
@@ -625,16 +616,10 @@ defmodule ExAws.ElasticLoadBalancingV2 do
           parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
         }
   """
-  @type describe_listener_certificates_opts :: [
-          marker: binary,
-          # Minimum value of 1. Maximum value of 400
-          page_size: integer
-        ]
-  @spec describe_listener_certificates(listener_arn :: binary) :: ExAws.Operation.Query.t()
-  @spec describe_listener_certificates(
-          listener_arn :: binary,
-          opts :: describe_listener_certificates_opts
-        ) :: ExAws.Operation.Query.t()
+  @type describe_listener_certificates_opts :: pagination_opts
+  @spec describe_listener_certificates(listener_arn) :: ExAws.Operation.Query.t()
+  @spec describe_listener_certificates(listener_arn, opts :: describe_listener_certificates_opts) ::
+          ExAws.Operation.Query.t()
   def describe_listener_certificates(listener_arn, opts \\ []) do
     [{:listener_arn, listener_arn} | opts]
     |> build_request(:describe_listener_certificates)
@@ -658,12 +643,12 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @type describe_listeners_opts :: [
-          listener_arns: [binary, ...],
-          load_balancer_arn: binary,
-          marker: binary,
-          page_size: integer
-        ]
+  @type describe_listeners_opts ::
+          [
+            listener_arns: binary_list,
+            load_balancer_arn: load_balancer_arn
+          ]
+          | pagination_opts
   @spec describe_listeners() :: ExAws.Operation.Query.t()
   @spec describe_listeners(opts :: describe_listeners_opts) :: ExAws.Operation.Query.t()
   def describe_listeners(opts \\ []) do
@@ -690,8 +675,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
           parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
         }
   """
-  @spec describe_load_balancer_attributes(load_balancer_arn :: binary) ::
-          ExAws.Operation.Query.t()
+  @spec describe_load_balancer_attributes(load_balancer_arn) :: ExAws.Operation.Query.t()
   def describe_load_balancer_attributes(load_balancer_arn, opts \\ []) do
     [{:load_balancer_arn, load_balancer_arn} | opts]
     |> build_request(:describe_load_balancer_attributes)
@@ -732,12 +716,12 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @type describe_load_balancers_opts :: [
-          load_balancer_arns: [binary, ...],
-          names: [binary, ...],
-          marker: binary,
-          page_size: integer
-        ]
+  @type describe_load_balancers_opts ::
+          [
+            load_balancer_arns: binary_list,
+            names: binary_list
+          ]
+          | pagination_opts
   @spec describe_load_balancers() :: ExAws.Operation.Query.t()
   @spec describe_load_balancers(opts :: describe_load_balancers_opts) :: ExAws.Operation.Query.t()
   def describe_load_balancers(opts \\ []) do
@@ -776,12 +760,12 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @type describe_rules_opts :: [
-          listener_arn: binary,
-          rule_arns: [binary, ...],
-          marker: binary,
-          page_size: integer
-        ]
+  @type describe_rules_opts ::
+          [
+            listener_arn: listener_arn,
+            rule_arns: binary_list
+          ]
+          | pagination_opts
   @spec describe_rules() :: ExAws.Operation.Query.t()
   @spec describe_rules(opts :: describe_rules_opts) :: ExAws.Operation.Query.t()
   def describe_rules(opts \\ []) do
@@ -822,11 +806,11 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @type describe_ssl_policies_opts :: [
-          ssl_policy_names: [binary, ...],
-          marker: binary,
-          page_size: integer
-        ]
+  @type describe_ssl_policies_opts ::
+          [
+            ssl_policy_names: binary_list
+          ]
+          | pagination_opts
   @spec describe_ssl_policies() :: ExAws.Operation.Query.t()
   @spec describe_ssl_policies(opts :: describe_ssl_policies_opts) :: ExAws.Operation.Query.t()
   def describe_ssl_policies(opts \\ []) do
@@ -856,7 +840,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @spec describe_tags(resource_arns :: [binary, ...]) :: ExAws.Operation.Query.t()
+  @spec describe_tags(resource_arns :: binary_list) :: ExAws.Operation.Query.t()
   def describe_tags(resource_arns, opts \\ []) do
     [{:resource_arns, resource_arns} | opts]
     |> build_request(:describe_tags)
@@ -882,7 +866,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @spec describe_target_group_attributes(target_group_arn :: binary) :: ExAws.Operation.Query.t()
+  @spec describe_target_group_attributes(target_group_arn) :: ExAws.Operation.Query.t()
   def describe_target_group_attributes(target_group_arn, opts \\ []) do
     [{:target_group_arn, target_group_arn} | opts]
     |> build_request(:describe_target_group_attributes)
@@ -931,13 +915,13 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @type describe_target_groups_opts :: [
-          load_balancer_arn: binary,
-          target_group_arns: [binary, ...],
-          names: [binary, ...],
-          marker: binary,
-          page_size: integer
-        ]
+  @type describe_target_groups_opts ::
+          [
+            load_balancer_arn: load_balancer_arn,
+            target_group_arns: binary_list,
+            names: binary_list
+          ]
+          | pagination_opts
   @spec describe_target_groups() :: ExAws.Operation.Query.t()
   @spec describe_target_groups(opts :: describe_target_groups_opts) :: ExAws.Operation.Query.t()
   def describe_target_groups(opts \\ []) do
@@ -949,8 +933,8 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   """
   @type describe_target_health_opts :: [targets: target_descriptions]
 
-  @spec describe_target_health(target_group_arn :: binary) :: ExAws.Operation.Query.t()
-  @spec describe_target_health(target_group_arn :: binary, opts :: describe_target_health_opts) ::
+  @spec describe_target_health(target_group_arn) :: ExAws.Operation.Query.t()
+  @spec describe_target_health(target_group_arn, opts :: describe_target_health_opts) ::
           ExAws.Operation.Query.t()
   def describe_target_health(target_group_arn, opts \\ []) do
     [{:target_group_arn, target_group_arn} | opts]
@@ -1004,12 +988,11 @@ defmodule ExAws.ElasticLoadBalancingV2 do
           port: integer,
           protocol: binary,
           ssl_policy: binary,
-          certificates: [binary, ...],
-          default_actions: [action, ...]
+          certificates: binary_list,
+          default_actions: actions
         ]
-  @spec modify_listener(listener_arn :: binary) :: ExAws.Operation.Query.t()
-  @spec modify_listener(listener_arn :: binary, opts :: modify_listener_opts) ::
-          ExAws.Operation.Query.t()
+  @spec modify_listener(listener_arn) :: ExAws.Operation.Query.t()
+  @spec modify_listener(listener_arn, opts :: modify_listener_opts) :: ExAws.Operation.Query.t()
   def modify_listener(listener_arn, opts \\ []) do
     [{:listener_arn, listener_arn} | opts]
     |> build_request(:modify_listener)
@@ -1023,10 +1006,8 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   fails. Any existing attributes that you do not modify retain their current
   values.
   """
-  @spec modify_load_balancer_attributes(
-          load_balancer_arn :: binary,
-          attributes :: [load_balancer_attribute, ...]
-        ) :: ExAws.Operation.Query.t()
+  @spec modify_load_balancer_attributes(load_balancer_arn, [load_balancer_attribute, ...]) ::
+          ExAws.Operation.Query.t()
   def modify_load_balancer_attributes(load_balancer_arn, attributes, opts \\ []) do
     [{:load_balancer_arn, load_balancer_arn}, {:attributes, attributes} | opts]
     |> build_request(:modify_load_balancer_attributes)
@@ -1039,11 +1020,11 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   To modify the default action, use `modify_listener/1`.
   """
   @type modify_rule_opts :: [
-          actions: [action, ...],
-          conditions: [rule_condition, ...]
+          actions: actions,
+          conditions: rule_conditions
         ]
-  @spec modify_rule(rule_arn :: binary) :: ExAws.Operation.Query.t()
-  @spec modify_rule(rule_arn :: binary, opts :: modify_rule_opts) :: ExAws.Operation.Query.t()
+  @spec modify_rule(rule_arn) :: ExAws.Operation.Query.t()
+  @spec modify_rule(rule_arn, opts :: modify_rule_opts) :: ExAws.Operation.Query.t()
   def modify_rule(rule_arn, opts \\ []) do
     [{:rule_arn, rule_arn} | opts] |> build_request(:modify_rule)
   end
@@ -1089,21 +1070,9 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @type modify_target_group_opts :: [
-          health_check_protocol: binary,
-          health_check_port: binary,
-          health_check_path: binary,
-          # min 5, max 300
-          health_check_interval_seconds: integer,
-          # min 2, max 60
-          health_check_timeout_seconds: integer,
-          # min 2, max 60
-          unhealthy_threshold_count: integer,
-          matcher: binary
-        ]
-  @spec modify_target_group(target_group_arn :: binary) :: ExAws.Operation.Query.t()
-  @spec modify_target_group(target_group_arn :: binary, opts :: modify_target_group_opts) ::
-          ExAws.Operation.Query.t()
+  @type modify_target_group_opts :: [matcher: binary] | health_check_opts
+  @spec modify_target_group(target_group_arn) :: ExAws.Operation.Query.t()
+  @spec modify_target_group(target_group_arn, opts :: modify_target_group_opts) :: ExAws.Operation.Query.t()
   def modify_target_group(target_group_arn, opts \\ []) do
     [{:target_group_arn, target_group_arn} | opts]
     |> build_request(:modify_target_group)
@@ -1132,10 +1101,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @spec modify_target_group_attributes(
-          target_group_arn :: binary,
-          attributes :: [target_group_attribute, ...]
-        ) :: ExAws.Operation.Query.t()
+  @spec modify_target_group_attributes(target_group_arn, [target_group_attribute, ...]) :: ExAws.Operation.Query.t()
   def modify_target_group_attributes(target_group_arn, attributes, opts \\ []) do
     [{:target_group_arn, target_group_arn}, {:attributes, attributes} | opts]
     |> build_request(:modify_target_group_attributes)
@@ -1179,8 +1145,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @spec register_targets(target_group_arn :: binary, targets :: target_descriptions) ::
-          ExAws.Operation.Query.t()
+  @spec register_targets(target_group_arn, target_descriptions) :: ExAws.Operation.Query.t()
   def register_targets(target_group_arn, targets, opts \\ []) do
     [{:target_group_arn, target_group_arn}, {:targets, targets} | opts]
     |> build_request(:register_targets)
@@ -1217,8 +1182,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @spec remove_listener_certificates(listener_arn :: binary, certificates :: [certificate, ...]) ::
-          ExAws.Operation.Query.t()
+  @spec remove_listener_certificates(listener_arn, certificates) :: ExAws.Operation.Query.t()
   def remove_listener_certificates(listener_arn, certificates, opts \\ []) do
     [{:listener_arn, listener_arn}, {:certificates, certificates} | opts]
     |> build_request(:remove_listener_certificates)
@@ -1249,7 +1213,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @spec remove_tags(resource_arns :: [binary, ...], tag_keys :: [binary, ...]) ::
+  @spec remove_tags(resource_arns :: binary_list, tag_keys :: binary_list) ::
           ExAws.Operation.Query.t()
   def remove_tags(resource_arns, tag_keys, opts \\ []) do
     [{:resource_arns, resource_arns}, {:tags_keys, tag_keys} | opts]
@@ -1279,7 +1243,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @spec set_ip_address_type(load_balancer_arn :: binary, ip_address_type :: binary) ::
+  @spec set_ip_address_type(load_balancer_arn, ip_address_type :: binary) ::
           ExAws.Operation.Query.t()
   def set_ip_address_type(load_balancer_arn, ip_address_type, opts \\ []) do
     [{:load_balancer_arn, load_balancer_arn}, {:ip_address_type, ip_address_type} | opts]
@@ -1311,7 +1275,8 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @spec set_rule_priorities(rule_priorities :: [integer, ...]) :: ExAws.Operation.Query.t()
+  @type rule_priorities :: [integer, ...]
+  @spec set_rule_priorities(rule_priorities) :: ExAws.Operation.Query.t()
   def set_rule_priorities(rule_priorities, opts \\ []) do
     [{:rule_priorities, rule_priorities} | opts]
     |> build_request(:set_rule_priorities)
@@ -1344,7 +1309,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @spec set_security_groups(load_balancer_arn :: binary, security_groups :: [binary, ...]) ::
+  @spec set_security_groups(load_balancer_arn, security_groups :: binary_list) ::
           ExAws.Operation.Query.t()
   def set_security_groups(load_balancer_arn, security_groups, opts \\ []) do
     [{:load_balancer_arn, load_balancer_arn}, {:security_groups, security_groups} | opts]
@@ -1377,16 +1342,9 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @type set_subnets_opts :: [
-          subnet_mappings: [subnet_mapping, ...]
-        ]
-  @spec set_subnets(load_balancer_arn :: binary, subnets :: [binary, ...]) ::
-          ExAws.Operation.Query.t()
-  @spec set_subnets(
-          load_balancer_arn :: binary,
-          subnets :: [binary, ...],
-          opts :: set_subnets_opts
-        ) :: ExAws.Operation.Query.t()
+  @type set_subnets_opts :: [subnet_mappings: [subnet_mapping, ...]]
+  @spec set_subnets(load_balancer_arn, subnets :: binary_list) :: ExAws.Operation.Query.t()
+  @spec set_subnets(load_balancer_arn, subnets :: binary_list, opts :: set_subnets_opts) :: ExAws.Operation.Query.t()
   def set_subnets(load_balancer_arn, subnets, opts \\ []) do
     [{:load_balancer_arn, load_balancer_arn}, {:subnets, subnets} | opts]
     |> build_request(:set_subnets)
