@@ -29,12 +29,21 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   @typedoc """
   Information about a tag
   """
-  @type tag :: {key :: atom, value :: binary} | %{key: binary, value: binary}
+  @type tag() :: {key :: atom, value :: binary} | %{key: binary, value: binary}
 
   @typedoc """
   A list of `t:tag/0`
   """
   @type tags :: [tag, ...]
+
+  @typedoc """
+  The tag keys for the tags to remove.
+
+  Length Constraints: Minimum length of 1. Maximum length of 128.
+
+  Pattern: ^([\p{L}\p{Z}\p{N}_.:/=+\-@]*)$
+  """
+  @type tag_keys :: [binary, ...]
 
   @typedoc """
   The name of the load balancer.
@@ -43,7 +52,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   must contain only alphanumeric characters or hyphens, must not begin or end with
   a hyphen, and must not begin with "internal-".
   """
-  @type load_balancer_name :: binary
+  @type load_balancer_name() :: binary
 
   @typedoc """
   Information about a load balancer attribute.
@@ -56,12 +65,12 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   @typedoc """
   Information about a target group attribute.
   """
-  @type target_group_attribute :: {key :: atom, value :: binary}
+  @type target_group_attribute() :: {key :: atom, value :: binary}
 
   @typedoc """
   The Amazon Resource Name (ARN) of the listener
   """
-  @type listener_arn :: binary
+  @type listener_arn() :: binary
 
   @typedoc """
   The Amazon Resource Name (ARN) of the rule
@@ -71,7 +80,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   @typedoc """
   The Amazon Resource Name (ARN) of the target group
   """
-  @type target_group_arn :: binary()
+  @type target_group_arn() :: binary()
 
   @typedoc """
   A single Amazon Resource Name (ARN)
@@ -89,6 +98,15 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   Valid Range: Minimum value of 1. Maximum value of 65535.
   """
   @type port_num() :: integer
+
+  @typedoc """
+  The rule priority
+
+  A listener can't have multiple rules with the same priority.
+
+  Valid Range: Minimum value of 1. Maximum value of 50000.
+  """
+  @type priority() :: pos_integer()
 
   @typedoc """
   The IP address type. Internal load balancers must use ipv4
@@ -110,7 +128,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   "ipv4" | "dualstack" | "dualstack-without-public-ipv4"
   ```
   """
-  @type ip_address_type :: binary
+  @type ip_address_type() :: binary
 
   @typedoc """
   The protocol for connections from clients to the load balancer. For Application Load
@@ -124,7 +142,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   "HTTP" | "HTTPS" | "TCP" | "TLS" | "UDP" | "TCP_UDP" | "GENEVE"
   ```
   """
-  @type protocol :: binary
+  @type protocol() :: binary
 
   @typedoc """
   [HTTP/HTTPS protocol] The protocol version
@@ -133,7 +151,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   requests to targets using HTTP/2. The default is "HTTP1", which sends requests
   to targets using HTTP/1.1.
   """
-  @type protocol_version :: binary
+  @type protocol_version() :: binary
 
   @typedoc """
   The protocol the load balancer uses when performing health checks on targets
@@ -148,7 +166,24 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   "HTTP" | "HTTPS" | "TCP" | "TLS" | "UDP" | "TCP_UDP" | "GENEVE"
   ```
   """
-  @type health_check_protocol :: binary()
+  @type health_check_protocol() :: binary()
+
+  @typedoc """
+  The name of the target group.
+
+  This name must be unique per region per account, can have a maximum of 32
+  characters, must contain only alphanumeric characters or hyphens, and must
+  not begin or end with a hyphen.
+  """
+  @type target_group_name() :: binary
+
+  @typedoc """
+  The identifier of the virtual private cloud (VPC)
+
+  If the target is a Lambda function, this parameter does not apply. Otherwise, this
+  parameter is required.
+  """
+  @type vpc_id() :: binary
 
   @typedoc """
   The type of target that you must specify when registering targets with this target group
@@ -197,7 +232,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   Minimum length of 1. Maximum length of 1024.
   ```
   """
-  @type health_check_path :: binary
+  @type health_check_path() :: binary
 
   @typedoc """
   The port the load balancer uses when performing health checks on targets
@@ -206,12 +241,17 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   which is the port on which each target receives traffic from the load balancer. If the
   protocol is GENEVE, the default is port 80.
   """
-  @type health_check_port :: binary
+  @type health_check_port() :: binary
 
   @typedoc """
   The Amazon Resource Name (ARN) of the load balancer
   """
-  @type load_balancer_arn :: binary
+  @type load_balancer_arn() :: binary
+
+  @typedoc """
+  A list of `t:load_balancer_arn/0`
+  """
+  @type load_balancer_arns() :: [load_balancer_arn(), ...]
 
   @typedoc """
   The type of revocation file.
@@ -402,6 +442,11 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         ]
 
   @typedoc """
+  A list of `t:action/0`
+  """
+  @type actions :: [action, ...]
+
+  @typedoc """
   The Amazon Resource Name (ARN) of the certificate.
   """
   @type certificate_arn :: binary
@@ -572,11 +617,16 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         ]
 
   @typedoc """
+  A list of rule conditions
+  """
+  @type conditions() :: [rule_condition, ...]
+
+  @typedoc """
   Optional parameters for `modify_rule/2`.
   """
   @type modify_rule_opts :: [
           actions: [action, ...],
-          conditions: [rule_condition, ...]
+          conditions: conditions()
         ]
 
   @typedoc """
@@ -1011,12 +1061,14 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   @spec create_listener(load_balancer_arn(), protocol(), port_num(), [action, ...], deprecated_create_listener_opts()) ::
           ExAws.Operation.Query.t()
   def create_listener(load_balancer_arn, protocol, port_num, default_actions, opts \\ []) do
-    [
-      {:load_balancer_arn, load_balancer_arn},
-      {:protocol, protocol},
-      {:port, port_num},
-      {:default_actions, default_actions} | opts
-    ]
+    opts
+    |> keyword_to_map()
+    |> Map.merge(%{
+      load_balancer_arn: load_balancer_arn,
+      protocol: protocol,
+      port: port_num,
+      default_actions: default_actions
+    })
     |> build_request(:create_listener)
   end
 
@@ -1086,7 +1138,9 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   """
   @spec create_load_balancer(load_balancer_name, create_load_balancer_opts) :: ExAws.Operation.Query.t()
   def create_load_balancer(load_balancer_name, opts \\ []) do
-    [{:name, load_balancer_name} | opts]
+    opts
+    |> keyword_to_map()
+    |> Map.merge(%{name: load_balancer_name})
     |> build_request(:create_load_balancer)
   end
 
@@ -1106,20 +1160,17 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   `modify_rule/1`. To set the priorities of your rules, use `set_rule_priorities/1`.
   To delete a rule, use `delete_rule/1`.
   """
-  @spec create_rule(
-          listener_arn :: binary,
-          conditions :: [rule_condition, ...],
-          priority :: integer,
-          actions :: [action, ...],
-          create_rule_opts()
-        ) :: ExAws.Operation.Query.t()
+  @spec create_rule(listener_arn(), conditions(), priority(), actions(), create_rule_opts()) ::
+          ExAws.Operation.Query.t()
   def create_rule(listener_arn, conditions, priority, actions, opts \\ []) do
-    [
-      {:listener_arn, listener_arn},
-      {:conditions, conditions},
-      {:priority, priority},
-      {:actions, actions} | opts
-    ]
+    opts
+    |> keyword_to_map()
+    |> Map.merge(%{
+      listener_arn: listener_arn,
+      conditions: conditions,
+      priority: priority,
+      actions: actions
+    })
     |> build_request(:create_rule)
   end
 
@@ -1156,9 +1207,14 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @spec create_target_group(binary(), binary(), create_target_group_opts()) :: ExAws.Operation.Query.t()
+  @spec create_target_group(target_group_name(), vpc_id(), create_target_group_opts()) :: ExAws.Operation.Query.t()
   def create_target_group(name, vpc_id, opts \\ []) do
-    [{:name, name}, {:vpc_id, vpc_id} | opts]
+    opts
+    |> keyword_to_map()
+    |> Map.merge(%{
+      name: name,
+      vpc_id: vpc_id
+    })
     |> build_request(:create_target_group)
   end
 
@@ -1219,9 +1275,9 @@ defmodule ExAws.ElasticLoadBalancingV2 do
           parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
         }
   """
-  @spec delete_load_balancer(load_balancer_arn :: binary) :: ExAws.Operation.Query.t()
-  def delete_load_balancer(load_balancer_arn, opts \\ []) do
-    [{:load_balancer_arn, load_balancer_arn} | opts]
+  @spec delete_load_balancer(load_balancer_arn()) :: ExAws.Operation.Query.t()
+  def delete_load_balancer(load_balancer_arn) do
+    [{:load_balancer_arn, load_balancer_arn}]
     |> build_request(:delete_load_balancer)
   end
 
@@ -1274,8 +1330,8 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         }
   """
   @spec delete_target_group(target_group_arn()) :: ExAws.Operation.Query.t()
-  def delete_target_group(target_group_arn, opts \\ []) do
-    [{:target_group_arn, target_group_arn} | opts]
+  def delete_target_group(target_group_arn) do
+    [{:target_group_arn, target_group_arn}]
     |> build_request(:delete_target_group)
   end
 
@@ -1323,8 +1379,8 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         }
   """
   @spec deregister_targets(target_group_arn(), target_descriptions()) :: ExAws.Operation.Query.t()
-  def deregister_targets(target_group_arn, targets, opts \\ []) do
-    [{:target_group_arn, target_group_arn}, {:targets, targets} | opts]
+  def deregister_targets(target_group_arn, targets) do
+    [{:target_group_arn, target_group_arn}, {:targets, targets}]
     |> build_request(:deregister_targets)
   end
 
@@ -1377,7 +1433,11 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   @spec describe_listener_certificates(listener_arn(), describe_listener_certificates_opts()) ::
           ExAws.Operation.Query.t()
   def describe_listener_certificates(listener_arn, opts \\ []) do
-    [{:listener_arn, listener_arn} | opts]
+    opts
+    |> keyword_to_map()
+    |> Map.merge(%{
+      listener_arn: listener_arn
+    })
     |> build_request(:describe_listener_certificates)
   end
 
@@ -1399,8 +1459,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @spec describe_listeners() :: ExAws.Operation.Query.t()
-  @spec describe_listeners(opts :: describe_listeners_opts) :: ExAws.Operation.Query.t()
+  @spec describe_listeners(describe_listeners_opts()) :: ExAws.Operation.Query.t()
   def describe_listeners(opts \\ []) do
     opts |> build_request(:describe_listeners)
   end
@@ -1425,10 +1484,9 @@ defmodule ExAws.ElasticLoadBalancingV2 do
           parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
         }
   """
-  @spec describe_load_balancer_attributes(load_balancer_arn :: binary) ::
-          ExAws.Operation.Query.t()
-  def describe_load_balancer_attributes(load_balancer_arn, opts \\ []) do
-    [{:load_balancer_arn, load_balancer_arn} | opts]
+  @spec describe_load_balancer_attributes(load_balancer_arn()) :: ExAws.Operation.Query.t()
+  def describe_load_balancer_attributes(load_balancer_arn) do
+    [{:load_balancer_arn, load_balancer_arn}]
     |> build_request(:describe_load_balancer_attributes)
   end
 
@@ -1552,7 +1610,8 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   Describes the tags for the specified resources.
 
   You can describe the tags for one or more Application Load Balancers,
-  Network Load Balancers, and target groups.
+  Network Load Balancers, and target groups.  You can specify up to 20
+  resources in a single call.
 
   ## Examples:
 
@@ -1571,9 +1630,9 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @spec describe_tags(resource_arns :: [binary, ...]) :: ExAws.Operation.Query.t()
-  def describe_tags(resource_arns, opts \\ []) do
-    [{:resource_arns, resource_arns} | opts]
+  @spec describe_tags(resource_arns()) :: ExAws.Operation.Query.t()
+  def describe_tags(resource_arns) do
+    [{:resource_arns, resource_arns}]
     |> build_request(:describe_tags)
   end
 
@@ -1597,9 +1656,9 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @spec describe_target_group_attributes(target_group_arn :: binary) :: ExAws.Operation.Query.t()
-  def describe_target_group_attributes(target_group_arn, opts \\ []) do
-    [{:target_group_arn, target_group_arn} | opts]
+  @spec describe_target_group_attributes(target_group_arn()) :: ExAws.Operation.Query.t()
+  def describe_target_group_attributes(target_group_arn) do
+    [{:target_group_arn, target_group_arn}]
     |> build_request(:describe_target_group_attributes)
   end
 
@@ -1717,6 +1776,8 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   fails. Any existing attributes that you do not modify retain their current
   values.
   """
+  @spec modify_load_balancer_attributes(load_balancer_arn(), [load_balancer_attribute(), ...]) ::
+          ExAws.Operation.Query.t()
   def modify_load_balancer_attributes(load_balancer_arn, attributes) do
     [{:load_balancer_arn, load_balancer_arn}, {:attributes, attributes}]
     |> build_request(:modify_load_balancer_attributes)
@@ -1915,7 +1976,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @spec remove_tags(resource_arns(), tag_keys :: [binary, ...]) :: ExAws.Operation.Query.t()
+  @spec remove_tags(resource_arns(), tag_keys()) :: ExAws.Operation.Query.t()
   def remove_tags(resource_arns, tag_keys) do
     [{:resource_arns, resource_arns}, {:tags_keys, tag_keys}]
     |> build_request(:remove_tags)
