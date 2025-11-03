@@ -2064,8 +2064,9 @@ defmodule ExAws.ElasticLoadBalancingV2 do
 
   defp keyword_to_map(keyword) when is_list(keyword) do
     keyword
-    |> Enum.into(%{}, fn {k, v} -> {maybe_stringify(k), v} end)
+    |> Enum.into(%{}, fn {k, v} -> {k, v} end)
   end
+
   defp keyword_to_map(map) when is_map(map), do: map
   defp keyword_to_map(_), do: %{}
 
@@ -2187,6 +2188,6 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   end
 
   defp format_param({key, parameters}) do
-    format([{maybe_stringify(key), parameters}])
+    format([{key, parameters}])
   end
 end
