@@ -36,7 +36,7 @@ defmodule ExAws.ElasticLoadBalancing.Mixfile do
       {:sweet_xml, "~> 0.6", optional: true},
       {:hackney, "1.6.3 or 1.6.5 or 1.7.1 or 1.8.6 or ~> 1.9", only: [:dev, :test]},
       {:poison, ">= 1.2.0", optional: true},
-      {:ex_doc, "~> 0.34.2", only: [:dev, :test]},
+      {:ex_doc, "~> 0.39.1", only: [:dev, :test]},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:ex_aws, "~> 2.5"},
       {:dialyxir, "~> 1.4.3", only: [:dev, :test], runtime: false}
