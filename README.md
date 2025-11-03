@@ -1,5 +1,11 @@
 # AWS Elastic Load Balancing API
 
+[![hex.pm](https://img.shields.io/hexpm/v/ex_aws_elastic_load_balancing.svg)](https://hex.pm/packages/ex_aws_elastic_load_balancing)
+[![hex.pm](https://img.shields.io/hexpm/dt/ex_aws_elastic_load_balancing.svg)](https://hex.pm/packages/ex_aws_elastic_load_balancing)
+[![hex.pm](https://img.shields.io/hexpm/l/ex_aws_elastic_load_balancing.svg)](https://hex.pm/packages/ex_aws_elastic_load_balancing)
+[![hexdocs.pm](https://img.shields.io/badge/hexdocs-release-lightgreen.svg)](https://hexdocs.pm/ex_aws_elastic_load_balancing)
+[![github.com](https://img.shields.io/github/last-commit/fmcgeough/ex_aws_elastic_load_balancing.svg)](https://github.com/fmcgeough/ex_aws_elastic_load_balancing/commits/master)
+
 AWS Elastic Load Balancing Service module for [ex_aws](https://github.com/ex-aws/ex_aws).
 AWS Elastic Load Balancing consists of two different API's that are grouped under the general
 heading of "Elastic Load Balancing". Both are included in this library. `ExAws.ElasticLoadBalancing`
