@@ -29,7 +29,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   @typedoc """
   Information about a tag
   """
-  @type tag() :: {key :: atom, value :: binary} | %{key: binary, value: binary}
+  @type tag() :: {atom(), binary()} | %{key: binary, value: binary}
 
   @typedoc """
   A list of `t:tag/0`
@@ -430,7 +430,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   Each rule must include exactly one of the following types of actions: forward, fixed-response,
   or redirect, and it must be the last action to be performed.
   """
-  @type action :: [
+  @type action() :: [
           type: action_type(),
           authenticate_cognito_config: authenticate_cognito_action_config(),
           authenticate_oidc_config: authenticate_oidc_action_config(),
@@ -439,12 +439,21 @@ defmodule ExAws.ElasticLoadBalancingV2 do
           order: order_action(),
           redirect_config: redirect_action_config(),
           target_group_arn: target_group_arn()
-        ]
+        ] | %{
+          optional(:type) => action_type(),
+          optional(:authenticate_cognito_config) => authenticate_cognito_action_config(),
+          optional(:authenticate_oidc_config) => authenticate_oidc_action_config(),
+          optional(:fixed_response_config) => fixed_response_config(),
+          optional(:forward_config) => forward_action_config(),
+          optional(:order) => order_action(),
+          optional(:redirect_config) => redirect_action_config(),
+          optional(:target_group_arn) => target_group_arn()
+        }
 
   @typedoc """
   A list of `t:action/0`
   """
-  @type actions :: [action, ...]
+  @type actions() :: [action, ...]
 
   @typedoc """
   The Amazon Resource Name (ARN) of the certificate.
@@ -475,7 +484,28 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   @typedoc """
   A list of `t:certificate/0`
   """
-  @type certificates :: [certificate(), ...]
+  @type certificates() :: [certificate(), ...]
+
+  @typedoc """
+  Information about a host header condition.
+
+  - regex_values - The regular expressions to compare against the host header. The maximum
+    length of each string is 128 characters.
+  - values - The host names. The maximum length of each string is 128 characters. The
+    comparison is case insensitive. The following wildcard characters are
+    supported: * (matches 0 or more characters) and ? (matches exactly 1 character). You
+    must include at least one "." character. You can include only alphabetical characters
+    after the final "." character.
+  """
+  @type host_header_config() ::
+          [
+            {:regex_values, [binary, ...]},
+            {:values, [binary, ...]}
+          ]
+          | %{
+              optional(:regex_values) => [binary, ...],
+              optional(:values) => [binary, ...]
+            }
 
   @typedoc """
   [TLS listeners] The name of the Application-Layer Protocol Negotiation (ALPN) policy.
@@ -488,6 +518,11 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   For more information, see ALPN policies in the Network Load Balancers Guide.
   """
   @type alpn_policy :: binary
+
+  @typedoc """
+  The IDs of the security groups.
+  """
+  @type security_groups() :: [binary, ...]
 
   @typedoc """
   Optional parameters for `create_listener/3`.
@@ -597,7 +632,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
           protocol: protocol(),
           ssl_policy: binary,
           certificates: [binary, ...],
-          default_actions: [action, ...]
+          default_actions: actions()
         ]
 
   @typedoc """
@@ -611,13 +646,20 @@ defmodule ExAws.ElasticLoadBalancingV2 do
 
   For more information, see Quotas for your Application Load Balancers.
   """
-  @type rule_condition :: [
-          field: binary,
-          values: [binary, ...]
-        ]
+  @type rule_condition ::
+          [
+            field: binary,
+            values: [binary, ...],
+            host_header_config: host_header_config()
+          ]
+          | %{
+              optional(:field) => binary,
+              optional(:values) => [binary, ...],
+              optional(:host_header_config) => host_header_config()
+            }
 
   @typedoc """
-  A list of rule conditions
+  A list of `t:rule_condition/0`
   """
   @type conditions() :: [rule_condition, ...]
 
@@ -625,7 +667,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   Optional parameters for `modify_rule/2`.
   """
   @type modify_rule_opts :: [
-          actions: [action, ...],
+          actions: actions(),
           conditions: conditions()
         ]
 
@@ -881,7 +923,8 @@ defmodule ExAws.ElasticLoadBalancingV2 do
 
   ## Examples:
 
-      iex> ExAws.ElasticLoadBalancingV2.add_tags(["resource_arn1", "resource_arn2"], [%{key: "hello", value: "test"}])
+      iex> tags = [%{key: "hello", value: "test"}, %{key: "foo", value: "bar"}]
+      iex> ExAws.ElasticLoadBalancingV2.add_tags(["resource_arn1", "resource_arn2"], tags)
       %ExAws.Operation.Query{
         path: "/",
         params: %{
@@ -890,6 +933,8 @@ defmodule ExAws.ElasticLoadBalancingV2 do
           "ResourceArns.member.2" => "resource_arn2",
           "Tags.member.1.Key" => "hello",
           "Tags.member.1.Value" => "test",
+          "Tags.member.2.Key" => "foo",
+          "Tags.member.2.Value" => "bar",
           "Version" => "2015-12-01"
         },
         content_encoding: "identity",
@@ -898,7 +943,8 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
 
-      iex> ExAws.ElasticLoadBalancingV2.add_tags(["resource_arn1", "resource_arn2"], [hello: "test"])
+      iex> tags = [hello: "test", foo: "bar"]
+      iex> ExAws.ElasticLoadBalancingV2.add_tags(["resource_arn1", "resource_arn2"], tags)
       %ExAws.Operation.Query{
         path: "/",
         params: %{
@@ -907,23 +953,8 @@ defmodule ExAws.ElasticLoadBalancingV2 do
           "ResourceArns.member.2" => "resource_arn2",
           "Tags.member.1.Key" => "hello",
           "Tags.member.1.Value" => "test",
-          "Version" => "2015-12-01"
-        },
-        content_encoding: "identity",
-        service: :elasticloadbalancing,
-        action: :add_tags,
-        parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
-      }
-
-      iex> ExAws.ElasticLoadBalancingV2.add_tags(["resource_arn1", "resource_arn2"], [{:hello, "test"}])
-      %ExAws.Operation.Query{
-        path: "/",
-        params: %{
-          "Action" => "AddTags",
-          "ResourceArns.member.1" => "resource_arn1",
-          "ResourceArns.member.2" => "resource_arn2",
-          "Tags.member.1.Key" => "hello",
-          "Tags.member.1.Value" => "test",
+          "Tags.member.2.Key" => "foo",
+          "Tags.member.2.Value" => "bar",
           "Version" => "2015-12-01"
         },
         content_encoding: "identity",
@@ -1108,12 +1139,15 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
 
-      iex> ExAws.ElasticLoadBalancingV2.create_load_balancer("Loader",
-      ...> [schema: "internet-facing",
-      ...> subnet_mappings: [%{subnet_id: "1.2.3.4", allocation_id: "i2234342"}],
+      iex> opts = [
+      ...> schema: "internet-facing",
+      ...> subnet_mappings: [
+      ...>   %{subnet_id: "1.2.3.4", allocation_id: "i2234342"}
+      ...> ],
       ...> subnets: ["1.2.3.4", "5.6.7.8"],
       ...> security_groups: ["Secure123", "Secure456"],
-      ...> type: "application", ip_address_type: "ipv4"])
+      ...> type: "application", ip_address_type: "ipv4"]
+      iex> ExAws.ElasticLoadBalancingV2.create_load_balancer("Loader", opts)
       %ExAws.Operation.Query{
         path: "/",
         params: %{
@@ -1159,6 +1193,29 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   To view your current rules, use `describe_rules/1`. To update a rule, use
   `modify_rule/1`. To set the priorities of your rules, use `set_rule_priorities/1`.
   To delete a rule, use `delete_rule/1`.
+
+  ## Examples
+
+      iex> conditions = [%{field: "path-pattern", values: ["/images/*"]}]
+      iex> actions = [%{type: "forward", target_group_arn: "target_arn"}]
+      iex> ExAws.ElasticLoadBalancingV2.create_rule("listener_arn", conditions, 10, actions)
+      %ExAws.Operation.Query{
+        path: "/",
+        params: %{
+          "Action" => "CreateRule",
+          "Actions.member.1.TargetGroupArn" => "target_arn",
+          "Actions.member.1.Type" => "forward",
+          "Conditions.member.1.Field" => "path-pattern",
+          "Conditions.member.1.Values.1" => "/images/*",
+          "ListenerArn" => "listener_arn",
+          "Priority" => 10,
+          "Version" => "2015-12-01"
+        },
+        content_encoding: "identity",
+        service: :elasticloadbalancing,
+        action: :create_rule,
+        parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+      }
   """
   @spec create_rule(listener_arn(), conditions(), priority(), actions(), create_rule_opts()) ::
           ExAws.Operation.Query.t()
@@ -1192,12 +1249,34 @@ defmodule ExAws.ElasticLoadBalancingV2 do
 
   ## Examples:
 
-      iex> ExAws.ElasticLoadBalancingV2.create_target_group("target_group_name", "vpc_id")
+      iex> opts = [protocol: "HTTP", port: 80, health_check_path: "/health"]
+      iex> ExAws.ElasticLoadBalancingV2.create_target_group("target_group_name", "vpc_id", opts)
       %ExAws.Operation.Query{
         path: "/",
         params: %{
           "Action" => "CreateTargetGroup",
+          "HealthCheckPath" => "/health",
           "Name" => "target_group_name",
+          "Port" => 80,
+          "Protocol" => "HTTP",
+          "Version" => "2015-12-01",
+          "VpcId" => "vpc_id"
+        },
+        content_encoding: "identity",
+        service: :elasticloadbalancing,
+        action: :create_target_group,
+        parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+      }
+      iex> opts = %{protocol: "HTTP", port: 80, health_check_path: "/health"}
+      iex> ExAws.ElasticLoadBalancingV2.create_target_group("target_group_name", "vpc_id", opts)
+      %ExAws.Operation.Query{
+        path: "/",
+        params: %{
+          "Action" => "CreateTargetGroup",
+          "HealthCheckPath" => "/health",
+          "Name" => "target_group_name",
+          "Port" => 80,
+          "Protocol" => "HTTP",
           "Version" => "2015-12-01",
           "VpcId" => "vpc_id"
         },
@@ -1301,8 +1380,8 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         }
   """
   @spec delete_rule(rule_arn()) :: ExAws.Operation.Query.t()
-  def delete_rule(rule_arn, opts \\ []) do
-    [{:rule_arn, rule_arn} | opts]
+  def delete_rule(rule_arn) do
+    [{:rule_arn, rule_arn}]
     |> build_request(:delete_rule)
   end
 
@@ -2069,8 +2148,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @spec set_security_groups(load_balancer_arn(), security_groups :: [binary, ...], set_security_groups_opts()) ::
-          ExAws.Operation.Query.t()
+  @spec set_security_groups(load_balancer_arn(), security_groups(), set_security_groups_opts()) :: ExAws.Operation.Query.t()
   def set_security_groups(load_balancer_arn, security_groups, opts \\ []) do
     [{:load_balancer_arn, load_balancer_arn}, {:security_groups, security_groups} | opts]
     |> build_request(:set_security_groups)
@@ -2211,6 +2289,14 @@ defmodule ExAws.ElasticLoadBalancingV2 do
 
   defp format_param({:subnet_mappings, subnet_mappings}) do
     subnet_mappings |> format(prefix: "SubnetMappings.member")
+  end
+
+  defp format_param({:regex_values, regex_values}) do
+    regex_values |> format(prefix: "RegexValues.member")
+  end
+
+  defp format_param({:values, values}) do
+    values |> format(prefix: "Values.member")
   end
 
   defp format_param({:tags, tags}) do
