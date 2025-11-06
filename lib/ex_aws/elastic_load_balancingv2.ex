@@ -581,6 +581,17 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         ]
 
   @typedoc """
+  Optional parameters for `add_trust_store_revocations/2`.
+  """
+  @type add_trust_store_revocations_opts() ::
+          [
+            {:revocation_contents, revocation_contents()}
+          ]
+          | %{
+              optional(:revocation_contents) => revocation_contents()
+            }
+
+  @typedoc """
   Optional parameters for `create_listener/3`.
   """
   @type create_listener_opts ::
@@ -1068,9 +1079,9 @@ defmodule ExAws.ElasticLoadBalancingV2 do
 
   ## Examples:
 
-      iex> add_trust_store_revocations = [%{revocation_type: "CRL"}]
+      iex> add_trust_store_revocations = [revocation_contents: [%{revocation_type: "CRL"}]]
       iex> trust_store_arn = "trust_store_arn"
-      iex> ExAws.ElasticLoadBalancingV2.add_trust_store_revocations(add_trust_store_revocations, trust_store_arn)
+      iex> ExAws.ElasticLoadBalancingV2.add_trust_store_revocations(trust_store_arn, add_trust_store_revocations)
       %ExAws.Operation.Query{
               action: :add_trust_store_revocations,
               content_encoding: "identity",
@@ -1080,9 +1091,11 @@ defmodule ExAws.ElasticLoadBalancingV2 do
               service: :elasticloadbalancing
             }
   """
-  @spec add_trust_store_revocations(revocation_contents(), trust_store_arn()) :: ExAws.Operation.Query.t()
-  def add_trust_store_revocations(revocation_contents, trust_store_arn) do
-    [{:revocation_contents, revocation_contents}, {:trust_store_arn, trust_store_arn}]
+  @spec add_trust_store_revocations(trust_store_arn(), add_trust_store_revocations_opts()) :: ExAws.Operation.Query.t()
+  def add_trust_store_revocations(trust_store_arn, opts \\ []) do
+    opts
+    |> keyword_to_map()
+    |> Map.merge(%{trust_store_arn: trust_store_arn})
     |> build_request(:add_trust_store_revocations)
   end
 

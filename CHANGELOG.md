@@ -1,6 +1,7 @@
 v3.0.0 
 * Add function add_trust_store_revocations to ElasticLoadBalancingV2
 * Remove opts parameter for delete_listener, set_rule_priorities, modify_target_group_attributes, register_targets, remove_listener_certificates, remove_tags, set_ip_address_type, modify_load_balancer_attributes in ElasticLoadBalancingV2. Unneeded.
+* add_trust_store_revocations in ElasticLoadBalancingV2 modified. The parameter `revocation_contents` is not required. The signature of the function was modified to allow passing just `trust_store_arn` as the sole parameter.
 
 v2.2.2
 
