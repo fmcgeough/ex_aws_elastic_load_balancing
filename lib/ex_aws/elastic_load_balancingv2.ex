@@ -430,25 +430,27 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   Each rule must include exactly one of the following types of actions: forward, fixed-response,
   or redirect, and it must be the last action to be performed.
   """
-  @type action() :: [
-          type: action_type(),
-          authenticate_cognito_config: authenticate_cognito_action_config(),
-          authenticate_oidc_config: authenticate_oidc_action_config(),
-          fixed_response_config: fixed_response_config(),
-          forward_config: forward_action_config(),
-          order: order_action(),
-          redirect_config: redirect_action_config(),
-          target_group_arn: target_group_arn()
-        ] | %{
-          optional(:type) => action_type(),
-          optional(:authenticate_cognito_config) => authenticate_cognito_action_config(),
-          optional(:authenticate_oidc_config) => authenticate_oidc_action_config(),
-          optional(:fixed_response_config) => fixed_response_config(),
-          optional(:forward_config) => forward_action_config(),
-          optional(:order) => order_action(),
-          optional(:redirect_config) => redirect_action_config(),
-          optional(:target_group_arn) => target_group_arn()
-        }
+  @type action() ::
+          [
+            type: action_type(),
+            authenticate_cognito_config: authenticate_cognito_action_config(),
+            authenticate_oidc_config: authenticate_oidc_action_config(),
+            fixed_response_config: fixed_response_config(),
+            forward_config: forward_action_config(),
+            order: order_action(),
+            redirect_config: redirect_action_config(),
+            target_group_arn: target_group_arn()
+          ]
+          | %{
+              optional(:type) => action_type(),
+              optional(:authenticate_cognito_config) => authenticate_cognito_action_config(),
+              optional(:authenticate_oidc_config) => authenticate_oidc_action_config(),
+              optional(:fixed_response_config) => fixed_response_config(),
+              optional(:forward_config) => forward_action_config(),
+              optional(:order) => order_action(),
+              optional(:redirect_config) => redirect_action_config(),
+              optional(:target_group_arn) => target_group_arn()
+            }
 
   @typedoc """
   A list of `t:action/0`
@@ -499,12 +501,12 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   """
   @type host_header_config() ::
           [
-            {:regex_values, [binary, ...]},
-            {:values, [binary, ...]}
+            {:regex_values, [binary(), ...]},
+            {:values, [binary(), ...]}
           ]
           | %{
-              optional(:regex_values) => [binary, ...],
-              optional(:values) => [binary, ...]
+              optional(:regex_values) => [binary(), ...],
+              optional(:values) => [binary(), ...]
             }
 
   @typedoc """
@@ -517,12 +519,66 @@ defmodule ExAws.ElasticLoadBalancingV2 do
 
   For more information, see ALPN policies in the Network Load Balancers Guide.
   """
-  @type alpn_policy :: binary
+  @type alpn_policy() :: binary()
 
   @typedoc """
   The IDs of the security groups.
   """
-  @type security_groups() :: [binary, ...]
+  @type security_groups() :: [binary(), ...]
+
+  @typedoc """
+  The type of load balancer. The default is "application".
+
+  Valid Values
+  ```
+  "application" | "network" | "gateway"
+  ```
+  """
+  @type load_balancer_type() :: binary()
+
+  @typedoc """
+  The nodes of an Internet-facing load balancer have public IP addresses.
+  The DNS name of an Internet-facing load balancer is publicly resolvable
+  to the public IP addresses of the nodes. Therefore, Internet-facing load
+  balancers can route requests from clients over the internet.
+
+  The nodes of an internal load balancer have only private IP addresses.
+  The DNS name of an internal load balancer is publicly resolvable to the
+  private IP addresses of the nodes. Therefore, internal load balancers
+  can route requests only from clients with access to the VPC for the load balancer.
+
+  The default is an Internet-facing load balancer.
+
+  You can't specify a scheme for a Gateway Load Balancer.
+
+  Valid Values
+  ```
+  "internet-facing" | "internal"
+  ```
+  """
+  @type load_balancer_scheme() :: binary()
+
+  @typedoc """
+  Information about a target.
+  """
+  @type target_description :: %{
+          required(:id) => binary,
+          optional(:port) => port_num(),
+          optional(:availability_zone) => binary
+        }
+
+  @typedoc """
+  A list of `t:target_description/0`
+  """
+  @type target_descriptions :: [target_description()]
+
+  @typedoc """
+  Information about a subnet mapping
+  """
+  @type subnet_mapping :: [
+          subnet_id: binary,
+          allocation_id: binary
+        ]
 
   @typedoc """
   Optional parameters for `create_listener/3`.
@@ -567,22 +623,22 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   """
   @type create_load_balancer_opts ::
           [
-            subnets: [binary, ...],
-            subnet_mappings: [subnet_mapping, ...],
-            security_groups: [binary, ...],
-            scheme: binary,
+            subnets: [binary(), ...],
+            subnet_mappings: [subnet_mapping(), ...],
+            security_groups: [binary(), ...],
+            scheme: load_balancer_scheme(),
             tags: [tag, ...],
-            type: binary,
-            ip_address_type: binary
+            type: load_balancer_type(),
+            ip_address_type: ip_address_type()
           ]
           | %{
               optional(:subnets) => [binary, ...],
               optional(:subnet_mappings) => [subnet_mapping, ...],
               optional(:security_groups) => [binary, ...],
-              optional(:scheme) => binary,
+              optional(:scheme) => load_balancer_scheme(),
               optional(:tags) => [tag, ...],
-              optional(:type) => binary,
-              optional(:ip_address_type) => binary
+              optional(:type) => load_balancer_type(),
+              optional(:ip_address_type) => ip_address_type()
             }
 
   @typedoc """
@@ -684,52 +740,83 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   @typedoc """
   Optional parameters for `describe_account_limits/1`.
   """
-  @type describe_account_limits_opts :: [
-          marker: binary,
-          # Minimum value of 1. Maximum value of 400
-          page_size: integer
-        ]
+  @type describe_account_limits_opts ::
+          [
+            marker: binary,
+            # Minimum value of 1. Maximum value of 400
+            page_size: page_size()
+          ]
+          | %{
+              optional(:marker) => binary,
+              optional(:page_size) => page_size()
+            }
 
   @typedoc """
   Optional parameters for `modify_target_group/2`.
   """
-  @type modify_target_group_opts :: [
-          health_check_protocol: binary,
-          health_check_port: binary,
-          health_check_path: binary,
-          # min 5, max 300
-          health_check_interval_seconds: integer,
-          # min 2, max 60
-          health_check_timeout_seconds: integer,
-          # min 2, max 60
-          unhealthy_threshold_count: integer,
-          matcher: binary
-        ]
+  @type modify_target_group_opts ::
+          [
+            health_check_protocol: binary,
+            health_check_port: binary,
+            health_check_path: binary,
+            # min 5, max 300
+            health_check_interval_seconds: integer,
+            # min 2, max 60
+            health_check_timeout_seconds: integer,
+            # min 2, max 60
+            unhealthy_threshold_count: integer,
+            matcher: binary
+          ]
+          | %{
+              optional(:health_check_protocol) => binary,
+              optional(:health_check_port) => binary,
+              optional(:health_check_path) => binary,
+              optional(:health_check_interval_seconds) => integer,
+              optional(:health_check_timeout_seconds) => integer,
+              optional(:unhealthy_threshold_count) => integer,
+              optional(:matcher) => binary
+            }
 
   @typedoc """
   Optional parameters for `describe_listeners/1`.
   """
-  @type describe_listeners_opts :: [
-          listener_arns: [listener_arn(), ...],
-          load_balancer_arn: load_balancer_arn(),
-          marker: binary,
-          page_size: page_size()
-        ]
+  @type describe_listeners_opts ::
+          [
+            listener_arns: [listener_arn(), ...],
+            load_balancer_arn: load_balancer_arn(),
+            marker: binary,
+            page_size: page_size()
+          ]
+          | %{
+              optional(:listener_arns) => [listener_arn(), ...],
+              optional(:load_balancer_arn) => load_balancer_arn(),
+              optional(:marker) => binary,
+              optional(:page_size) => page_size()
+            }
 
   @typedoc """
   Optional parameters for `set_security_groups/3`.
   """
-  @type set_security_groups_opts :: [
-          enforce_security_group_inbound_rules_on_private_link_traffic: binary
-        ]
+  @type set_security_groups_opts ::
+          [
+            enforce_security_group_inbound_rules_on_private_link_traffic: binary
+          ]
+          | %{
+              optional(:enforce_security_group_inbound_rules_on_private_link_traffic) => binary
+            }
 
   @typedoc """
   Optional parameters for `describe_listener_certificates/2`.
   """
-  @type describe_listener_certificates_opts :: [
-          marker: binary,
-          page_size: page_size()
-        ]
+  @type describe_listener_certificates_opts ::
+          [
+            marker: binary,
+            page_size: page_size()
+          ]
+          | %{
+              optional(:marker) => binary,
+              optional(:page_size) => page_size()
+            }
 
   @typedoc """
   The type of transform.
@@ -808,66 +895,73 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   @typedoc """
   Optional parameters for `describe_load_balancers/1`.
   """
-  @type describe_load_balancers_opts :: [
-          load_balancer_arns: [load_balancer_arn()],
-          names: [binary, ...],
-          marker: binary,
-          page_size: page_size()
-        ]
+  @type describe_load_balancers_opts ::
+          [
+            load_balancer_arns: [load_balancer_arn()],
+            names: [binary, ...],
+            marker: binary,
+            page_size: page_size()
+          ]
+          | %{
+              optional(:load_balancer_arns) => [load_balancer_arn()],
+              optional(:names) => [binary, ...],
+              optional(:marker) => binary,
+              optional(:page_size) => page_size()
+            }
 
   @typedoc """
   Optional parameters for `describe_ssl_policies/1`.
   """
-  @type describe_ssl_policies_opts :: [
-          ssl_policy_names: [binary, ...],
-          marker: binary,
-          page_size: integer
-        ]
+  @type describe_ssl_policies_opts ::
+          [
+            ssl_policy_names: [binary, ...],
+            marker: binary,
+            page_size: integer
+          ]
+          | %{
+              optional(:ssl_policy_names) => [binary, ...],
+              optional(:marker) => binary,
+              optional(:page_size) => page_size()
+            }
 
   @typedoc """
   Optional parameters for `describe_target_groups/1`.
   """
-  @type describe_target_groups_opts :: [
-          load_balancer_arn: load_balancer_arn(),
-          target_group_arns: [target_group_arn()],
-          names: [binary, ...],
-          marker: binary,
-          page_size: page_size()
-        ]
+  @type describe_target_groups_opts ::
+          [
+            load_balancer_arn: load_balancer_arn(),
+            target_group_arns: [target_group_arn()],
+            names: [binary, ...],
+            marker: binary,
+            page_size: page_size()
+          ]
+          | %{
+              optional(:load_balancer_arn) => load_balancer_arn(),
+              optional(:target_group_arns) => [target_group_arn()],
+              optional(:names) => [binary, ...],
+              optional(:marker) => binary,
+              optional(:page_size) => page_size()
+            }
 
   @typedoc """
   Optional parameters for `describe_target_health/2`.
   """
-  @type describe_target_health_opts :: [targets: target_descriptions]
+  @type describe_target_health_opts ::
+          [targets: target_descriptions]
+          | %{
+              optional(:targets) => target_descriptions()
+            }
 
   @typedoc """
   Optional parameters for `set_subnets/3`.
   """
-  @type set_subnets_opts :: [
-          subnet_mappings: [subnet_mapping, ...]
-        ]
-
-  @typedoc """
-  Information about a target.
-  """
-  @type target_description :: %{
-          required(:id) => binary,
-          optional(:port) => port_num(),
-          optional(:availability_zone) => binary
-        }
-
-  @typedoc """
-  A list of `t:target_description/0`
-  """
-  @type target_descriptions :: [target_description()]
-
-  @typedoc """
-  Information about a subnet mapping
-  """
-  @type subnet_mapping :: [
-          subnet_id: binary,
-          allocation_id: binary
-        ]
+  @type set_subnets_opts ::
+          [
+            subnet_mappings: [subnet_mapping, ...]
+          ]
+          | %{
+              optional(:subnet_mappings) => [subnet_mapping, ...]
+            }
 
   @doc """
   Adds the specified SSL server certificate to the certificate list for the specified HTTPS or TLS listener.
@@ -2148,7 +2242,8 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @spec set_security_groups(load_balancer_arn(), security_groups(), set_security_groups_opts()) :: ExAws.Operation.Query.t()
+  @spec set_security_groups(load_balancer_arn(), security_groups(), set_security_groups_opts()) ::
+          ExAws.Operation.Query.t()
   def set_security_groups(load_balancer_arn, security_groups, opts \\ []) do
     [{:load_balancer_arn, load_balancer_arn}, {:security_groups, security_groups} | opts]
     |> build_request(:set_security_groups)
