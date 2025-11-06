@@ -1183,8 +1183,13 @@ defmodule ExAws.ElasticLoadBalancingV2 do
       }
   """
   @deprecated "Use `create_listener/3` instead"
-  @spec create_listener(load_balancer_arn(), protocol(), port_num(), [action, ...], deprecated_create_listener_opts()) ::
-          ExAws.Operation.Query.t()
+  @spec create_listener(
+          load_balancer_arn(),
+          protocol(),
+          port_num(),
+          [action, ...],
+          deprecated_create_listener_opts()
+        ) :: ExAws.Operation.Query.t()
   def create_listener(load_balancer_arn, protocol, port_num, default_actions, opts \\ []) do
     opts
     |> keyword_to_map()
