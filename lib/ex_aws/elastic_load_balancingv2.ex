@@ -628,6 +628,44 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         }
 
   @typedoc """
+  [Application Load Balancers on Outposts] The ID of the customer-owned address pool (CoIP pool)
+
+  Length Constraints: Maximum length of 256.
+  Pattern: `^(ipv4pool-coip-)[a-zA-Z0-9]+$`
+  """
+  @type customer_owned_ipv4_pool() :: binary()
+
+  @typedoc """
+  [Network Load Balancers with UDP listeners] Indicates whether to
+  use an IPv6 prefix from each subnet for source NAT.
+
+  The IP address type must be dualstack. The default value is "off".
+
+  Valid Values:
+  ```
+  "on" | "off"
+  ```
+  """
+  @type enable_prefix_for_ipv6_source_nat() :: binary()
+
+  @typedoc """
+  An IPAM pool is a collection of IP address CIDRs
+
+  IPAM pools enable you to organize your IP addresses according to your
+  routing and security needs.
+
+  Length Constraints: Maximum length of 1000.
+  Pattern: `^(ipam-pool-)[a-zA-Z0-9]+$`
+  """
+  @type ipv4_ipam_pool_id() :: binary()
+
+  @type i_pam_pools() ::
+          [ipv4_ipam_pool_id: ipv4_ipam_pool_id()]
+          | %{
+              optional(:ipv4_ipam_pool_id) => ipv4_ipam_pool_id()
+            }
+
+  @typedoc """
   Optional parameters for `add_trust_store_revocations/2`.
   """
   @type add_trust_store_revocations_opts() ::
@@ -685,22 +723,28 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   """
   @type create_load_balancer_opts ::
           [
+            customer_owned_ipv4_pool: customer_owned_ipv4_pool(),
+            enable_prefix_for_ipv6_source_nat: enable_prefix_for_ipv6_source_nat(),
+            ip_address_type: ip_address_type(),
+            i_pam_pools: i_pam_pools(),
+            scheme: load_balancer_scheme(),
+            security_groups: [binary(), ...],
             subnets: [binary(), ...],
             subnet_mappings: [subnet_mapping(), ...],
-            security_groups: [binary(), ...],
-            scheme: load_balancer_scheme(),
-            tags: [tag, ...],
-            type: load_balancer_type(),
-            ip_address_type: ip_address_type()
+            tags: [tag(), ...],
+            type: load_balancer_type()
           ]
           | %{
-              optional(:subnets) => [binary, ...],
-              optional(:subnet_mappings) => [subnet_mapping, ...],
-              optional(:security_groups) => [binary, ...],
+              optional(:customer_owned_ipv4_pool) => customer_owned_ipv4_pool(),
+              optional(:enable_prefix_for_ipv6_source_nat) => enable_prefix_for_ipv6_source_nat(),
+              optional(:ip_address_type) => ip_address_type(),
+              optional(:i_pam_pools) => i_pam_pools(),
               optional(:scheme) => load_balancer_scheme(),
-              optional(:tags) => [tag, ...],
-              optional(:type) => load_balancer_type(),
-              optional(:ip_address_type) => ip_address_type()
+              optional(:security_groups) => [binary(), ...],
+              optional(:subnets) => [binary(), ...],
+              optional(:subnet_mappings) => [subnet_mapping, ...],
+              optional(:tags) => [tag(), ...],
+              optional(:type) => load_balancer_type()
             }
 
   @typedoc """
