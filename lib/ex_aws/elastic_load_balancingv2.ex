@@ -620,12 +620,12 @@ defmodule ExAws.ElasticLoadBalancingV2 do
 
   """
   @type mutual_authentication_attributes() :: %{
-    optional(:advertise_trust_store_ca_names) => on_or_off(),
-    optional(:ignore_client_certificate_expiry) => boolean(),
-    optional(:mode) => mode(),
-    optional(:trust_store_arn) => trust_store_arn(),
-    optional(:trust_store_association_status) => trust_store_association_status()
-  }
+          optional(:advertise_trust_store_ca_names) => on_or_off(),
+          optional(:ignore_client_certificate_expiry) => boolean(),
+          optional(:mode) => mode(),
+          optional(:trust_store_arn) => trust_store_arn(),
+          optional(:trust_store_association_status) => trust_store_association_status()
+        }
 
   @typedoc """
   Optional parameters for `add_trust_store_revocations/2`.
@@ -658,7 +658,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
               optional(:port) => port_num(),
               optional(:protocol) => protocol(),
               optional(:ssl_policy) => ssl_policy(),
-              optional(:tags) => tags(),
+              optional(:tags) => tags()
             }
 
   @typedoc """
