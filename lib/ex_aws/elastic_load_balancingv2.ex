@@ -256,7 +256,10 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   @typedoc """
   The type of revocation file.
 
-  Valid Values: "CRL"
+  Valid Values:
+  ```
+  "CRL"
+  ```
   """
   @type revocation_type() :: binary
 
@@ -305,7 +308,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
             }
 
   @typedoc """
-  The revocation file to add.
+  A list of `t:revocation_content/0`
   """
   @type revocation_contents :: [revocation_content(), ...]
 
@@ -512,7 +515,9 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   @typedoc """
   [TLS listeners] The name of the Application-Layer Protocol Negotiation (ALPN) policy.
 
-  You can specify one policy name. The following are the possible values:
+  You can specify one policy name.
+
+  Valid Values
   ```
   "HTTP1Only" | "HTTP2Only" | "HTTP2Optional" | "HTTP2Preferred" | "None"
   ```
@@ -581,6 +586,48 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         ]
 
   @typedoc """
+  The values "on" and "off"
+
+  Valid Values:
+  ```
+  "on" | "off"
+  ```
+  """
+  @type on_or_off() :: binary()
+
+  @typedoc """
+  The client certificate handling method
+
+  Valid Values:
+  ```
+  "off" | "passthrough" | "verify"
+  ```
+  """
+  @type mode() :: binary()
+
+  @typedoc """
+  Indicates a shared trust stores association status.
+
+  Valid Values:
+  ```
+  "active" | "removed"
+  ```
+  """
+  @type trust_store_association_status() :: binary()
+
+  @typedoc """
+  Information about the mutual authentication attributes of a listener
+
+  """
+  @type mutual_authentication_attributes() :: %{
+    optional(:advertise_trust_store_ca_names) => on_or_off(),
+    optional(:ignore_client_certificate_expiry) => boolean(),
+    optional(:mode) => mode(),
+    optional(:trust_store_arn) => trust_store_arn(),
+    optional(:trust_store_association_status) => trust_store_association_status()
+  }
+
+  @typedoc """
   Optional parameters for `add_trust_store_revocations/2`.
   """
   @type add_trust_store_revocations_opts() ::
@@ -596,20 +643,22 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   """
   @type create_listener_opts ::
           [
-            {:ssl_policy, ssl_policy()},
-            {:certificates, certificates()},
             {:alpn_policy, [alpn_policy()]},
-            {:tags, tags()},
+            {:certificates, certificates()},
+            {:mutual_authentication, mutual_authentication_attributes()},
             {:port, port_num()},
-            {:protocol, protocol()}
+            {:protocol, protocol()},
+            {:ssl_policy, ssl_policy()},
+            {:tags, tags()}
           ]
           | %{
-              optional(:ssl_policy) => ssl_policy(),
-              optional(:certificates) => certificates(),
               optional(:alpn_policy) => [alpn_policy()],
-              optional(:tags) => tags(),
+              optional(:certificates) => certificates(),
+              optional(:mutual_authentication) => mutual_authentication_attributes(),
               optional(:port) => port_num(),
-              optional(:protocol) => protocol()
+              optional(:protocol) => protocol(),
+              optional(:ssl_policy) => ssl_policy(),
+              optional(:tags) => tags(),
             }
 
   @typedoc """
@@ -617,15 +666,17 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   """
   @type deprecated_create_listener_opts ::
           [
-            {:ssl_policy, ssl_policy()},
-            {:certificates, certificates()},
             {:alpn_policy, [alpn_policy()]},
+            {:certificates, certificates()},
+            {:mutual_authentication, mutual_authentication_attributes()},
+            {:ssl_policy, ssl_policy()},
             {:tags, tags()}
           ]
           | %{
-              optional(:ssl_policy) => ssl_policy(),
-              optional(:certificates) => certificates(),
               optional(:alpn_policy) => [alpn_policy()],
+              optional(:certificates) => certificates(),
+              optional(:mutual_authentication) => mutual_authentication_attributes(),
+              optional(:ssl_policy) => ssl_policy(),
               optional(:tags) => tags()
             }
 
@@ -1079,9 +1130,9 @@ defmodule ExAws.ElasticLoadBalancingV2 do
 
   ## Examples:
 
-      iex> add_trust_store_revocations = [revocation_contents: [%{revocation_type: "CRL"}]]
+      iex> opts = [revocation_contents: [%{revocation_type: "CRL"}]]
       iex> trust_store_arn = "trust_store_arn"
-      iex> ExAws.ElasticLoadBalancingV2.add_trust_store_revocations(trust_store_arn, add_trust_store_revocations)
+      iex> ExAws.ElasticLoadBalancingV2.add_trust_store_revocations(trust_store_arn, opts)
       %ExAws.Operation.Query{
               action: :add_trust_store_revocations,
               content_encoding: "identity",
