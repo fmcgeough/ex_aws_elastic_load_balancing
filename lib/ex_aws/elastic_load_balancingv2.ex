@@ -1110,10 +1110,16 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   """
   @type set_subnets_opts ::
           [
-            subnet_mappings: [subnet_mapping, ...]
+            enable_prefix_for_ipv6_source_nat: enable_prefix_for_ipv6_source_nat(),
+            ip_address_type: ip_address_type(),
+            subnet_mappings: [subnet_mapping(), ...],
+            subnets: subnets()
           ]
           | %{
-              optional(:subnet_mappings) => [subnet_mapping, ...]
+              optional(:enable_prefix_for_ipv6_source_nat) => enable_prefix_for_ipv6_source_nat(),
+              optional(:ip_address_type) => ip_address_type(),
+              optional(:subnet_mappings) => [subnet_mapping(), ...],
+              optional(:subnets) => subnets()
             }
 
   @doc """
