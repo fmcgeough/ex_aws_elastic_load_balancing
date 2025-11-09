@@ -68,6 +68,11 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   @type target_group_attribute() :: {key :: atom, value :: binary}
 
   @typedoc """
+  A list of `t:target_group_attribute/0`
+  """
+  @type target_group_attributes() :: [target_group_attribute(), ...]
+
+  @typedoc """
   The Amazon Resource Name (ARN) of the listener
   """
   @type listener_arn() :: binary
@@ -628,6 +633,28 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         }
 
   @typedoc """
+  The IDs of the public subnets. You can specify only one subnet
+  per Availability Zone
+
+  You must specify either subnets or subnet mappings.
+
+  - [Application Load Balancers] You must specify subnets from at least
+    two Availability Zones. You can't specify Elastic IP addresses for your subnets.
+  - [Application Load Balancers on Outposts] You must specify one Outpost subnet.
+  - [Application Load Balancers on Local Zones] You can specify subnets from one
+    or more Local Zones.
+  - [Network Load Balancers] You can specify subnets from one or more Availability
+    Zones. You can specify one Elastic IP address per subnet if you need static IP
+    addresses for your internet-facing load balancer. For internal load balancers,
+    you can specify one private IP address per subnet from the IPv4 range of the
+    subnet. For internet-facing load balancer, you can specify one IPv6 address
+    per subnet.
+  - [Gateway Load Balancers] You can specify subnets from one or more Availability
+    Zones.
+  """
+  @type subnets() :: [binary(), ...]
+
+  @typedoc """
   [Application Load Balancers on Outposts] The ID of the customer-owned address pool (CoIP pool)
 
   Length Constraints: Maximum length of 256.
@@ -789,13 +816,21 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   @typedoc """
   Optional parameters for `modify_listener/2`.
   """
-  @type modify_listener_opts :: [
-          port: port_num(),
-          protocol: protocol(),
-          ssl_policy: binary,
-          certificates: [binary, ...],
-          default_actions: actions()
-        ]
+  @type modify_listener_opts ::
+          [
+            port: port_num(),
+            protocol: protocol(),
+            ssl_policy: binary,
+            certificates: [binary, ...],
+            default_actions: actions()
+          ]
+          | %{
+              optional(:port) => port_num(),
+              optional(:protocol) => protocol(),
+              optional(:ssl_policy) => binary,
+              optional(:certificates) => [binary, ...],
+              optional(:default_actions) => actions()
+            }
 
   @typedoc """
   Information about a condition for a rule.
@@ -828,20 +863,32 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   @typedoc """
   Optional parameters for `modify_rule/2`.
   """
-  @type modify_rule_opts :: [
-          actions: actions(),
-          conditions: conditions()
-        ]
+  @type modify_rule_opts ::
+          [
+            actions: actions(),
+            conditions: conditions()
+          ]
+          | %{
+              optional(:actions) => actions(),
+              optional(:conditions) => conditions()
+            }
 
   @typedoc """
   Optional parameters for `describe_rules/1`.
   """
-  @type describe_rules_opts :: [
-          listener_arn: listener_arn(),
-          rule_arns: [rule_arn(), ...],
-          marker: binary,
-          page_size: integer
-        ]
+  @type describe_rules_opts ::
+          [
+            listener_arn: listener_arn(),
+            rule_arns: [rule_arn(), ...],
+            marker: binary,
+            page_size: integer
+          ]
+          | %{
+              optional(:listener_arn) => listener_arn(),
+              optional(:rule_arns) => [rule_arn(), ...],
+              optional(:marker) => binary,
+              optional(:page_size) => integer
+            }
 
   @typedoc """
   Optional parameters for `describe_account_limits/1`.
@@ -1990,6 +2037,22 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         action: :describe_target_groups,
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
+      iex> opts = %{load_balancer_arn: "load_balancer_arn", target_group_arns: ["target_group_arn1", "target_group_arn2"]}
+      iex> ExAws.ElasticLoadBalancingV2.describe_target_groups(opts)
+      %ExAws.Operation.Query{
+        path: "/",
+        params: %{
+          "Action" => "DescribeTargetGroups",
+          "LoadBalancerArn" => "load_balancer_arn",
+          "TargetGroupArns.member.1" => "target_group_arn1",
+          "TargetGroupArns.member.2" => "target_group_arn2",
+          "Version" => "2015-12-01"
+        },
+        content_encoding: "identity",
+        service: :elasticloadbalancing,
+        action: :describe_target_groups,
+        parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+      }
   """
   @spec describe_target_groups(describe_target_groups_opts()) :: ExAws.Operation.Query.t()
   def describe_target_groups(opts \\ []) do
@@ -2150,7 +2213,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @spec modify_target_group_attributes(target_group_arn(), [target_group_attribute(), ...]) :: ExAws.Operation.Query.t()
+  @spec modify_target_group_attributes(target_group_arn(), target_group_attributes()) :: ExAws.Operation.Query.t()
   def modify_target_group_attributes(target_group_arn, attributes) do
     [{:target_group_arn, target_group_arn}, {:attributes, attributes}]
     |> build_request(:modify_target_group_attributes)
@@ -2388,9 +2451,14 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @spec set_subnets(load_balancer_arn(), [binary, ...], set_subnets_opts()) :: ExAws.Operation.Query.t()
+  @spec set_subnets(load_balancer_arn(), subnets(), set_subnets_opts()) :: ExAws.Operation.Query.t()
   def set_subnets(load_balancer_arn, subnets, opts \\ []) do
-    [{:load_balancer_arn, load_balancer_arn}, {:subnets, subnets} | opts]
+    opts
+    |> keyword_to_map()
+    |> Map.merge(%{
+      load_balancer_arn: load_balancer_arn,
+      subnets: subnets
+    })
     |> build_request(:set_subnets)
   end
 
