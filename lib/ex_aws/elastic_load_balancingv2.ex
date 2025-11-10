@@ -226,6 +226,24 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   @type health_check_interval_seconds() :: pos_integer()
 
   @typedoc """
+  The amount of time, in seconds, during which no response from
+  a target means a failed health check
+
+  The range is 2–120 seconds. For target groups with a protocol of HTTP,
+  the default is 6 seconds. For target groups with a protocol of TCP, TLS
+  or HTTPS, the default is 10 seconds. For target groups with a protocol
+  of GENEVE, the default is 5 seconds. If the target type is lambda, the
+  default is 30 seconds.
+
+
+  Valid Range
+  ```
+  Minimum value of 2. Maximum value of 120.
+  ```
+  """
+  @type health_check_timeout_seconds() :: pos_integer()
+
+  @typedoc """
   [HTTP/HTTPS health checks] The destination for health checks on the targets
 
   - [HTTP1 or HTTP2 protocol version] The ping path. The default is /.
@@ -294,6 +312,13 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   Valid Range: Minimum value of 1. Maximum value of 400.
   """
   @type page_size() :: pos_integer()
+
+  @typedoc """
+  The marker for the next set of results
+
+  You received this marker from a previous call.
+  """
+  @type marker() :: binary()
 
   @typedoc """
   Information about a revocation file.
@@ -787,8 +812,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
             health_check_enabled: boolean,
             health_check_path: health_check_path(),
             health_check_interval_seconds: health_check_interval_seconds(),
-            # min 2, max 60
-            health_check_timeout_seconds: integer,
+            health_check_timeout_seconds: health_check_timeout_seconds(),
             healthy_threshold_count: integer,
             # min 2, max 60
             unhealthy_threshold_count: integer,
@@ -805,7 +829,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
               optional(:health_check_enabled) => boolean,
               optional(:health_check_path) => health_check_path(),
               optional(:health_check_interval_seconds) => health_check_interval_seconds(),
-              optional(:health_check_timeout_seconds) => integer,
+              optional(:health_check_timeout_seconds) => health_check_timeout_seconds(),
               optional(:healthy_threshold_count) => integer,
               optional(:unhealthy_threshold_count) => integer,
               optional(:matcher) => binary,
@@ -880,13 +904,13 @@ defmodule ExAws.ElasticLoadBalancingV2 do
           [
             listener_arn: listener_arn(),
             rule_arns: [rule_arn(), ...],
-            marker: binary,
+            marker: marker(),
             page_size: integer
           ]
           | %{
               optional(:listener_arn) => listener_arn(),
               optional(:rule_arns) => [rule_arn(), ...],
-              optional(:marker) => binary,
+              optional(:marker) => marker(),
               optional(:page_size) => integer
             }
 
@@ -895,12 +919,12 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   """
   @type describe_account_limits_opts ::
           [
-            marker: binary,
+            marker: marker(),
             # Minimum value of 1. Maximum value of 400
             page_size: page_size()
           ]
           | %{
-              optional(:marker) => binary,
+              optional(:marker) => marker(),
               optional(:page_size) => page_size()
             }
 
@@ -913,9 +937,9 @@ defmodule ExAws.ElasticLoadBalancingV2 do
             health_check_port: binary,
             health_check_path: binary,
             # min 5, max 300
-            health_check_interval_seconds: integer,
+            health_check_interval_seconds: health_check_interval_seconds(),
             # min 2, max 60
-            health_check_timeout_seconds: integer,
+            health_check_timeout_seconds: health_check_timeout_seconds(),
             # min 2, max 60
             unhealthy_threshold_count: integer,
             matcher: binary
@@ -924,8 +948,8 @@ defmodule ExAws.ElasticLoadBalancingV2 do
               optional(:health_check_protocol) => binary,
               optional(:health_check_port) => binary,
               optional(:health_check_path) => binary,
-              optional(:health_check_interval_seconds) => integer,
-              optional(:health_check_timeout_seconds) => integer,
+              optional(:health_check_interval_seconds) => health_check_interval_seconds(),
+              optional(:health_check_timeout_seconds) => health_check_timeout_seconds(),
               optional(:unhealthy_threshold_count) => integer,
               optional(:matcher) => binary
             }
@@ -937,13 +961,13 @@ defmodule ExAws.ElasticLoadBalancingV2 do
           [
             listener_arns: [listener_arn(), ...],
             load_balancer_arn: load_balancer_arn(),
-            marker: binary,
+            marker: marker(),
             page_size: page_size()
           ]
           | %{
               optional(:listener_arns) => [listener_arn(), ...],
               optional(:load_balancer_arn) => load_balancer_arn(),
-              optional(:marker) => binary,
+              optional(:marker) => marker(),
               optional(:page_size) => page_size()
             }
 
@@ -963,11 +987,11 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   """
   @type describe_listener_certificates_opts ::
           [
-            marker: binary,
+            marker: marker(),
             page_size: page_size()
           ]
           | %{
-              optional(:marker) => binary,
+              optional(:marker) => marker(),
               optional(:page_size) => page_size()
             }
 
@@ -1052,13 +1076,13 @@ defmodule ExAws.ElasticLoadBalancingV2 do
           [
             load_balancer_arns: [load_balancer_arn()],
             names: [binary, ...],
-            marker: binary,
+            marker: marker(),
             page_size: page_size()
           ]
           | %{
               optional(:load_balancer_arns) => [load_balancer_arn()],
               optional(:names) => [binary, ...],
-              optional(:marker) => binary,
+              optional(:marker) => marker(),
               optional(:page_size) => page_size()
             }
 
@@ -1068,12 +1092,12 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   @type describe_ssl_policies_opts ::
           [
             ssl_policy_names: [binary, ...],
-            marker: binary,
+            marker: marker(),
             page_size: integer
           ]
           | %{
               optional(:ssl_policy_names) => [binary, ...],
-              optional(:marker) => binary,
+              optional(:marker) => marker(),
               optional(:page_size) => page_size()
             }
 
@@ -1085,14 +1109,14 @@ defmodule ExAws.ElasticLoadBalancingV2 do
             load_balancer_arn: load_balancer_arn(),
             target_group_arns: [target_group_arn()],
             names: [binary, ...],
-            marker: binary,
+            marker: marker(),
             page_size: page_size()
           ]
           | %{
               optional(:load_balancer_arn) => load_balancer_arn(),
               optional(:target_group_arns) => [target_group_arn()],
               optional(:names) => [binary, ...],
-              optional(:marker) => binary,
+              optional(:marker) => marker(),
               optional(:page_size) => page_size()
             }
 
