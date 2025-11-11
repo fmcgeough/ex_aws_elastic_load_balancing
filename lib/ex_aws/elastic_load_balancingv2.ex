@@ -174,6 +174,85 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   @type health_check_protocol() :: binary()
 
   @typedoc """
+  The protocol the load balancer uses when performing health checks on targets
+
+  For Application Load Balancers, the default is HTTP. For Network Load Balancers
+  and Gateway Load Balancers, the default is TCP. The TCP protocol is not supported
+  for health checks if the protocol of the target group is HTTP or HTTPS. The
+  GENEVE, TLS, UDP, and TCP_UDP protocols are not supported for health checks.
+  """
+  @type health_check_port() :: binary()
+
+  @typedoc """
+  The number of consecutive health check successes required before considering
+  a target healthy
+
+  The range is 2-10. If the target group protocol is TCP, TCP_UDP, UDP, TLS,
+  HTTP or HTTPS, the default is 5. For target groups with a protocol of GENEVE,
+  the default is 5. If the target type is lambda, the default is 5.
+
+  Valid Range
+  ```
+  Minimum value of 2. Maximum value of 10.
+  ```
+  """
+  @type healthy_threshold_count() :: pos_integer()
+
+  @typedoc """
+  Indicates whether health checks are enabled
+
+  If the target type is lambda, health checks are disabled by default
+  but can be enabled. If the target type is instance, ip, or alb,
+  health checks are always enabled and can't be disabled.
+  """
+  @type health_check_enabled() :: boolean()
+
+  @typedoc """
+  The number of consecutive health check failures required before considering the target unhealthy.
+
+  ```
+  Valid Range: Minimum value of 2. Maximum value of 10.
+  ```
+  """
+  @type unhealthy_threshold_count() :: pos_integer()
+
+  @typedoc """
+  For Application Load Balancers, you can specify values between 200
+  and 499, with the default value being 200
+
+  You can specify multiple values (for example, "200,202") or a range
+  of values (for example, "200-299").
+
+  For Network Load Balancers, you can specify values between 200 and
+  599, with the default value being 200-399. You can specify multiple
+  values (for example, "200,202") or a range of values (for example, "200-299").
+
+  For Gateway Load Balancers, this must be "200–399".
+
+  Note that when using shorthand syntax, some values such as commas need to be escaped
+  """
+  @type http_code() :: binary()
+
+  @typedoc """
+  You can specify values between 0 and 99.
+  You can specify multiple values (for example, "0,1") or a range of
+  values (for example, "0-5"). The default value is 12.
+  """
+  @type grpc_code() :: binary()
+
+  @typedoc """
+  The codes to use when checking for a successful response from a target
+
+  If the protocol version is gRPC, these are gRPC codes. Otherwise, these are HTTP codes.
+  """
+  @type matcher() ::
+          [{:grpc_code, grpc_code()}, {:http_code, http_code()}]
+          | %{
+              optional(:grpc_code) => grpc_code(),
+              optional(:http_code) => http_code()
+            }
+
+  @typedoc """
   The name of the target group.
 
   This name must be unique per region per account, can have a maximum of 32
@@ -256,15 +335,6 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   ```
   """
   @type health_check_path() :: binary
-
-  @typedoc """
-  The port the load balancer uses when performing health checks on targets
-
-  If the protocol is HTTP, HTTPS, TCP, TLS, UDP, or TCP_UDP, the default is "traffic-port",
-  which is the port on which each target receives traffic from the load balancer. If the
-  protocol is GENEVE, the default is port 80.
-  """
-  @type health_check_port() :: binary
 
   @typedoc """
   The Amazon Resource Name (ARN) of the load balancer
@@ -804,37 +874,40 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   """
   @type create_target_group_opts ::
           [
+            health_check_enabled: health_check_enabled(),
+            health_check_interval_seconds: health_check_interval_seconds(),
+            health_check_path: health_check_path(),
+            health_check_port: health_check_port(),
+            health_check_protocol: health_check_protocol(),
+            health_check_timeout_seconds: health_check_timeout_seconds(),
+            healthy_threshold_count: healthy_threshold_count(),
+            ip_address_type: ip_address_type(),
+            matcher: matcher(),
+            port: port_num(),
             protocol: protocol(),
             protocol_version: protocol_version(),
-            port: port_num(),
-            health_check_protocol: health_check_protocol(),
-            health_check_port: health_check_port(),
-            health_check_enabled: boolean,
-            health_check_path: health_check_path(),
-            health_check_interval_seconds: health_check_interval_seconds(),
-            health_check_timeout_seconds: health_check_timeout_seconds(),
-            healthy_threshold_count: integer,
-            # min 2, max 60
-            unhealthy_threshold_count: integer,
-            matcher: binary,
+            tags: tags(),
             target_type: target_type(),
-            tags: tags()
+            unhealthy_threshold_count: unhealthy_threshold_count(),
+            vpc_id: vpc_id()
           ]
           | %{
+              optional(:health_check_enabled) => health_check_enabled(),
+              optional(:health_check_interval_seconds) => health_check_interval_seconds(),
+              optional(:health_check_path) => health_check_path(),
+              optional(:health_check_port) => health_check_port(),
+              optional(:health_check_protocol) => health_check_protocol(),
+              optional(:health_check_timeout_seconds) => health_check_timeout_seconds(),
+              optional(:healthy_threshold_count) => healthy_threshold_count(),
+              optional(:ip_address_type) => ip_address_type(),
+              optional(:matcher) => matcher(),
+              optional(:port) => port_num(),
               optional(:protocol) => protocol(),
               optional(:protocol_version) => protocol_version(),
-              optional(:port) => port_num(),
-              optional(:health_check_protocol) => health_check_protocol(),
-              optional(:health_check_port) => health_check_port(),
-              optional(:health_check_enabled) => boolean,
-              optional(:health_check_path) => health_check_path(),
-              optional(:health_check_interval_seconds) => health_check_interval_seconds(),
-              optional(:health_check_timeout_seconds) => health_check_timeout_seconds(),
-              optional(:healthy_threshold_count) => integer,
-              optional(:unhealthy_threshold_count) => integer,
-              optional(:matcher) => binary,
+              optional(:tags) => tags(),
               optional(:target_type) => target_type(),
-              optional(:tags) => tags()
+              optional(:unhealthy_threshold_count) => unhealthy_threshold_count(),
+              optional(:vpc_id) => vpc_id()
             }
 
   @typedoc """
@@ -933,25 +1006,26 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   """
   @type modify_target_group_opts ::
           [
-            health_check_protocol: binary,
-            health_check_port: binary,
-            health_check_path: binary,
-            # min 5, max 300
+            health_check_enabled: health_check_enabled(),
             health_check_interval_seconds: health_check_interval_seconds(),
-            # min 2, max 60
+            health_check_path: health_check_path(),
+            health_check_port: health_check_port(),
+            health_check_protocol: health_check_protocol(),
             health_check_timeout_seconds: health_check_timeout_seconds(),
-            # min 2, max 60
-            unhealthy_threshold_count: integer,
-            matcher: binary
+            healthy_threshold_count: healthy_threshold_count(),
+            matcher: matcher(),
+            unhealthy_threshold_count: unhealthy_threshold_count()
           ]
           | %{
-              optional(:health_check_protocol) => binary,
-              optional(:health_check_port) => binary,
-              optional(:health_check_path) => binary,
+              optional(:health_check_enabled) => health_check_enabled(),
               optional(:health_check_interval_seconds) => health_check_interval_seconds(),
+              optional(:health_check_path) => health_check_path(),
+              optional(:health_check_port) => health_check_port(),
+              optional(:health_check_protocol) => health_check_protocol(),
               optional(:health_check_timeout_seconds) => health_check_timeout_seconds(),
-              optional(:unhealthy_threshold_count) => integer,
-              optional(:matcher) => binary
+              optional(:healthy_threshold_count) => healthy_threshold_count(),
+              optional(:matcher) => matcher(),
+              optional(:unhealthy_threshold_count) => unhealthy_threshold_count()
             }
 
   @typedoc """
