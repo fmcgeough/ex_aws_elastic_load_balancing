@@ -866,6 +866,34 @@ defmodule ExAws.ElasticLoadBalancingV2 do
             }
 
   @typedoc """
+  Optional parameters for `describe_trust_store_associations/2`.
+  """
+  @type describe_trust_store_associations_opts() ::
+          [
+            {:page_size, page_size()},
+            {:marker, marker()}
+          ]
+          | %{
+              optional(:page_size) => page_size(),
+              optional(:marker) => marker()
+            }
+
+  @typedoc """
+  Optional parameters for `describe_trust_store_revocations/2`.
+  """
+  @type describe_trust_store_revocations_opts() ::
+          [
+            {:page_size, page_size()},
+            {:marker, marker()},
+            {:revocation_ids, [integer(), ...]}
+          ]
+          | %{
+              optional(:page_size) => page_size(),
+              optional(:marker) => marker(),
+              optional(:revocation_ids) => [integer(), ...]
+            }
+
+  @typedoc """
   Optional parameters for `create_listener/3`.
   """
   @type create_listener_opts ::
@@ -1883,6 +1911,30 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   end
 
   @doc """
+  Deletes the specified trust store.
+
+  ## Examples:
+
+        iex> ExAws.ElasticLoadBalancingV2.delete_trust_store("trust_store_arn")
+        %ExAws.Operation.Query{
+          path: "/",
+          params: %{
+            "Action" => "DeleteTrustStore",
+            "TrustStoreArn" => "trust_store_arn",
+            "Version" => "2015-12-01"
+          },
+          content_encoding: "identity",
+          service: :elasticloadbalancing,
+          action: :delete_trust_store,
+          parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+        }
+  """
+  def delete_trust_store(trust_store_arn) do
+    [{:trust_store_arn, trust_store_arn}]
+    |> build_request(:delete_trust_store)
+  end
+
+  @doc """
   Deregisters the specified targets from the specified target group.
 
   After the targets are deregistered, they no longer receive traffic
@@ -1956,6 +2008,54 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   @spec describe_account_limits(describe_account_limits_opts()) :: ExAws.Operation.Query.t()
   def describe_account_limits(opts \\ []) do
     opts |> build_request(:describe_account_limits)
+  end
+
+  @doc """
+  Describes the capacity reservation status for the specified load balancer.
+
+  ## Examples:
+
+        iex> ExAws.ElasticLoadBalancingV2.describe_capacity_reservation("load_balancer_arn")
+        %ExAws.Operation.Query{
+          path: "/",
+          params: %{
+            "Action" => "DescribeCapacityReservation",
+            "LoadBalancerArn" => "load_balancer_arn",
+            "Version" => "2015-12-01"
+          },
+          content_encoding: "identity",
+          service: :elasticloadbalancing,
+          action: :describe_capacity_reservation,
+          parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+        }
+  """
+  def describe_capacity_reservation(load_balancer_arn) do
+    [{:load_balancer_arn, load_balancer_arn}]
+    |> build_request(:describe_capacity_reservation)
+  end
+
+  @doc """
+  Describes the attributes for the specified listener
+
+  ## Examples:
+
+        iex> ExAws.ElasticLoadBalancingV2.describe_listener_attributes("listener_arn")
+        %ExAws.Operation.Query{
+          path: "/",
+          params: %{
+            "Action" => "DescribeListenerAttributes",
+            "ListenerArn" => "listener_arn",
+            "Version" => "2015-12-01"
+          },
+          content_encoding: "identity",
+          service: :elasticloadbalancing,
+          action: :describe_listener_attributes,
+          parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+        }
+  """
+  def describe_listener_attributes(listener_arn) do
+    [{:listener_arn, listener_arn}]
+    |> build_request(:describe_listener_attributes)
   end
 
   @doc """
@@ -2280,6 +2380,77 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   def describe_target_health(target_group_arn, opts \\ []) do
     [{:target_group_arn, target_group_arn} | opts]
     |> build_request(:describe_target_health)
+  end
+
+  @doc """
+  Describes all resources associated with the specified trust store
+
+  ## Examples:
+
+      iex> ExAws.ElasticLoadBalancingV2.describe_trust_store_associations("trust_store_arn")
+      %ExAws.Operation.Query{
+        path: "/",
+        params: %{
+          "Action" => "DescribeTrustStoreAssociations",
+          "TrustStoreArn" => "trust_store_arn",
+          "Version" => "2015-12-01"
+        },
+        content_encoding: "identity",
+        service: :elasticloadbalancing,
+        action: :describe_trust_store_associations,
+        parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+      }
+  """
+  @spec describe_trust_store_associations(trust_store_arn(), describe_trust_store_associations_opts()) ::
+          ExAws.Operation.Query.t()
+  def describe_trust_store_associations(trust_store_arn, opts \\ []) do
+    opts
+    |> keyword_to_map()
+    |> Map.merge(%{trust_store_arn: trust_store_arn})
+    |> build_request(:describe_trust_store_associations)
+  end
+
+  @doc """
+  Describes the revocation files in use by the specified trust store or revocation files
+
+  ## Examples:
+
+      iex> ExAws.ElasticLoadBalancingV2.describe_trust_store_revocations("trust_store_arn")
+      %ExAws.Operation.Query{
+        path: "/",
+        params: %{
+          "Action" => "DescribeTrustStoreRevocations",
+          "TrustStoreArn" => "trust_store_arn",
+          "Version" => "2015-12-01"
+        },
+        content_encoding: "identity",
+        service: :elasticloadbalancing,
+        action: :describe_trust_store_revocations,
+        parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+      }
+      iex> ExAws.ElasticLoadBalancingV2.describe_trust_store_revocations("trust_store_arn", %{revocation_ids: [3423, 12423]})
+      %ExAws.Operation.Query{
+        path: "/",
+        params: %{
+          "Action" => "DescribeTrustStoreRevocations",
+          "RevocationIds.member.1" => 3423,
+          "RevocationIds.member.2" => 12423,
+          "TrustStoreArn" => "trust_store_arn",
+          "Version" => "2015-12-01"
+        },
+        content_encoding: "identity",
+        service: :elasticloadbalancing,
+        action: :describe_trust_store_revocations,
+        parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+      }
+  """
+  @spec describe_trust_store_revocations(trust_store_arn(), describe_trust_store_revocations_opts()) ::
+          ExAws.Operation.Query.t()
+  def describe_trust_store_revocations(trust_store_arn, opts \\ []) do
+    opts
+    |> keyword_to_map()
+    |> Map.merge(%{trust_store_arn: trust_store_arn})
+    |> build_request(:describe_trust_store_revocations)
   end
 
   @doc """
@@ -2818,6 +2989,10 @@ defmodule ExAws.ElasticLoadBalancingV2 do
 
   defp format_param({:revocation_contents, revocation_contents}) do
     revocation_contents |> format(prefix: "RevocationContents.member")
+  end
+
+  defp format_param({:revocation_ids, revocation_ids}) do
+    revocation_ids |> format(prefix: "RevocationIds.member")
   end
 
   defp format_param({:trust_store_arn, trust_store_arn}) do
