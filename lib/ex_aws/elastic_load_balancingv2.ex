@@ -457,13 +457,51 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         }
 
   @typedoc """
+  The HTTP response code (2XX, 4XX, or 5XX).
+
+  Pattern: `^(2|4|5)\d\d$`
+  """
+  @type fixed_response_action_status_code() :: binary()
+
+  @typedoc """
+  The content type
+
+  Valid Values
+  ```
+  "text/plain" | "text/css" | "text/html" | "application/javascript" | "application/json"
+  ```
+
+  Length Constraints
+  ```
+  Minimum length of 0. Maximum length of 32.
+  ```
+  """
+  @type fixed_response_action_content_type() :: binary()
+
+  @typedoc """
+  The message body
+
+  Length Constraints
+  ```
+  Minimum length of 0. Maximum length of 1024.
+  ```
+  """
+  @type fixed_response_action_message() :: binary()
+
+  @typedoc """
   Information about an action that returns a custom HTTP response
   """
-  @type fixed_response_config() :: %{
-          required(:status_code) => binary,
-          optional(:content_type) => binary,
-          optional(:message_body) => binary
-        }
+  @type fixed_response_config() ::
+          [
+            {:status_code, fixed_response_action_status_code()},
+            {:content_type, fixed_response_action_content_type()},
+            {:message_body, fixed_response_action_message()}
+          ]
+          | %{
+              required(:status_code) => fixed_response_action_status_code(),
+              optional(:content_type) => fixed_response_action_content_type(),
+              optional(:message_body) => fixed_response_action_message()
+            }
 
   @typedoc """
   Information about the target group stickiness for a rule.
@@ -787,6 +825,35 @@ defmodule ExAws.ElasticLoadBalancingV2 do
               optional(:ipv4_ipam_pool_id) => ipv4_ipam_pool_id()
             }
 
+  @type trust_store_name() :: binary()
+
+  @typedoc """
+  The Amazon S3 bucket for the ca certificates bundle.
+  """
+  @type ca_certificates_bundle_s3_bucket() :: binary()
+
+  @typedoc """
+  The Amazon S3 path for the ca certificates bundle.
+  """
+  @type ca_certificates_bundle_s3_key() :: binary()
+
+  @typedoc """
+  The Amazon S3 object version for the ca certificates bundle
+
+  If undefined the current version is used.
+  """
+  @type ca_certificates_bundle_s3_object_version() :: binary()
+
+  @type create_trust_store_opts() ::
+          [
+            {:ca_certificates_bundle_s3_object_version, ca_certificates_bundle_s3_object_version()},
+            {:tags, tags()}
+          ]
+          | %{
+              optional(:ca_certificates_bundle_s3_object_version) => ca_certificates_bundle_s3_object_version(),
+              optional(:tags) => tags()
+            }
+
   @typedoc """
   Optional parameters for `add_trust_store_revocations/2`.
   """
@@ -851,9 +918,9 @@ defmodule ExAws.ElasticLoadBalancingV2 do
             i_pam_pools: i_pam_pools(),
             scheme: load_balancer_scheme(),
             security_groups: [binary(), ...],
-            subnets: [binary(), ...],
+            subnets: subnets(),
             subnet_mappings: [subnet_mapping(), ...],
-            tags: [tag(), ...],
+            tags: tags(),
             type: load_balancer_type()
           ]
           | %{
@@ -863,9 +930,9 @@ defmodule ExAws.ElasticLoadBalancingV2 do
               optional(:i_pam_pools) => i_pam_pools(),
               optional(:scheme) => load_balancer_scheme(),
               optional(:security_groups) => [binary(), ...],
-              optional(:subnets) => [binary(), ...],
+              optional(:subnets) => subnets(),
               optional(:subnet_mappings) => [subnet_mapping, ...],
-              optional(:tags) => [tag(), ...],
+              optional(:tags) => tags(),
               optional(:type) => load_balancer_type()
             }
 
@@ -917,15 +984,15 @@ defmodule ExAws.ElasticLoadBalancingV2 do
           [
             port: port_num(),
             protocol: protocol(),
-            ssl_policy: binary,
-            certificates: [binary, ...],
+            ssl_policy: ssl_policy(),
+            certificates: certificates(),
             default_actions: actions()
           ]
           | %{
               optional(:port) => port_num(),
               optional(:protocol) => protocol(),
-              optional(:ssl_policy) => binary,
-              optional(:certificates) => [binary, ...],
+              optional(:ssl_policy) => ssl_policy(),
+              optional(:certificates) => certificates(),
               optional(:default_actions) => actions()
             }
 
@@ -1556,7 +1623,9 @@ defmodule ExAws.ElasticLoadBalancingV2 do
 
       iex> conditions = [%{field: "path-pattern", values: ["/images/*"]}]
       iex> actions = [%{type: "forward", target_group_arn: "target_arn"}]
-      iex> ExAws.ElasticLoadBalancingV2.create_rule("listener_arn", conditions, 10, actions)
+      iex> priority = 10
+      iex> listener_arn = "arn:aws:test_arn"
+      iex> ExAws.ElasticLoadBalancingV2.create_rule(listener_arn, conditions, priority, actions)
       %ExAws.Operation.Query{
         path: "/",
         params: %{
@@ -1565,7 +1634,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
           "Actions.member.1.Type" => "forward",
           "Conditions.member.1.Field" => "path-pattern",
           "Conditions.member.1.Values.1" => "/images/*",
-          "ListenerArn" => "listener_arn",
+          "ListenerArn" => "arn:aws:test_arn",
           "Priority" => 10,
           "Version" => "2015-12-01"
         },
@@ -1607,8 +1676,8 @@ defmodule ExAws.ElasticLoadBalancingV2 do
 
   ## Examples:
 
-      iex> opts = [protocol: "HTTP", port: 80, health_check_path: "/health"]
-      iex> ExAws.ElasticLoadBalancingV2.create_target_group("target_group_name", "vpc_id", opts)
+      iex> opts = [protocol: "HTTP", port: 80, health_check_path: "/health", vpc_id: "vpc_id"]
+      iex> ExAws.ElasticLoadBalancingV2.create_target_group("target_group_name", opts)
       %ExAws.Operation.Query{
         path: "/",
         params: %{
@@ -1625,8 +1694,9 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         action: :create_target_group,
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
-      iex> opts = %{protocol: "HTTP", port: 80, health_check_path: "/health"}
-      iex> ExAws.ElasticLoadBalancingV2.create_target_group("target_group_name", "vpc_id", opts)
+      iex> # Demonstrate passing opts as a map
+      iex> opts = %{protocol: "HTTP", port: 80, health_check_path: "/health", vpc_id: "vpc_id"}
+      iex> ExAws.ElasticLoadBalancingV2.create_target_group("target_group_name", opts)
       %ExAws.Operation.Query{
         path: "/",
         params: %{
@@ -1644,15 +1714,55 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @spec create_target_group(target_group_name(), vpc_id(), create_target_group_opts()) :: ExAws.Operation.Query.t()
-  def create_target_group(name, vpc_id, opts \\ []) do
+  @spec create_target_group(target_group_name(), create_target_group_opts()) :: ExAws.Operation.Query.t()
+  def create_target_group(name, opts \\ []) do
+    opts
+    |> keyword_to_map()
+    |> Map.merge(%{name: name})
+    |> build_request(:create_target_group)
+  end
+
+  @doc """
+  Creates a trust store.
+
+  For more information, see Mutual TLS for Application Load Balancers.
+
+  ## Examples:
+
+      iex> trust_store_name = "my-trust-store"
+      iex> ca_certificates_bundle_s3_bucket = "amzn-s3-demo-bucket"
+      iex> ca_certificates_bundle_s3_key = "CACertBundle.pem"
+      iex> ExAws.ElasticLoadBalancingV2.create_trust_store(trust_store_name, ca_certificates_bundle_s3_bucket, ca_certificates_bundle_s3_key)
+      %ExAws.Operation.Query{
+        path: "/",
+        params: %{
+          "Action" => "CreateTrustStore",
+          "CaCertificatesBundleS3Bucket" => "amzn-s3-demo-bucket",
+          "CaCertificatesBundleS3Key" => "CACertBundle.pem",
+          "TrustStoreName" => "my-trust-store",
+          "Version" => "2015-12-01"
+        },
+        content_encoding: "identity",
+        service: :elasticloadbalancing,
+        action: :create_trust_store,
+        parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+      }
+  """
+  @spec create_trust_store(
+          trust_store_name(),
+          ca_certificates_bundle_s3_bucket(),
+          ca_certificates_bundle_s3_key(),
+          create_trust_store_opts()
+        ) :: ExAws.Operation.Query.t()
+  def create_trust_store(trust_store_name, ca_certificates_bundle_s3_bucket, ca_certificates_bundle_s3_key, opts \\ []) do
     opts
     |> keyword_to_map()
     |> Map.merge(%{
-      name: name,
-      vpc_id: vpc_id
+      trust_store_name: trust_store_name,
+      ca_certificates_bundle_s3_bucket: ca_certificates_bundle_s3_bucket,
+      ca_certificates_bundle_s3_key: ca_certificates_bundle_s3_key
     })
-    |> build_request(:create_target_group)
+    |> build_request(:create_trust_store)
   end
 
   @doc """

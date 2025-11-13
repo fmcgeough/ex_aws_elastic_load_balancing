@@ -2,6 +2,9 @@ v3.0.0
 * Add function add_trust_store_revocations to ElasticLoadBalancingV2
 * Remove opts parameter for delete_listener, set_rule_priorities, modify_target_group_attributes, register_targets, remove_listener_certificates, remove_tags, set_ip_address_type, modify_load_balancer_attributes in ElasticLoadBalancingV2. Unneeded.
 * add_trust_store_revocations in ElasticLoadBalancingV2 modified. The parameter `revocation_contents` is not required. The signature of the function was modified to allow passing just `trust_store_arn` as the sole parameter.
+* create_target_group in ElasticLoadBalancingV2 modified. The parameter `vpc_id`
+  is not required. It can be passed in the optional opts parameter if needed.
+  Note: The `vpc_id` is the identifier of the virtual private cloud (VPC). If the target is a Lambda function, this parameter does not apply. Otherwise, this parameter is required.
 
 v2.2.2
 
