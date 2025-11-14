@@ -377,6 +377,11 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   @type trust_store_arn() :: binary
 
   @typedoc """
+  The revocation ID of the revocation file
+  """
+  @type revocation_id() :: integer()
+
+  @typedoc """
   The maximum number of results to return with this call
 
   Valid Range: Minimum value of 1. Maximum value of 400.
@@ -825,6 +830,12 @@ defmodule ExAws.ElasticLoadBalancingV2 do
               optional(:ipv4_ipam_pool_id) => ipv4_ipam_pool_id()
             }
 
+  @typedoc """
+  The name of the trust store.
+
+  Length Constraints: `Minimum length of 1. Maximum length of 32.`
+  Pattern: `^([a-zA-Z0-9]+-)*[a-zA-Z0-9]+$`
+  """
   @type trust_store_name() :: binary()
 
   @typedoc """
@@ -885,12 +896,29 @@ defmodule ExAws.ElasticLoadBalancingV2 do
           [
             {:page_size, page_size()},
             {:marker, marker()},
-            {:revocation_ids, [integer(), ...]}
+            {:revocation_ids, [revocation_id(), ...]}
           ]
           | %{
               optional(:page_size) => page_size(),
               optional(:marker) => marker(),
-              optional(:revocation_ids) => [integer(), ...]
+              optional(:revocation_ids) => [revocation_id(), ...]
+            }
+
+  @typedoc """
+  Optional parameters for `describe_trust_stores/1`.
+  """
+  @type describe_trust_stores_opts() ::
+          [
+            {:page_size, page_size()},
+            {:marker, marker()},
+            {:names, [trust_store_name(), ...]},
+            {:trust_store_arns, [trust_store_arn(), ...]}
+          ]
+          | %{
+              optional(:page_size) => page_size(),
+              optional(:marker) => marker(),
+              optional(:names) => [trust_store_name(), ...],
+              optional(:trust_store_arns) => [trust_store_arn(), ...]
             }
 
   @typedoc """
@@ -2454,6 +2482,134 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   end
 
   @doc """
+  Describes all trust stores for the specified account
+
+  ## Examples:
+
+      iex> ExAws.ElasticLoadBalancingV2.describe_trust_stores()
+      %ExAws.Operation.Query{
+        path: "/",
+        params: %{"Action" => "DescribeTrustStores", "Version" => "2015-12-01"},
+        content_encoding: "identity",
+        service: :elasticloadbalancing,
+        action: :describe_trust_stores,
+        parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+      }
+      iex> ExAws.ElasticLoadBalancingV2.describe_trust_stores(%{trust_store_names: ["trust_store1", "trust_store2"]})
+      %ExAws.Operation.Query{
+        path: "/",
+        params: %{
+          "Action" => "DescribeTrustStores",
+          "TrustStoreNames.1" => "trust_store1",
+          "TrustStoreNames.2" => "trust_store2",
+          "Version" => "2015-12-01"
+        },
+        content_encoding: "identity",
+        service: :elasticloadbalancing,
+        action: :describe_trust_stores,
+        parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+      }
+      iex> ExAws.ElasticLoadBalancingV2.describe_trust_stores(%{trust_store_arns: ["arn1", "arn2"]})
+      %ExAws.Operation.Query{
+        path: "/",
+        params: %{
+          "Action" => "DescribeTrustStores",
+          "TrustStoreArns.member.1" => "arn1",
+          "TrustStoreArns.member.2" => "arn2",
+          "Version" => "2015-12-01"
+        },
+        content_encoding: "identity",
+        service: :elasticloadbalancing,
+        action: :describe_trust_stores,
+        parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+      }
+  """
+  @spec describe_trust_stores(describe_trust_stores_opts()) :: ExAws.Operation.Query.t()
+  def describe_trust_stores(opts \\ []) do
+    opts |> build_request(:describe_trust_stores)
+  end
+
+  @doc """
+  Retrieves the resource policy for a specified resource
+
+  ## Examples:
+
+      iex> ExAws.ElasticLoadBalancingV2.get_resource_policy("resource_arn")
+      %ExAws.Operation.Query{
+        path: "/",
+        params: %{
+          "Action" => "GetResourcePolicy",
+          "ResourceArn" => "resource_arn",
+          "Version" => "2015-12-01"
+        },
+        content_encoding: "identity",
+        service: :elasticloadbalancing,
+        action: :get_resource_policy,
+        parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+      }
+  """
+  @spec get_resource_policy(resource_arn()) :: ExAws.Operation.Query.t()
+  def get_resource_policy(resource_arn) do
+    [{:resource_arn, resource_arn}]
+    |> build_request(:get_resource_policy)
+  end
+
+  @doc """
+  Retrieves the CA certificates bundle for the specified trust store
+
+  This action returns a pre-signed S3 URI which is active for ten minutes.
+
+  ## Examples:
+
+      iex> ExAws.ElasticLoadBalancingV2.get_trust_store_ca_certificates_bundle("trust_store_arn")
+      %ExAws.Operation.Query{
+        path: "/",
+        params: %{
+          "Action" => "GetTrustStoreCaCertificatesBundle",
+          "TrustStoreArn" => "trust_store_arn",
+          "Version" => "2015-12-01"
+        },
+        content_encoding: "identity",
+        service: :elasticloadbalancing,
+        action: :get_trust_store_ca_certificates_bundle,
+        parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+      }
+  """
+  @spec get_trust_store_ca_certificates_bundle(trust_store_arn()) :: ExAws.Operation.Query.t()
+  def get_trust_store_ca_certificates_bundle(trust_store_arn) do
+    [{:trust_store_arn, trust_store_arn}]
+    |> build_request(:get_trust_store_ca_certificates_bundle)
+  end
+
+  @doc """
+  Retrieves the specified revocation file.
+
+  This action returns a pre-signed S3 URI which is active for ten minutes.
+
+  ## Examples:
+
+      iex> ExAws.ElasticLoadBalancingV2.get_trust_store_revocation_content("trust_store_arn", 2134342)
+      %ExAws.Operation.Query{
+        path: "/",
+        params: %{
+          "Action" => "GetTrustStoreRevocationContent",
+          "RevocationId" => 2134342,
+          "TrustStoreArn" => "trust_store_arn",
+          "Version" => "2015-12-01"
+        },
+        content_encoding: "identity",
+        service: :elasticloadbalancing,
+        action: :get_trust_store_revocation_content,
+        parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+      }
+  """
+  @spec get_trust_store_revocation_content(trust_store_arn(), revocation_id()) :: ExAws.Operation.Query.t()
+  def get_trust_store_revocation_content(trust_store_arn, revocation_id) do
+    [{:trust_store_arn, trust_store_arn}, {:revocation_id, revocation_id}]
+    |> build_request(:get_trust_store_revocation_content)
+  end
+
+  @doc """
   Modifies the specified properties of the specified listener.
 
   Any properties that you do not specify retain their current values.
@@ -2922,6 +3078,10 @@ defmodule ExAws.ElasticLoadBalancingV2 do
 
   defp format_param({:names, names}) do
     names |> format(prefix: "Names.member")
+  end
+
+  defp format_param({:trust_store_arns, trust_store_arns}) do
+    trust_store_arns |> format(prefix: "TrustStoreArns.member")
   end
 
   defp format_param({:resource_arns, resource_arns}) do
