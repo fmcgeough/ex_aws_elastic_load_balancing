@@ -1343,6 +1343,99 @@ defmodule ExAws.ElasticLoadBalancingV2 do
               optional(:subnets) => subnets()
             }
 
+  @typedoc """
+  The minimum capacity for a load balancer.
+  """
+  @type minimum_load_balancer_capacity() :: [{:capacity_units, integer()}] | %{optional(:capacity_units) => integer()}
+
+  @typedoc """
+  Optional parameters for `modify_capacity_reservation/2`.
+  """
+  @type modify_capacity_reservation_opts() ::
+          [
+            {:minimum_load_balancer_capacity, minimum_load_balancer_capacity()},
+            {:reset_capacity_reservation, boolean()}
+          ]
+          | %{
+              optional(:minimum_load_balancer_capacity) => minimum_load_balancer_capacity(),
+              optional(:reset_capacity_reservation) => boolean()
+            }
+
+  @type ipam_pools() :: %{ipv4_ipam_pool_id: ipv4_ipam_pool_id()}
+
+  @typedoc """
+  Optional parameters for `modify_ip_pools/2`.
+  """
+  @type modify_ip_pools_opts() ::
+          [{:ipam_pools, ipam_pools()}, {:remove_ipam_pools, [binary(), ...]}]
+          | %{optional(:ipam_pools) => ipam_pools(), optional(:remove_ipam_pools) => [binary(), ...]}
+
+  @typedoc """
+  The name of the attribute.
+
+  The following attribute is supported by Network Load Balancers, and Gateway Load Balancers.
+
+  - "tcp.idle_timeout.seconds" - The tcp idle timeout value, in seconds. The valid range
+    is 60-6000 seconds. The default is 350 seconds.
+
+  The following attributes are only supported by Application Load Balancers.
+
+  - "routing.http.request.x_amzn_mtls_clientcert_serial_number.header_name" - Enables you to modify the
+    header name of the X-Amzn-Mtls-Clientcert-Serial-Number HTTP request header.
+  - "routing.http.request.x_amzn_mtls_clientcert_issuer.header_name" - Enables you to modify the header
+    name of the X-Amzn-Mtls-Clientcert-Issuer HTTP request header.
+  - "routing.http.request.x_amzn_mtls_clientcert_subject.header_name" - Enables you to modify the header name
+    of the X-Amzn-Mtls-Clientcert-Subject HTTP request header.
+  - "routing.http.request.x_amzn_mtls_clientcert_validity.header_name" - Enables you to modify the header
+    name of the X-Amzn-Mtls-Clientcert-Validity HTTP request header.
+  - "routing.http.request.x_amzn_mtls_clientcert_leaf.header_name" - Enables you to modify the header name
+    of the X-Amzn-Mtls-Clientcert-Leaf HTTP request header.
+  - "routing.http.request.x_amzn_mtls_clientcert.header_name" - Enables you to modify the header name of
+    the X-Amzn-Mtls-Clientcert HTTP request header.
+  - "routing.http.request.x_amzn_tls_version.header_name" - Enables you to modify the header name of the
+    X-Amzn-Tls-Version HTTP request header.
+  - "routing.http.request.x_amzn_tls_cipher_suite.header_name" - Enables you to modify the header name of
+    the X-Amzn-Tls-Cipher-Suite HTTP request header.
+  - "routing.http.response.server.enabled" - Enables you to allow or remove the HTTP response server header.
+  - "routing.http.response.strict_transport_security.header_value" - Informs browsers that the site should
+    only be accessed using HTTPS, and that any future attempts to access it using HTTP should automatically
+    be converted to HTTPS.
+  - "routing.http.response.access_control_allow_origin.header_value" - Specifies which origins are allowed
+    to access the server.
+  - "routing.http.response.access_control_allow_methods.header_value" - Returns which HTTP methods are allowed
+    when accessing the server from a different origin.
+  - "routing.http.response.access_control_allow_headers.header_value" - Specifies which headers can be used
+    during the request.
+  - "routing.http.response.access_control_allow_credentials.header_value" - Indicates whether the browser should
+    include credentials such as cookies or authentication when making requests.
+  - "routing.http.response.access_control_expose_headers.header_value" - Returns which headers the browser can
+    expose to the requesting client.
+  - "routing.http.response.access_control_max_age.header_value" - Specifies how long the results of a preflight
+    request can be cached, in seconds.
+  - "routing.http.response.content_security_policy.header_value" - Specifies restrictions enforced by the browser
+    to help minimize the risk of certain types of security threats.
+  - "routing.http.response.x_content_type_options.header_value" - Indicates whether the MIME types advertised in
+    the Content-Type headers should be followed and not be changed.
+  - "routing.http.response.x_frame_options.header_value" - Indicates whether the browser is allowed to render a
+    page in a frame, iframe, embed or object.
+
+  Length Constraints: `Maximum length of 256`
+  Pattern: `^[a-zA-Z0-9._]+$`
+  """
+  @type listener_attribute_key() :: binary()
+
+  @typedoc """
+  The value of the attribute.
+  """
+  @type listener_attribute_value() :: binary()
+
+  @type listener_attribute() ::
+          [{:key, listener_attribute_key()}, {:value, listener_attribute_value()}]
+          | %{
+              optional(:key) => listener_attribute_key(),
+              optional(:value) => listener_attribute_value()
+            }
+
   @doc """
   Adds the specified SSL server certificate to the certificate list for the specified HTTPS or TLS listener.
 
@@ -2610,6 +2703,66 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   end
 
   @doc """
+  Modifies the capacity reservation of the specified load balancer.
+
+  When modifying capacity reservation, you must include at least
+  one `:minimum_load_balancer_capacity` or `:reset_capacity_reservation`.
+
+  ## Examples:
+
+      iex> ExAws.ElasticLoadBalancingV2.modify_capacity_reservation("load_balancer_arn", minimum_load_balancer_capacity: 5)
+      %ExAws.Operation.Query{
+        path: "/",
+        params: %{
+          "Action" => "ModifyCapacityReservation",
+          "LoadBalancerArn" => "load_balancer_arn",
+          "MinimumLoadBalancerCapacity" => 5,
+          "Version" => "2015-12-01"
+        },
+        content_encoding: "identity",
+        service: :elasticloadbalancing,
+        action: :modify_capacity_reservation,
+        parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+      }
+  """
+  @spec modify_capacity_reservation(load_balancer_arn(), modify_capacity_reservation_opts()) ::
+          ExAws.Operation.Query.t()
+  def modify_capacity_reservation(load_balancer_arn, opts \\ []) do
+    opts
+    |> keyword_to_map()
+    |> Map.merge(%{load_balancer_arn: load_balancer_arn})
+    |> build_request(:modify_capacity_reservation)
+  end
+
+  @doc """
+  [Application Load Balancers] Modify the IP pool associated to a load balancer.
+
+  ## Examples:
+
+      iex> ExAws.ElasticLoadBalancingV2.modify_ip_pools("load_balancer_arn", ipam_pools: [%{ipv4_ipam_pool_id: "pool1"}])
+      %ExAws.Operation.Query{
+        path: "/",
+        params: %{
+          "Action" => "ModifyIpPools",
+          "IpamPools.member.1.Ipv4IpamPoolId" => "pool1",
+          "LoadBalancerArn" => "load_balancer_arn",
+          "Version" => "2015-12-01"
+        },
+        content_encoding: "identity",
+        service: :elasticloadbalancing,
+        action: :modify_ip_pools,
+        parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+      }
+  """
+  @spec modify_ip_pools(load_balancer_arn(), modify_ip_pools_opts()) :: ExAws.Operation.Query.t()
+  def modify_ip_pools(load_balancer_arn, opts \\ []) do
+    opts
+    |> keyword_to_map()
+    |> Map.merge(%{load_balancer_arn: load_balancer_arn})
+    |> build_request(:modify_ip_pools)
+  end
+
+  @doc """
   Modifies the specified properties of the specified listener.
 
   Any properties that you do not specify retain their current values.
@@ -2656,6 +2809,16 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   def modify_listener(listener_arn, opts \\ []) do
     [{:listener_arn, listener_arn} | opts]
     |> build_request(:modify_listener)
+  end
+
+  @doc """
+  Modifies the specified attributes of the specified listener.
+  """
+  @spec modify_listener_attributes(listener_arn(), [listener_attribute(), ...]) ::
+          ExAws.Operation.Query.t()
+  def modify_listener_attributes(listener_arn, attributes) do
+    [{:listener_arn, listener_arn}, {:attributes, attributes}]
+    |> build_request(:modify_listener_attributes)
   end
 
   @doc """
@@ -3157,6 +3320,14 @@ defmodule ExAws.ElasticLoadBalancingV2 do
 
   defp format_param({:trust_store_arn, trust_store_arn}) do
     %{"TrustStoreArn" => trust_store_arn}
+  end
+
+  defp format_param({:ipam_pools, ipam_pools}) do
+    ipam_pools |> format(prefix: "IpamPools.member")
+  end
+
+  defp format_param({:remove_ipam_pools, remove_ipam_pools}) do
+    remove_ipam_pools |> format(prefix: "RemoveIpamPools.member")
   end
 
   defp format_param({key, parameters}) do

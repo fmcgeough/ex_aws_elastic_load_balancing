@@ -19,6 +19,9 @@ v3.0.0
   - `ExAws.ElasticLoadBalancingV2.get_resource_policy/1`
   - `ExAws.ElasticLoadBalancingV2.get_trust_store_ca_certificates_bundle/1`
   - `ExAws.ElasticLoadBalancingV2.add_trust_store_revocations/2`
+  - `ExAws.ElasticLoadBalancingV2.modify_capacity_reservation/2`
+  - `ExAws.ElasticLoadBalancingV2.modify_ip_pools/2`
+  - `ExAws.ElasticLoadBalancingV2.modify_listener_attributes/2`
 
 v2.2.2
 
