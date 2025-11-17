@@ -164,7 +164,7 @@ if Code.ensure_loaded?(SweetXml) do
         port: ~x"./Port/text()"s,
         vpc_id: ~x"./VpcId/text()"s,
         healthy_threshold_count: ~x"./HealthyThresholdCount/text()"s,
-        healthy_inteval_seconds: ~x"./HealthCheckIntervalSeconds/text()"s,
+        healthy_interval_seconds: ~x"./HealthCheckIntervalSeconds/text()"s,
         load_balancer_arn: ~x"./LoadBalancerArns/member/text()"s,
         unhealthy_threshold_count: ~x"./UnhealthyThresholdCount/text()"s
       ]
