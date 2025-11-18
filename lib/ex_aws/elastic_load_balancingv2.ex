@@ -829,12 +829,6 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   """
   @type ipv4_ipam_pool_id() :: binary()
 
-  @type i_pam_pools() ::
-          [ipv4_ipam_pool_id: ipv4_ipam_pool_id()]
-          | %{
-              optional(:ipv4_ipam_pool_id) => ipv4_ipam_pool_id()
-            }
-
   @typedoc """
   The name of the trust store.
 
@@ -976,7 +970,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
             customer_owned_ipv4_pool: customer_owned_ipv4_pool(),
             enable_prefix_for_ipv6_source_nat: enable_prefix_for_ipv6_source_nat(),
             ip_address_type: ip_address_type(),
-            i_pam_pools: i_pam_pools(),
+            ipam_pools: ipam_pools(),
             scheme: load_balancer_scheme(),
             security_groups: [binary(), ...],
             subnets: subnets(),
@@ -988,7 +982,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
               optional(:customer_owned_ipv4_pool) => customer_owned_ipv4_pool(),
               optional(:enable_prefix_for_ipv6_source_nat) => enable_prefix_for_ipv6_source_nat(),
               optional(:ip_address_type) => ip_address_type(),
-              optional(:i_pam_pools) => i_pam_pools(),
+              optional(:ipam_pools) => ipam_pools(),
               optional(:scheme) => load_balancer_scheme(),
               optional(:security_groups) => [binary(), ...],
               optional(:subnets) => subnets(),
@@ -1252,6 +1246,11 @@ defmodule ExAws.ElasticLoadBalancingV2 do
           {:rewrites, [rewrite_config()]}
         ]
 
+  @typedoc """
+  Information about a URL rewrite transform
+
+  This transform modifies the request URL. Specify only when Type is url-rewrite.
+  """
   @type url_rewrite_config() :: [
           {:rewrites, [rewrite_config()]}
         ]
@@ -1375,6 +1374,11 @@ defmodule ExAws.ElasticLoadBalancingV2 do
               optional(:reset_capacity_reservation) => boolean()
             }
 
+  @typedoc """
+  An IPAM pool is a collection of IP address CIDRs
+
+  IPAM pools enable you to organize your IP addresses according to your routing and security needs.
+  """
   @type ipam_pools() :: %{ipv4_ipam_pool_id: ipv4_ipam_pool_id()}
 
   @typedoc """
@@ -1443,6 +1447,9 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   """
   @type listener_attribute_value() :: binary()
 
+  @typedoc """
+  Information about a listener attribute.
+  """
   @type listener_attribute() ::
           [{:key, listener_attribute_key()}, {:value, listener_attribute_value()}]
           | %{
@@ -2993,7 +3000,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   CS1, G1, G2, HI1, HS1, M1, M2, M3, and T1. You can register instances of
   these types by IP address.
 
-  To remove a target from a target group, use `deregister_targets/1`.
+  To remove a target from a target group, use `deregister_targets/2`.
 
   ## Examples:
 
