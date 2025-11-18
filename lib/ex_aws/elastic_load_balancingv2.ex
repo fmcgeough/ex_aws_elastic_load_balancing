@@ -382,6 +382,11 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   @type revocation_id() :: integer()
 
   @typedoc """
+  A list of `t:revocation_id/0`
+  """
+  @type revocation_ids() :: [revocation_id(), ...]
+
+  @typedoc """
   The maximum number of results to return with this call
 
   Valid Range: Minimum value of 1. Maximum value of 400.
@@ -896,12 +901,12 @@ defmodule ExAws.ElasticLoadBalancingV2 do
           [
             {:page_size, page_size()},
             {:marker, marker()},
-            {:revocation_ids, [revocation_id(), ...]}
+            {:revocation_ids, revocation_ids()}
           ]
           | %{
               optional(:page_size) => page_size(),
               optional(:marker) => marker(),
-              optional(:revocation_ids) => [revocation_id(), ...]
+              optional(:revocation_ids) => revocation_ids()
             }
 
   @typedoc """
@@ -1149,6 +1154,15 @@ defmodule ExAws.ElasticLoadBalancingV2 do
               optional(:healthy_threshold_count) => healthy_threshold_count(),
               optional(:matcher) => matcher(),
               optional(:unhealthy_threshold_count) => unhealthy_threshold_count()
+            }
+
+  @typedoc """
+  Optional parameters for `modify_trust_store/4`.
+  """
+  @type modify_trust_store_opts() ::
+          [{:ca_certificates_bundle_s3_object_version, ca_certificates_bundle_s3_object_version()}]
+          | %{
+              optional(:ca_certificates_bundle_s3_object_version) => ca_certificates_bundle_s3_object_version()
             }
 
   @typedoc """
@@ -2924,6 +2938,44 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   end
 
   @doc """
+  Update the ca certificate bundle for the specified trust store.
+
+  ## Examples:
+
+      iex> ExAws.ElasticLoadBalancingV2.modify_trust_store("trust_store_arn", "s3_bucket", "s3_key")
+      %ExAws.Operation.Query{
+        path: "/",
+        params: %{
+          "Action" => "ModifyTrustStore",
+          "CaCertificatesBundleS3Bucket" => "s3_bucket",
+          "CaCertificatesBundleS3Key" => "s3_key",
+          "TrustStoreArn" => "trust_store_arn",
+          "Version" => "2015-12-01"
+        },
+        content_encoding: "identity",
+        service: :elasticloadbalancing,
+        action: :modify_trust_store,
+        parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+      }
+  """
+  @spec modify_trust_store(
+          trust_store_arn(),
+          ca_certificates_bundle_s3_bucket(),
+          ca_certificates_bundle_s3_key(),
+          modify_trust_store_opts()
+        ) :: ExAws.Operation.Query.t()
+  def modify_trust_store(trust_store_arn, ca_certificates_bundle_s3_bucket, ca_certificates_bundle_s3_key, opts \\ []) do
+    opts
+    |> keyword_to_map()
+    |> Map.merge(%{
+      trust_store_arn: trust_store_arn,
+      ca_certificates_bundle_s3_bucket: ca_certificates_bundle_s3_bucket,
+      ca_certificates_bundle_s3_key: ca_certificates_bundle_s3_key
+    })
+    |> build_request(:modify_trust_store)
+  end
+
+  @doc """
   Registers the specified targets with the specified target group.
 
   You can register targets by instance ID or by IP address. If the
@@ -3033,6 +3085,33 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   def remove_tags(resource_arns, tag_keys) do
     [{:resource_arns, resource_arns}, {:tags_keys, tag_keys}]
     |> build_request(:remove_tags)
+  end
+
+  @doc """
+  Removes the specified revocation files from the specified trust store
+
+  ## Examples:
+
+      iex> ExAws.ElasticLoadBalancingV2.remove_trust_store_revocations("trust_store_arn", [1234, 5678])
+      %ExAws.Operation.Query{
+        path: "/",
+        params: %{
+          "Action" => "RemoveTrustStoreRevocations",
+          "RevocationIds.member.1" => 1234,
+          "RevocationIds.member.2" => 5678,
+          "TrustStoreArn" => "trust_store_arn",
+          "Version" => "2015-12-01"
+        },
+        content_encoding: "identity",
+        service: :elasticloadbalancing,
+        action: :remove_trust_store_revocations,
+        parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+      }
+  """
+  @spec remove_trust_store_revocations(trust_store_arn(), revocation_ids()) :: ExAws.Operation.Query.t()
+  def remove_trust_store_revocations(trust_store_arn, revocation_ids) do
+    [{:trust_store_arn, trust_store_arn}, {:revocation_ids, revocation_ids}]
+    |> build_request(:remove_trust_store_revocations)
   end
 
   @doc """

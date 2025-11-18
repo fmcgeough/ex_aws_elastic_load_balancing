@@ -22,6 +22,8 @@ v3.0.0
   - `ExAws.ElasticLoadBalancingV2.modify_capacity_reservation/2`
   - `ExAws.ElasticLoadBalancingV2.modify_ip_pools/2`
   - `ExAws.ElasticLoadBalancingV2.modify_listener_attributes/2`
+  - `ExAws.ElasticLoadBalancingV2.modify_trust_store/4`
+  - `ExAws.ElasticLoadBalancingV2.remove_trust_store_revocations/2`
 
 v2.2.2
 
