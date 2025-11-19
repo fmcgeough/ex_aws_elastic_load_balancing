@@ -1249,7 +1249,9 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   @typedoc """
   Information about a URL rewrite transform
 
-  This transform modifies the request URL. Specify only when Type is url-rewrite.
+  This transform modifies the request URL.
+
+  Specify only when `:type` in `t:rule_transform/0` is "url-rewrite.
   """
   @type url_rewrite_config() :: [
           {:rewrites, [rewrite_config()]}

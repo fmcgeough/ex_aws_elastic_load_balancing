@@ -1,6 +1,13 @@
 v3.0.0 
-* Remove unneeded opts parameter for:
+* Remove unneeded opts parameter for the following functions (the arity
+  is for the updated functions):
+  - `ExAws.ElasticLoadBalancingV2.add_tags/2`
   - `ExAws.ElasticLoadBalancingV2.delete_listener/1`
+  - `ExAws.ElasticLoadBalancingV2.delete_load_balancer/1`
+  - `ExAws.ElasticLoadBalancingV2.delete_rule/1`
+  - `ExAws.ElasticLoadBalancingV2.delete_target_group/1`
+  - `ExAws.ElasticLoadBalancingV2.deregister_targets/2`
+  - `ExAws.ElasticLoadBalancingV2.describe_load_balancer_attributes/1`
   - `ExAws.ElasticLoadBalancingV2.modify_load_balancer_attributes/2`
   - `ExAws.ElasticLoadBalancingV2.modify_target_group_attributes/2`
   - `ExAws.ElasticLoadBalancingV2.register_targets/2`
@@ -13,12 +20,19 @@ v3.0.0
   parameter `vpc_id` is not required. It can be passed in the optional
   opts parameter if needed.
   Note: The `vpc_id` is the identifier of the virtual private cloud (VPC). If the target is a Lambda function, this parameter does not apply. Otherwise, this parameter is required.
+* `ExAws.ElasticLoadBalancingV2.create_listener/3` created as replacement for
+  `create_listener/5`. The parameters `port` and `protocol` are optional. In
+  the new function they are passed in the `opts` if needed. The function
+  `create_listener/5` is deprecated.
+* `ExAws.ElasticLoadBalancingV2.create_target_group/2` replaces the previous
+  function `create_target_group/3`. The function `create_target_group/3` has
+  been removed.
 * Added functions:
+  - `ExAws.ElasticLoadBalancingV2.add_trust_store_revocations/2`
   - `ExAws.ElasticLoadBalancingV2.describe_trust_store_revocations/2`
   - `ExAws.ElasticLoadBalancingV2.describe_trust_store_associations/2`
   - `ExAws.ElasticLoadBalancingV2.get_resource_policy/1`
   - `ExAws.ElasticLoadBalancingV2.get_trust_store_ca_certificates_bundle/1`
-  - `ExAws.ElasticLoadBalancingV2.add_trust_store_revocations/2`
   - `ExAws.ElasticLoadBalancingV2.modify_capacity_reservation/2`
   - `ExAws.ElasticLoadBalancingV2.modify_ip_pools/2`
   - `ExAws.ElasticLoadBalancingV2.modify_listener_attributes/2`
