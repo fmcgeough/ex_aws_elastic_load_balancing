@@ -1503,13 +1503,14 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   @doc """
   Adds the specified tags to the specified Elastic Load Balancing resource.
 
-  You can tag your Application Load Balancers, Network Load Balancers, and your target groups.
+  You can tag your Application Load Balancers, Network Load Balancers, Gateway Load
+  Balancers, target groups, trust stores, listeners, and rules.
 
   Each tag consists of a key and an optional value. If a resource already has a tag with the same
-  key, `add_tags/1` updates its value.
+  key, `add_tags/2` updates its value.
 
   To list the current tags for your resources, use `describe_tags/1`. To remove tags from
-  your resources, use `remove_tags/1`.
+  your resources, use `remove_tags/2`.
 
   ## Examples:
 
@@ -1564,13 +1565,23 @@ defmodule ExAws.ElasticLoadBalancingV2 do
 
   ## Examples:
 
-      iex> opts = [revocation_contents: [%{revocation_type: "CRL"}]]
+      iex> revocation1 = %{revocation_type: "CRL", s3_bucket: "test_bucket"}
+      iex> revocation2 = %{revocation_type: "CRL", s3_bucket: "test_bucket2"}
+      iex> opts = [{:revocation_contents, [revocation1, revocation2]}]
       iex> trust_store_arn = "trust_store_arn"
       iex> ExAws.ElasticLoadBalancingV2.add_trust_store_revocations(trust_store_arn, opts)
       %ExAws.Operation.Query{
               action: :add_trust_store_revocations,
               content_encoding: "identity",
-              params: %{"Action" => "AddTrustStoreRevocations", "TrustStoreArn" => "trust_store_arn", "Version" => "2015-12-01", "RevocationContents.member.1.RevocationType" => "CRL"},
+              params: %{
+                "Action" => "AddTrustStoreRevocations",
+                "RevocationContents.member.1.RevocationType" => "CRL",
+                "RevocationContents.member.1.S3Bucket" => "test_bucket",
+                "RevocationContents.member.2.RevocationType" => "CRL",
+                "RevocationContents.member.2.S3Bucket" => "test_bucket2",
+                "TrustStoreArn" => "trust_store_arn",
+                "Version" => "2015-12-01"
+              },
               parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2,
               path: "/",
               service: :elasticloadbalancing
