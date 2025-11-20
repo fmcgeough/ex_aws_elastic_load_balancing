@@ -18,7 +18,9 @@ v3.0.0
 * `ExAws.ElasticLoadBalancingV2.add_trust_store_revocations/2` modified. The parameter `revocation_contents` is not required. The signature of the function was modified to allow passing just `trust_store_arn` as the sole parameter.
 * `ExAws.ElasticLoadBalancingV2.create_target_group/2` modified. The 
   parameter `vpc_id` is not required. It can be passed in the optional
-  opts parameter if needed.
+  opts parameter if needed. This function replaces the library's previous
+  function `create_target_group(name, vpc_id, opts \\ [])`. The parameter
+  `vpc_id` is optional.
   Note: The `vpc_id` is the identifier of the virtual private cloud (VPC). If the target is a Lambda function, this parameter does not apply. Otherwise, this parameter is required.
 * `ExAws.ElasticLoadBalancingV2.create_listener/3` created as replacement for
   `create_listener/5`. The parameters `port` and `protocol` are optional. In
