@@ -1617,15 +1617,19 @@ defmodule ExAws.ElasticLoadBalancingV2 do
 
       iex> default_actions = [%{type: "forward", target_group_arn: "target_arn"}]
       iex> load_balancer_arn = "load_balancer_arn"
-      iex> opts = [protocol: "HTTP", port: 80]
+      iex> opts = [protocol: "HTTP", port: 80,
+      ...>         alpn_policy: ["HTTP1Only"],
+      ...>         mutual_authentication: %{trust_store_arn: "trust_store_arn"}]
       iex> ExAws.ElasticLoadBalancingV2.create_listener(load_balancer_arn, default_actions, opts)
       %ExAws.Operation.Query{
         path: "/",
         params: %{
           "Action" => "CreateListener",
+          "AlpnPolicy.member.1" => "HTTP1Only",
           "DefaultActions.member.1.TargetGroupArn" => "target_arn",
           "DefaultActions.member.1.Type" => "forward",
           "LoadBalancerArn" => "load_balancer_arn",
+          "MutualAuthentication.TrustStoreArn" => "trust_store_arn",
           "Port" => 80,
           "Protocol" => "HTTP",
           "Version" => "2015-12-01"
@@ -1937,13 +1941,13 @@ defmodule ExAws.ElasticLoadBalancingV2 do
           ca_certificates_bundle_s3_key(),
           create_trust_store_opts()
         ) :: ExAws.Operation.Query.t()
-  def create_trust_store(trust_store_name, ca_certificates_bundle_s3_bucket, ca_certificates_bundle_s3_key, opts \\ []) do
+  def create_trust_store(trust_store_name, ca_certs_bundle_s3_bucket, ca_certs_bundle_s3_key, opts \\ []) do
     opts
     |> keyword_to_map()
     |> Map.merge(%{
       trust_store_name: trust_store_name,
-      ca_certificates_bundle_s3_bucket: ca_certificates_bundle_s3_bucket,
-      ca_certificates_bundle_s3_key: ca_certificates_bundle_s3_key
+      ca_certificates_bundle_s3_bucket: ca_certs_bundle_s3_bucket,
+      ca_certificates_bundle_s3_key: ca_certs_bundle_s3_key
     })
     |> build_request(:create_trust_store)
   end
