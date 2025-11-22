@@ -2041,11 +2041,38 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   end
 
   @doc """
+  Deletes a shared trust store association
+
+  ## Examples:
+
+        iex> ExAws.ElasticLoadBalancingV2.delete_shared_trust_store_association("resource_arn", "trust_store_arn")
+        %ExAws.Operation.Query{
+          path: "/",
+          params: %{
+            "Action" => "DeleteSharedTrustStoreAssociation",
+            "ResourceArn" => "resource_arn",
+            "TrustStoreArn" => "trust_store_arn",
+            "Version" => "2015-12-01"
+          },
+          content_encoding: "identity",
+          service: :elasticloadbalancing,
+          action: :delete_shared_trust_store_association,
+          parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+        }
+  """
+  @spec delete_shared_trust_store_association(resource_arn(), trust_store_arn()) :: ExAws.Operation.Query.t()
+  def delete_shared_trust_store_association(resource_arn, trust_store_arn) do
+    [{:resource_arn, resource_arn}, {:trust_store_arn, trust_store_arn}]
+    |> build_request(:delete_shared_trust_store_association)
+  end
+
+  @doc """
   Deletes the specified target group.
 
-  You can delete a target group if it is not referenced by any
-  actions. Deleting a target group also deletes any associated
-  health checks.
+  You can delete a target group if it is not referenced by any actions.
+  Deleting a target group also deletes any associated health checks.
+  Deleting a target group does not affect its registered targets.
+  For example, any EC2 instances continue to run until you stop or terminate them.
 
   ## Examples:
 
@@ -2094,10 +2121,24 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   end
 
   @doc """
-  Deregisters the specified targets from the specified target group.
+  Deregisters the specified targets from the specified target group
 
-  After the targets are deregistered, they no longer receive traffic
-  from the load balancer.
+  After the targets are deregistered, they no longer receive traffic from the load balancer.
+
+  The load balancer stops sending requests to targets that are deregistering, but uses connection
+  draining to ensure that in-flight traffic completes on the existing connections. This deregistration
+  delay is configured by default but can be updated for each target group.
+
+  For more information, see the following:
+
+  - [Deregistration delay](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/edit-target-group-attributes.html#deregistration-delay)
+  in the Application Load Balancers User Guide
+  - [Deregistration delay](https://docs.aws.amazon.com/elasticloadbalancing/latest/network/edit-target-group-attributes.html#deregistration-delay)
+  in the Network Load Balancers User Guide
+  - [Deregistration delay](https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/edit-target-group-attributes.html#deregistration-delay)
+  in the Gateway Load Balancers User Guide
+
+  Note: If the specified target does not exist, the action returns successfully.
 
   ## Examples:
 
@@ -2146,11 +2187,11 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   Describes the current Elastic Load Balancing resource limits
   for your AWS account.
 
-  More information:
-  * [Limits for Your Application Load Balancers](http://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-limits.html)
-  in the *Application Load Balancer Guide*
-  * [Limits for Your Network Load Balancers](http://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-limits.html)
-  in the *Network Load Balancers Guide*.
+  For more information, see the following:
+
+  - [Quotas for your Application Load Balancers](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-limits.html)
+  - [Quotas for your Network Load Balancers](https://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-limits.html)
+  - [Quotas for your Gateway Load Balancers](https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/quotas-limits.html)
 
   ## Examples:
 
