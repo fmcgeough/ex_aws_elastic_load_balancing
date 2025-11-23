@@ -1333,12 +1333,28 @@ defmodule ExAws.ElasticLoadBalancingV2 do
             }
 
   @typedoc """
+  Used to include anomaly detection information.
+
+  Valid Values
+  ```
+  "AnomalyDetection" | "All"
+  ```
+  """
+  @type target_health_include_option() :: binary()
+
+  @typedoc """
+  List of `t:target_health_include_option/0`
+  """
+  @type target_health_include_options() :: [target_health_include_option(), ...]
+
+  @typedoc """
   Optional parameters for `describe_target_health/2`.
   """
   @type describe_target_health_opts ::
-          [targets: target_descriptions]
+          [targets: target_descriptions(), include: target_health_include_options()]
           | %{
-              optional(:targets) => target_descriptions()
+              optional(:targets) => target_descriptions(),
+              optional(:include) => target_health_include_options()
             }
 
   @typedoc """
@@ -2599,7 +2615,38 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   end
 
   @doc """
-  Describes the health of the specified targets or all of your targets.
+  Describes the health of the specified targets or all of your targets
+
+  ## Examples:
+
+      iex> ExAws.ElasticLoadBalancingV2.describe_target_health("target_group_arn")
+      %ExAws.Operation.Query{
+        path: "/",
+        params: %{
+          "Action" => "DescribeTargetHealth",
+          "TargetGroupArn" => "target_group_arn",
+          "Version" => "2015-12-01"
+        },
+        content_encoding: "identity",
+        service: :elasticloadbalancing,
+        action: :describe_target_health,
+        parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+      }
+      iex> opts = [include: ["AnomalyDetection"]]
+      iex> ExAws.ElasticLoadBalancingV2.describe_target_health("target_group_arn", opts)
+      %ExAws.Operation.Query{
+        path: "/",
+        params: %{
+          "Action" => "DescribeTargetHealth",
+          "Include.member.1" => "AnomalyDetection",
+          "TargetGroupArn" => "target_group_arn",
+          "Version" => "2015-12-01"
+        },
+        content_encoding: "identity",
+        service: :elasticloadbalancing,
+        action: :describe_target_health,
+        parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+      }
   """
   @spec describe_target_health(target_group_arn(), describe_target_health_opts()) :: ExAws.Operation.Query.t()
   def describe_target_health(target_group_arn, opts \\ []) do
@@ -3497,6 +3544,10 @@ defmodule ExAws.ElasticLoadBalancingV2 do
 
   defp format_param({:remove_ipam_pools, remove_ipam_pools}) do
     remove_ipam_pools |> format(prefix: "RemoveIpamPools.member")
+  end
+
+  defp format_param({:include, include}) do
+    include |> format(prefix: "Include.member")
   end
 
   defp format_param({key, parameters}) do
