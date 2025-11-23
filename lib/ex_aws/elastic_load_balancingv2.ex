@@ -2549,7 +2549,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
    target group, use `describe_target_health/1`. To describe the attributes
    of a target group, use `describe_target_group_attributes/1`.
 
-   ## Examples:
+  ## Examples:
 
       iex> ExAws.ElasticLoadBalancingV2.describe_target_groups()
       %ExAws.Operation.Query{
@@ -2560,12 +2560,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         action: :describe_target_groups,
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
-
       iex> opts = [load_balancer_arn: "load_balancer_arn", target_group_arns: ["target_group_arn1", "target_group_arn2"]]
-      [
-        load_balancer_arn: "load_balancer_arn",
-        target_group_arns: ["target_group_arn1", "target_group_arn2"]
-      ]
       iex> ExAws.ElasticLoadBalancingV2.describe_target_groups(opts)
       %ExAws.Operation.Query{
         path: "/",
