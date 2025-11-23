@@ -2259,7 +2259,14 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   end
 
   @doc """
-  Describes the certificates for the specified secure listener.
+  Describes the default certificate and the certificate list for the specified HTTPS or TLS listener
+
+  If the default certificate is also in the certificate list, it appears twice in the
+  results (once with `is_default` set to true and once with `is_default` set to false).
+
+  For more information, see [SSL certificates](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/https-listener-certificates.html)
+  in the Application Load Balancers Guide or [Server certificates](https://docs.aws.amazon.com/elasticloadbalancing/latest/network/tls-listener-certificates.html)
+  in the Network Load Balancers Guide.
 
   ## Examples:
 
@@ -2289,10 +2296,12 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   end
 
   @doc """
-  Describes the specified listeners or the listeners for the
-  specified Application Load Balancer or Network Load Balancer.
+  Describes the specified listeners or the listeners for the specified Application
+  Load Balancer, Network Load Balancer, or Gateway Load Balancer. You must specify
+  either a load balancer or one or more listeners.
 
-  You must specify either a load balancer or one or more listeners.
+  For an HTTPS or TLS listener, the output includes the default certificate for the
+  listener. To describe the certificate list for the listener, use `describe_listener_certificates/2`.
 
   ## Example
 
@@ -2312,8 +2321,17 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   end
 
   @doc """
-  Describes the attributes for the specified Application Load
-  Balancer or Network Load Balancer.
+  Describes the attributes for the specified Application Load Balancer,
+  Network Load Balancer, or Gateway Load Balancer.
+
+  For more information, see the following:
+
+  - [Load balancer attributes](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/application-load-balancers.html#load-balancer-attributes)
+    in the Application Load Balancers Guide
+  - [Load balancer attributes](https://docs.aws.amazon.com/elasticloadbalancing/latest/network/network-load-balancers.html#load-balancer-attributes)
+    in the Network Load Balancers Guide
+  - [Load balancer attributes](https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/gateway-load-balancers.html#load-balancer-attributes)
+    in the Gateway Load Balancers Guide
 
   ## Examples:
 
@@ -2417,9 +2435,12 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   @doc """
   Describes the specified policies or all policies used for SSL negotiation.
 
-  More information:
-  * [Security Policies](http://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-https-listener.html#describe-ssl-policies)
-  in the *Application Load Balancers Guide*.
+  For more information, see:
+
+  - [Security policies](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/describe-ssl-policies.html)
+    in the Application Load Balancers Guide
+  - [Security policies](https://docs.aws.amazon.com/elasticloadbalancing/latest/network/describe-ssl-policies.html)
+    in the Network Load Balancers Guide.
 
   ## Examples:
 
