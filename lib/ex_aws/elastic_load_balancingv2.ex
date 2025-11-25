@@ -854,6 +854,21 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   """
   @type ca_certificates_bundle_s3_object_version() :: binary()
 
+  @typedoc """
+  Information about the priorities for the rules for a listener
+  """
+  @type rule_priority_pair() ::
+          [{:rule_arn, rule_arn()}, {:priority, priority()}]
+          | %{
+              optional(:rule_arn) => rule_arn(),
+              optional(:priority) => priority()
+            }
+
+  @typedoc """
+  A list of `t:rule_priority_pair/0`
+  """
+  @type rule_priorities() :: [rule_priority_pair(), ...]
+
   @type create_trust_store_opts() ::
           [
             {:ca_certificates_bundle_s3_object_version, ca_certificates_bundle_s3_object_version()},
@@ -1037,18 +1052,22 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   """
   @type modify_listener_opts ::
           [
+            alpn_policy: [alpn_policy()],
+            certificates: certificates(),
+            default_actions: actions(),
+            mutual_authentication: mutual_authentication_attributes(),
             port: port_num(),
             protocol: protocol(),
-            ssl_policy: ssl_policy(),
-            certificates: certificates(),
-            default_actions: actions()
+            ssl_policy: ssl_policy()
           ]
           | %{
+              optional(:alpn_policy) => [alpn_policy()],
+              optional(:certificates) => certificates(),
+              optional(:default_actions) => actions(),
+              optional(:mutual_authentication) => mutual_authentication_attributes(),
               optional(:port) => port_num(),
               optional(:protocol) => protocol(),
-              optional(:ssl_policy) => ssl_policy(),
-              optional(:certificates) => certificates(),
-              optional(:default_actions) => actions()
+              optional(:ssl_policy) => ssl_policy()
             }
 
   @typedoc """
@@ -1085,11 +1104,15 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   @type modify_rule_opts ::
           [
             actions: actions(),
-            conditions: conditions()
+            conditions: conditions(),
+            reset_transforms: boolean(),
+            transforms: [rule_transform(), ...]
           ]
           | %{
               optional(:actions) => actions(),
-              optional(:conditions) => conditions()
+              optional(:conditions) => conditions(),
+              optional(:reset_transforms) => boolean(),
+              optional(:transforms) => [rule_transform(), ...]
             }
 
   @typedoc """
@@ -1177,14 +1200,29 @@ defmodule ExAws.ElasticLoadBalancingV2 do
             }
 
   @typedoc """
+  Indicates whether to evaluate inbound security group rules for traffic
+  sent to a Network Load Balancer through AWS PrivateLink
+
+  Applies only if the load balancer has an associated security group. The default is "on".
+
+  Valid Values
+  ```
+  "on" | "off"
+  ```
+  """
+  @type enforce_security_group_inbound_rules_on_private_link_traffic() :: binary()
+
+  @typedoc """
   Optional parameters for `set_security_groups/3`.
   """
   @type set_security_groups_opts ::
           [
-            enforce_security_group_inbound_rules_on_private_link_traffic: binary
+            enforce_security_group_inbound_rules_on_private_link_traffic:
+              enforce_security_group_inbound_rules_on_private_link_traffic()
           ]
           | %{
-              optional(:enforce_security_group_inbound_rules_on_private_link_traffic) => binary
+              optional(:enforce_security_group_inbound_rules_on_private_link_traffic) =>
+                enforce_security_group_inbound_rules_on_private_link_traffic()
             }
 
   @typedoc """
@@ -2739,7 +2777,8 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         action: :describe_trust_stores,
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
-      iex> ExAws.ElasticLoadBalancingV2.describe_trust_stores(%{trust_store_names: ["trust_store1", "trust_store2"]})
+      iex> opts = %{trust_store_names: ["trust_store1", "trust_store2"]}
+      iex> ExAws.ElasticLoadBalancingV2.describe_trust_stores(opts)
       %ExAws.Operation.Query{
         path: "/",
         params: %{
@@ -2753,7 +2792,8 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         action: :describe_trust_stores,
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
-      iex> ExAws.ElasticLoadBalancingV2.describe_trust_stores(%{trust_store_arns: ["arn1", "arn2"]})
+      iex> opts = %{trust_store_arns: ["arn1", "arn2"]}
+      iex> ExAws.ElasticLoadBalancingV2.describe_trust_stores(opts)
       %ExAws.Operation.Query{
         path: "/",
         params: %{
@@ -3289,14 +3329,16 @@ defmodule ExAws.ElasticLoadBalancingV2 do
 
   ## Examples:
 
-      iex> ExAws.ElasticLoadBalancingV2.set_rule_priorities([1,2,3])
+      iex> rule_priorities = [%{rule_arn: "rule1_arn", priority: 1}, %{rule_arn: "rule2_arn", priority: 2}]
+      iex> ExAws.ElasticLoadBalancingV2.set_rule_priorities(rule_priorities)
       %ExAws.Operation.Query{
         path: "/",
         params: %{
           "Action" => "SetRulePriorities",
-          "RulePriorities.member.1" => 1,
-          "RulePriorities.member.2" => 2,
-          "RulePriorities.member.3" => 3,
+          "RulePriorities.member.1.Priority" => 1,
+          "RulePriorities.member.1.RuleArn" => "rule1_arn",
+          "RulePriorities.member.2.Priority" => 2,
+          "RulePriorities.member.2.RuleArn" => "rule2_arn",
           "Version" => "2015-12-01"
         },
         content_encoding: "identity",
@@ -3305,7 +3347,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @spec set_rule_priorities(rule_priorities :: [integer, ...]) :: ExAws.Operation.Query.t()
+  @spec set_rule_priorities(rule_priorities()) :: ExAws.Operation.Query.t()
   def set_rule_priorities(rule_priorities) do
     [{:rule_priorities, rule_priorities}]
     |> build_request(:set_rule_priorities)
