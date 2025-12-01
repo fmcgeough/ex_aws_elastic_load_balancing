@@ -1519,7 +1519,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   If the certificate in already in the certificate list, the call is successful but the certificate is not added again.
 
   To list the certificates for your listener, use `describe_listener_certificates/1`.
-  To remove certificates from your listener, use `remove_listener_certificates/3`.
+  To remove certificates from your listener, use `remove_listener_certificates/2`.
 
   ## Examples:
 
@@ -1774,7 +1774,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
 
   When you create a load balancer, you can specify security groups, subnets,
   IP address type, and tags. Otherwise, you could do so later using `set_security_groups/3`,
-  `set_subnets/3`, `set_ip_address_type/3`, and `add_tags/2`.
+  `set_subnets/3`, `set_ip_address_type/2`, and `add_tags/2`.
 
   To create listeners for your load balancer, use `create_listener/3`. To describe your
   current load balancers, see `describe_load_balancers/1`. When you are finished with a
@@ -1783,11 +1783,15 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   You can create up to 20 load balancers per region per account. You can request an
   increase for the number of load balancers for your account.
 
-  More information:
-  * [Limits for Your Application Load Balancer](http://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-limits.html)
-  in the *Application Load Balancers Guide*
-  * [Limits for Your Network Load Balancer](http://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-limits.html)
-  in the *Network Load Balancers Guide*
+  For more information, see the following:
+
+  - [Application Load Balancers](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/application-load-balancers.html)
+  - [Network Load Balancers](https://docs.aws.amazon.com/elasticloadbalancing/latest/network/network-load-balancers.html)
+  - [Gateway Load Balancers](https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/gateway-load-balancers.html)
+
+  This operation is idempotent, which means that it completes at most one time.
+  If you attempt to create multiple load balancers with the same settings, each
+  call succeeds.
 
   ## Examples:
 
@@ -1902,18 +1906,22 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   @doc """
   Creates a target group.
 
-  To register targets with the target group, use `register_targets/3`. To
+  To register targets with the target group, use `register_targets/2`. To
   update the health check settings for the target group, use
   `modify_target_group/1`. To monitor the health of targets in the target group,
   use `describe_target_health/1`. To route traffic to the targets in a target group,
   specify the target group in an action using `create_listener/3` or `create_rule/5`.
-  To delete a target group, use `delete_target_group/2`.
+  To delete a target group, use `delete_target_group/1`.
 
   More information:
-  * [Target Groups for Your Application Load Balancers](http://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-target-groups.html)
-  in the *Application Load Balancers Guide*
-  * [Target Groups for Your Network Load Balancers](http://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-target-groups.html)
-  in the *Network Load Balancers Guide*.
+
+  - [Target Groups for Your Application Load Balancers](http://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-target-groups.html)
+  - [Target Groups for Your Network Load Balancers](http://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-target-groups.html)
+  - [Target groups for your Gateway Load Balancers](https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/target-groups.html)
+
+  This operation is idempotent, which means that it completes at most one time.
+  If you attempt to create multiple target groups with the same settings, each
+  call succeeds.
 
   ## Examples:
 
@@ -1966,7 +1974,8 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   @doc """
   Creates a trust store.
 
-  For more information, see Mutual TLS for Application Load Balancers.
+  For more information, see
+  [Mutual TLS for Application Load Balancers](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/mutual-authentication.html).
 
   ## Examples:
 
@@ -2035,8 +2044,8 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   end
 
   @doc """
-  Deletes the specified Application Load Balancer or Network Load Balancer
-  and its attached listeners.
+  Deletes the specified Application Load Balancer, Network Load Balancer,
+  or Gateway Load Balancer. Deleting a load balancer also deletes its listeners.
 
   You can't delete a load balancer if deletion protection is enabled.
   If the load balancer does not exist or has already been deleted,
@@ -2070,7 +2079,9 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   end
 
   @doc """
-  Deletes the specified rule.
+  Deletes the specified rule
+
+  You can't delete the default rule.
 
   ## Examples:
 
@@ -2416,24 +2427,9 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   To describe the listeners for a load balancer, use `describe_listeners/1`.
   To describe the attributes for a load balancer, use `describe_load_balancer_attributes/1`.
 
-  The options that can be passed into `describe_load_balancers/1` allow load_balancer_arns or names
-  (there would not be a reason ordinarily to specify both). Elastic Load Balancing provides
-  two versions of ARNS (one for Classic and one for Application Load Balancer). The syntax for
-  each is below:
-
-  Classic Load Balancer ARN Syntax:
-
-      arn:aws:elasticloadbalancing:region:account-id:loadbalancer/name
-
-  Application Load Balancer ARN Syntax:
-
-      arn:aws:elasticloadbalancing:region:account-id:loadbalancer/app/load-balancer-name/load-balancer-id
-      arn:aws:elasticloadbalancing:region:account-id:listener/app/load-balancer-name/load-balancer-id/listener-id
-      arn:aws:elasticloadbalancing:region:account-id:listener-rule/app/load-balancer-name/load-balancer-id/listener-id/rule-id
-      arn:aws:elasticloadbalancing:region:account-id:targetgroup/target-group-name/target-group-id
-
   ## Examples:
 
+      iex> # Describe all load balancers
       iex> ExAws.ElasticLoadBalancingV2.describe_load_balancers()
       %ExAws.Operation.Query{
         path: "/",
@@ -3031,7 +3027,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   Modifies the specified rule.
 
   Any existing properties that you do not modify retain their current values.
-  To modify the default action, use `modify_listener/1`.
+  To modify the actions for the default rule, use `modify_listener/1`.
   """
   @spec modify_rule(rule_arn(), modify_rule_opts()) :: ExAws.Operation.Query.t()
   def modify_rule(rule_arn, opts \\ []) do
@@ -3155,20 +3151,18 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   @doc """
   Registers the specified targets with the specified target group.
 
-  You can register targets by instance ID or by IP address. If the
-  target is an EC2 instance, it must be in the `running` state when you
-  register it.
+  If the target is an EC2 instance, it must be in the running state when you register it.
 
-  By default, the load balancer routes requests to registered targets using
-  the protocol and port for the target group. Alternatively, you can override
-  the port for a target when you register it. You can register each EC2
-  instance or IP address with the same target group multiple times using
-  different ports.
+  By default, the load balancer routes requests to registered targets using the protocol
+  and port for the target group. Alternatively, you can override the port for a target when
+  you register it. You can register each EC2 instance or IP address with the same target
+  group multiple times using different ports.
 
-  With a Network Load Balancer, you cannot register instances by instance ID
-  if they have the following instance types: C1, CC1, CC2, CG1, CG2, CR1,
-  CS1, G1, G2, HI1, HS1, M1, M2, M3, and T1. You can register instances of
-  these types by IP address.
+  For more information, see the following:
+
+  - Register targets for your Application Load Balancer
+  - Register targets for your Network Load Balancer
+  - Register targets for your Gateway Load Balancer
 
   To remove a target from a target group, use `deregister_targets/2`.
 
@@ -3234,8 +3228,10 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   end
 
   @doc """
-  Removes the specified tags from the specified Elastic Load Balancing
-  resource.
+  Removes the specified tags from the specified Elastic Load Balancing resources
+
+  You can remove the tags for one or more Application Load Balancers, Network Load
+  Balancers, Gateway Load Balancers, target groups, listeners, or rules.
 
   To list the current tags for your resources, use `describe_tags/1`.
 
@@ -3388,12 +3384,11 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   end
 
   @doc """
-  Enables the Availability Zone for the specified subnets for the specified
-  Application Load Balancer.
+  Enables the Availability Zones for the specified public subnets for the
+  specified Application Load Balancer, Network Load Balancer or Gateway Load
+  Balancer
 
   The specified subnets replace the previously enabled subnets.
-
-  *Note: You can't change the subnets for a Network Load Balancer*.
 
   ## Examples:
 
