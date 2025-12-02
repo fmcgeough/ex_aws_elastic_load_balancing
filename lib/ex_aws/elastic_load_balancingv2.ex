@@ -90,7 +90,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   @typedoc """
   Information about a target group attribute.
   """
-  @type target_group_attribute() :: {key :: atom, value :: binary()}
+  @type target_group_attribute() :: {atom(), binary()} | %{key: binary, value: binary}
 
   @typedoc """
   A list of `t:target_group_attribute/0`
@@ -3148,7 +3148,6 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   ## Examples:
 
       iex> attributes = [{:hello, "test"}]
-      [hello: "test"]
       iex> ExAws.ElasticLoadBalancingV2.modify_target_group_attributes("target_group_arn", attributes)
       %ExAws.Operation.Query{
         path: "/",
@@ -3156,6 +3155,24 @@ defmodule ExAws.ElasticLoadBalancingV2 do
           "Action" => "ModifyTargetGroupAttributes",
           "Attributes.member.1.Key" => "hello",
           "Attributes.member.1.Value" => "test",
+          "TargetGroupArn" => "target_group_arn",
+          "Version" => "2015-12-01"
+        },
+        content_encoding: "identity",
+        service: :elasticloadbalancing,
+        action: :modify_target_group_attributes,
+        parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+      }
+      iex> attributes = [%{key: "hello", value: "test"}, %{key: "goodbye", value: "farewell"}]
+      iex> ExAws.ElasticLoadBalancingV2.modify_target_group_attributes("target_group_arn", attributes)
+      %ExAws.Operation.Query{
+        path: "/",
+        params: %{
+          "Action" => "ModifyTargetGroupAttributes",
+          "Attributes.member.1.Key" => "hello",
+          "Attributes.member.1.Value" => "test",
+          "Attributes.member.2.Key" => "goodbye",
+          "Attributes.member.2.Value" => "farewell",
           "TargetGroupArn" => "target_group_arn",
           "Version" => "2015-12-01"
         },
@@ -3525,7 +3542,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
 
   defp format_param({:attributes, attributes}) do
     attributes
-    |> Enum.map(fn {key, value} -> [key: maybe_stringify(key), value: value] end)
+    |> Enum.map(&normalize_tag_or_attribute/1)
     |> format(prefix: "Attributes.member")
   end
 
@@ -3599,16 +3616,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
 
   defp format_param({:tags, tags}) do
     tags
-    |> Enum.map(fn tag ->
-      case is_map(tag) do
-        true ->
-          tag
-
-        false ->
-          {key, value} = tag
-          %{key: maybe_stringify(key), value: value}
-      end
-    end)
+    |> Enum.map(&normalize_tag_or_attribute/1)
     |> format(prefix: "Tags.member")
   end
 
@@ -3651,4 +3659,11 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   defp format_param({key, parameters}) do
     format([{key, parameters}])
   end
+
+  defp normalize_tag_or_attribute(val) when is_tuple(val) do
+    {key, value} = val
+    %{key: maybe_stringify(key), value: value}
+  end
+
+  defp normalize_tag_or_attribute(val), do: val
 end
