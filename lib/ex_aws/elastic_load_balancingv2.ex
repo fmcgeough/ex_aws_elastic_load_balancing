@@ -2,6 +2,26 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   @moduledoc """
   Operations on AWS ELB (Elastic Load Balancing) V2 API
 
+  The doc provided here is extracted from the [AWS ELB V2 API Reference](https://docs.aws.amazon.com/elasticloadbalancing/latest/APIReference/Welcome.html).
+  The public functions in this module mirror the API actions documented there. The Elixir function
+  names are the snake_case versions of the API action names. For example, `CreateLoadBalancer` in the API
+  becomes `create_load_balancer/2` in this module. The names of the parameters to the functions are
+  also the snake_case versions of the parameter names used in the API. For example, `LoadBalancerName` in
+  the API is `load_balancer_name` in this module).
+
+  The arity of functions is based on what is required vs what is optional. Required parameters are
+  passed as individual parameters, and optional parameters are passed as a keyword list or map in the final
+  parameter. If there are multiple required parameters, they are passed in the order that seemed to make
+  the most sense (in general, from most general to most specific).
+
+  Optional parameters have an associated type that aligns with the function name with the suffix `_opts`. For
+  example, the optional parameters for the function `create_load_balancer/2` are defined by the type
+  `t:create_load_balancer_opts/0`.
+
+  There are also type definitions for many of the complex types used in the API. These types are used
+  in the function specs for the public functions. They also provide some documentation that appears in
+  the AWS API Reference.
+
   AWS Elastic Load Balancing supports three types of load balancers: Application
   Load Balancers (ALB), Network Load Balancers (NLB), and Classic Load Balancers. You can
   select a load balancer based on your application needs. This API covers the
