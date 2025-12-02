@@ -47,6 +47,11 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   @version "2015-12-01"
 
   @typedoc """
+  A list of binaries
+  """
+  @type binary_list() :: [binary(), ...]
+
+  @typedoc """
   Information about a tag
   """
   @type tag() :: {atom(), binary()} | %{key: binary, value: binary}
@@ -72,20 +77,20 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   must contain only alphanumeric characters or hyphens, must not begin or end with
   a hyphen, and must not begin with "internal-".
   """
-  @type load_balancer_name() :: binary
+  @type load_balancer_name() :: binary()
 
   @typedoc """
   Information about a load balancer attribute.
   """
   @type load_balancer_attribute :: %{
-          optional(:key) => binary,
-          optional(:value) => binary
+          optional(:key) => binary(),
+          optional(:value) => binary()
         }
 
   @typedoc """
   Information about a target group attribute.
   """
-  @type target_group_attribute() :: {key :: atom, value :: binary}
+  @type target_group_attribute() :: {key :: atom, value :: binary()}
 
   @typedoc """
   A list of `t:target_group_attribute/0`
@@ -95,12 +100,17 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   @typedoc """
   The Amazon Resource Name (ARN) of the listener
   """
-  @type listener_arn() :: binary
+  @type listener_arn() :: binary()
 
   @typedoc """
   The Amazon Resource Name (ARN) of the rule
   """
-  @type rule_arn :: binary
+  @type rule_arn :: binary()
+
+  @typedoc """
+  A list of `t:rule_arn/0`
+  """
+  @type rule_arns :: [rule_arn(), ...]
 
   @typedoc """
   The Amazon Resource Name (ARN) of the target group
@@ -122,7 +132,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
 
   Valid Range: Minimum value of 1. Maximum value of 65535.
   """
-  @type port_num() :: integer
+  @type port_num() :: pos_integer()
 
   @typedoc """
   The rule priority
@@ -354,12 +364,12 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   Minimum length of 1. Maximum length of 1024.
   ```
   """
-  @type health_check_path() :: binary
+  @type health_check_path() :: binary()
 
   @typedoc """
   The Amazon Resource Name (ARN) of the load balancer
   """
-  @type load_balancer_arn() :: binary
+  @type load_balancer_arn() :: binary()
 
   @typedoc """
   A list of `t:load_balancer_arn/0`
@@ -374,27 +384,27 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   "CRL"
   ```
   """
-  @type revocation_type() :: binary
+  @type revocation_type() :: binary()
 
   @typedoc """
   The Amazon S3 bucket
   """
-  @type s3_bucket() :: binary
+  @type s3_bucket() :: binary()
 
   @typedoc """
   The Amazon S3 path
   """
-  @type s3_key() :: binary
+  @type s3_key() :: binary()
 
   @typedoc """
   The Amazon S3 object version
   """
-  @type s3_object_version() :: binary
+  @type s3_object_version() :: binary()
 
   @typedoc """
   The Amazon Resource Name (ARN) of the trust store.
   """
-  @type trust_store_arn() :: binary
+  @type trust_store_arn() :: binary()
 
   @typedoc """
   The revocation ID of the revocation file
@@ -537,7 +547,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   Information about the target group stickiness for a rule.
   """
   @type target_group_stickiness_config() :: %{
-          optional(:enabled) => boolean,
+          optional(:enabled) => boolean(),
           optional(:duration_seconds) => integer
         }
 
@@ -672,12 +682,12 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   """
   @type host_header_config() ::
           [
-            {:regex_values, [binary(), ...]},
-            {:values, [binary(), ...]}
+            {:regex_values, binary_list()},
+            {:values, binary_list()}
           ]
           | %{
-              optional(:regex_values) => [binary(), ...],
-              optional(:values) => [binary(), ...]
+              optional(:regex_values) => binary_list(),
+              optional(:values) => binary_list()
             }
 
   @typedoc """
@@ -697,7 +707,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   @typedoc """
   The IDs of the security groups.
   """
-  @type security_groups() :: [binary(), ...]
+  @type security_groups() :: binary_list()
 
   @typedoc """
   The type of load balancer. The default is "application".
@@ -747,11 +757,37 @@ defmodule ExAws.ElasticLoadBalancingV2 do
 
   @typedoc """
   Information about a subnet mapping
+
+  - allocation_id - [Network Load Balancer] The allocation ID of the Elastic IP address for
+    an internet-facing load balancer.
+  - ipv6_address - [Network Load Balancer] The IPv6 address.
+  - private_ipv4_address - [Network Load Balancer] The private IPv4 address for an internal
+    load balancer.
+  - source_native_ipv6_prefix - [Network Load Balancer with UDP listeners] The ID of the IPv6
+    prefix to use for source NAT. Specify an IPv6 prefix (/80 netmask) from the subnet CIDR
+    block or "auto_assigned" to use an IPv6 prefix selected at random from the subnet CIDR block.
+  - subnet_id - The ID of the subnet.
   """
-  @type subnet_mapping :: [
-          subnet_id: binary,
-          allocation_id: binary
-        ]
+  @type subnet_mapping ::
+          [
+            allocation_id: binary(),
+            ipv6_address: binary(),
+            private_ipv4_address: binary(),
+            source_native_ipv6_prefix: binary(),
+            subnet_id: binary()
+          ]
+          | %{
+              optional(:allocation_id) => binary(),
+              optional(:ipv6_address) => binary(),
+              optional(:private_ipv4_address) => binary(),
+              optional(:source_native_ipv6_prefix) => binary(),
+              optional(:subnet_id) => binary()
+            }
+
+  @typedoc """
+  A list of `t:subnet_mapping/0`
+  """
+  @type subnet_mappings :: [subnet_mapping(), ...]
 
   @typedoc """
   The values "on" and "off"
@@ -815,7 +851,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   - [Gateway Load Balancers] You can specify subnets from one or more Availability
     Zones.
   """
-  @type subnets() :: [binary(), ...]
+  @type subnets() :: binary_list()
 
   @typedoc """
   [Application Load Balancers on Outposts] The ID of the customer-owned address pool (CoIP pool)
@@ -1007,9 +1043,9 @@ defmodule ExAws.ElasticLoadBalancingV2 do
             ip_address_type: ip_address_type(),
             ipam_pools: ipam_pools(),
             scheme: load_balancer_scheme(),
-            security_groups: [binary(), ...],
+            security_groups: binary_list(),
             subnets: subnets(),
-            subnet_mappings: [subnet_mapping(), ...],
+            subnet_mappings: subnet_mappings(),
             tags: tags(),
             type: load_balancer_type()
           ]
@@ -1019,9 +1055,9 @@ defmodule ExAws.ElasticLoadBalancingV2 do
               optional(:ip_address_type) => ip_address_type(),
               optional(:ipam_pools) => ipam_pools(),
               optional(:scheme) => load_balancer_scheme(),
-              optional(:security_groups) => [binary(), ...],
+              optional(:security_groups) => binary_list(),
               optional(:subnets) => subnets(),
-              optional(:subnet_mappings) => [subnet_mapping, ...],
+              optional(:subnet_mappings) => subnet_mappings(),
               optional(:tags) => tags(),
               optional(:type) => load_balancer_type()
             }
@@ -1103,13 +1139,13 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   """
   @type rule_condition ::
           [
-            field: binary,
-            values: [binary, ...],
+            field: binary(),
+            values: binary_list(),
             host_header_config: host_header_config()
           ]
           | %{
-              optional(:field) => binary,
-              optional(:values) => [binary, ...],
+              optional(:field) => binary(),
+              optional(:values) => binary_list(),
               optional(:host_header_config) => host_header_config()
             }
 
@@ -1126,13 +1162,13 @@ defmodule ExAws.ElasticLoadBalancingV2 do
             actions: actions(),
             conditions: conditions(),
             reset_transforms: boolean(),
-            transforms: [rule_transform(), ...]
+            transforms: rule_transforms()
           ]
           | %{
               optional(:actions) => actions(),
               optional(:conditions) => conditions(),
               optional(:reset_transforms) => boolean(),
-              optional(:transforms) => [rule_transform(), ...]
+              optional(:transforms) => rule_transforms()
             }
 
   @typedoc """
@@ -1141,15 +1177,15 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   @type describe_rules_opts ::
           [
             listener_arn: listener_arn(),
-            rule_arns: [rule_arn(), ...],
+            rule_arns: rule_arns(),
             marker: marker(),
-            page_size: integer
+            page_size: page_size()
           ]
           | %{
               optional(:listener_arn) => listener_arn(),
-              optional(:rule_arns) => [rule_arn(), ...],
+              optional(:rule_arns) => rule_arns(),
               optional(:marker) => marker(),
-              optional(:page_size) => integer
+              optional(:page_size) => page_size()
             }
 
   @typedoc """
@@ -1327,6 +1363,11 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         ]
 
   @typedoc """
+  A list of `t:rule_transform/0`
+  """
+  @type rule_transforms() :: [rule_transform(), ...]
+
+  @typedoc """
   Optional parameters for `create_rule/5`.
   """
   @type create_rule_opts ::
@@ -1363,7 +1404,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
           [
             ssl_policy_names: [binary, ...],
             marker: marker(),
-            page_size: integer
+            page_size: page_size()
           ]
           | %{
               optional(:ssl_policy_names) => [binary, ...],
@@ -1422,13 +1463,13 @@ defmodule ExAws.ElasticLoadBalancingV2 do
           [
             enable_prefix_for_ipv6_source_nat: enable_prefix_for_ipv6_source_nat(),
             ip_address_type: ip_address_type(),
-            subnet_mappings: [subnet_mapping(), ...],
+            subnet_mappings: subnet_mappings(),
             subnets: subnets()
           ]
           | %{
               optional(:enable_prefix_for_ipv6_source_nat) => enable_prefix_for_ipv6_source_nat(),
               optional(:ip_address_type) => ip_address_type(),
-              optional(:subnet_mappings) => [subnet_mapping(), ...],
+              optional(:subnet_mappings) => subnet_mappings(),
               optional(:subnets) => subnets()
             }
 
@@ -1461,8 +1502,8 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   Optional parameters for `modify_ip_pools/2`.
   """
   @type modify_ip_pools_opts() ::
-          [{:ipam_pools, ipam_pools()}, {:remove_ipam_pools, [binary(), ...]}]
-          | %{optional(:ipam_pools) => ipam_pools(), optional(:remove_ipam_pools) => [binary(), ...]}
+          [{:ipam_pools, ipam_pools()}, {:remove_ipam_pools, binary_list()}]
+          | %{optional(:ipam_pools) => ipam_pools(), optional(:remove_ipam_pools) => binary_list()}
 
   @typedoc """
   The name of the attribute.
