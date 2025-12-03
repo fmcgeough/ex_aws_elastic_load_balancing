@@ -21,8 +21,8 @@ preferred JSON codec / http client. Example:
 ```elixir
 def deps do
   [
-    {:ex_aws, "~> 2.0"},
-    {:ex_aws_elastic_load_balancing, "~> 2.2"},
+    {:ex_aws, "~> 2.5"},
+    {:ex_aws_elastic_load_balancing, "~> 3.0"},
     {:poison, "~> 3.0"},
     {:hackney, "~> 1.9"},
   ]
