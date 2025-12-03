@@ -1,4 +1,6 @@
 v3.0.0 
+
+* This is a major upgrade. The focus was the `ExAws.ElasticLoadBalancingV2` module. A large number of functions had arity changes. These changes may break your existing code using this library. Apologies. It should be fairly easy to address the problem if it occurs. A large number of types were either defined or redefined (because the previous definition was inaccurate) from previous version.
 * Remove unneeded opts parameter for the following functions (the arity
   is for the updated functions):
   - `ExAws.ElasticLoadBalancingV2.add_tags/2`
@@ -40,6 +42,7 @@ v3.0.0
   - `ExAws.ElasticLoadBalancingV2.modify_listener_attributes/2`
   - `ExAws.ElasticLoadBalancingV2.modify_trust_store/4`
   - `ExAws.ElasticLoadBalancingV2.remove_trust_store_revocations/2`
+* Dependencies updated in mix.lock file.
 
 v2.2.2
 
