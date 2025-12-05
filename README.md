@@ -14,8 +14,8 @@ Application Load Balancers, Network Load Balancers and Gateway Load Balancers.
 
 ## Installation
 
-The package can be installed by adding ex_aws_elastic_load_balancing to your
-list of dependencies in mix.exs along with :ex_aws and your
+The package can be installed by adding `ex_aws_elastic_load_balancing` to your
+list of dependencies in mix.exs along with `:ex_aws` and your
 preferred JSON codec / http client. Example:
 
 ```elixir
@@ -43,9 +43,11 @@ iex(3)>  ElasticLoadBalancing.describe_load_balancers() |> ExAws.request(keys)
 ## Other Notes
 
 Both AWS Elastic Load Balancing APIs use the "query" protocol. So every function in the API
-returns a `%ExAws.Operation.Query{}` struct.
+returns a `ExAws.Operation.Query` struct.
 
 Most of the unit tests are implemented using [DocTest](https://hexdocs.pm/ex_unit/ExUnit.DocTest.html).
+
+There is some minimal support for parsing the results of a limited number of operations using the SweetXml library.
 
 ## License
 

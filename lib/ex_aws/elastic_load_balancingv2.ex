@@ -41,6 +41,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
     format_type: :xml,
     non_standard_keys: %{}
 
+  alias ExAws.ElasticLoadBalancing.FormatV2
   alias ExAws.ElasticLoadBalancingV2.Parsers, as: V2Parser
 
   # version of the AWS API
@@ -3508,7 +3509,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
 
   defp build_request(opts, action) do
     opts
-    |> Enum.flat_map(&format_param/1)
+    |> Enum.flat_map(&FormatV2.format_param/1)
     |> request(action)
   end
 
@@ -3535,135 +3536,4 @@ defmodule ExAws.ElasticLoadBalancingV2 do
       parser: &V2Parser.parse/2
     }
   end
-
-  defp format_param({:actions, actions}) do
-    actions |> format(prefix: "Actions.member")
-  end
-
-  defp format_param({:attributes, attributes}) do
-    attributes
-    |> Enum.map(&normalize_tag_or_attribute/1)
-    |> format(prefix: "Attributes.member")
-  end
-
-  defp format_param({:alpn_policy, alpn_policies}) do
-    alpn_policies |> format(prefix: "AlpnPolicy.member")
-  end
-
-  defp format_param({:certificates, certificates}) do
-    certificates |> format(prefix: "Certificates.member")
-  end
-
-  defp format_param({:conditions, conditions}) do
-    conditions |> format(prefix: "Conditions.member")
-  end
-
-  defp format_param({:default_actions, actions}) do
-    actions |> format(prefix: "DefaultActions.member")
-  end
-
-  defp format_param({:listener_arns, listener_arns}) do
-    listener_arns |> format(prefix: "ListenerArns.member")
-  end
-
-  defp format_param({:load_balancer_arns, load_balancer_arns}) do
-    load_balancer_arns |> format(prefix: "LoadBalancerArns.member")
-  end
-
-  defp format_param({:names, names}) do
-    names |> format(prefix: "Names.member")
-  end
-
-  defp format_param({:trust_store_arns, trust_store_arns}) do
-    trust_store_arns |> format(prefix: "TrustStoreArns.member")
-  end
-
-  defp format_param({:resource_arns, resource_arns}) do
-    resource_arns |> format(prefix: "ResourceArns.member")
-  end
-
-  defp format_param({:rewrites, rewrites}) do
-    rewrites |> format(prefix: "Rewrites.member")
-  end
-
-  defp format_param({:rule_arns, rule_arns}) do
-    rule_arns |> format(prefix: "RuleArns.member")
-  end
-
-  defp format_param({:rule_priorities, rule_priorities}) do
-    rule_priorities |> format(prefix: "RulePriorities.member")
-  end
-
-  defp format_param({:security_groups, security_groups}) do
-    security_groups |> format(prefix: "SecurityGroups.member")
-  end
-
-  defp format_param({:subnets, subnets}) do
-    subnets |> format(prefix: "Subnets.member")
-  end
-
-  defp format_param({:subnet_mappings, subnet_mappings}) do
-    subnet_mappings |> format(prefix: "SubnetMappings.member")
-  end
-
-  defp format_param({:regex_values, regex_values}) do
-    regex_values |> format(prefix: "RegexValues.member")
-  end
-
-  defp format_param({:values, values}) do
-    values |> format(prefix: "Values.member")
-  end
-
-  defp format_param({:tags, tags}) do
-    tags
-    |> Enum.map(&normalize_tag_or_attribute/1)
-    |> format(prefix: "Tags.member")
-  end
-
-  defp format_param({:tag_keys, tag_keys}) do
-    tag_keys |> format(prefix: "TagKeys.member")
-  end
-
-  defp format_param({:targets, targets}) do
-    targets |> format(prefix: "Targets.member")
-  end
-
-  defp format_param({:target_group_arns, target_group_arns}) do
-    target_group_arns |> format(prefix: "TargetGroupArns.member")
-  end
-
-  defp format_param({:revocation_contents, revocation_contents}) do
-    revocation_contents |> format(prefix: "RevocationContents.member")
-  end
-
-  defp format_param({:revocation_ids, revocation_ids}) do
-    revocation_ids |> format(prefix: "RevocationIds.member")
-  end
-
-  defp format_param({:trust_store_arn, trust_store_arn}) do
-    %{"TrustStoreArn" => trust_store_arn}
-  end
-
-  defp format_param({:ipam_pools, ipam_pools}) do
-    ipam_pools |> format(prefix: "IpamPools.member")
-  end
-
-  defp format_param({:remove_ipam_pools, remove_ipam_pools}) do
-    remove_ipam_pools |> format(prefix: "RemoveIpamPools.member")
-  end
-
-  defp format_param({:include, include}) do
-    include |> format(prefix: "Include.member")
-  end
-
-  defp format_param({key, parameters}) do
-    format([{key, parameters}])
-  end
-
-  defp normalize_tag_or_attribute(val) when is_tuple(val) do
-    {key, value} = val
-    %{key: maybe_stringify(key), value: value}
-  end
-
-  defp normalize_tag_or_attribute(val), do: val
 end
