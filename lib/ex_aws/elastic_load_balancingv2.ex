@@ -1497,7 +1497,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
 
   IPAM pools enable you to organize your IP addresses according to your routing and security needs.
   """
-  @type ipam_pools() :: %{ipv4_ipam_pool_id: ipv4_ipam_pool_id()}
+  @type ipam_pools() :: [%{ipv4_ipam_pool_id: ipv4_ipam_pool_id()}]
 
   @typedoc """
   Optional parameters for `modify_ip_pools/2`.
@@ -1872,7 +1872,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
       }
 
       iex> opts = [
-      ...> schema: "internet-facing",
+      ...> scheme: "internet-facing",
       ...> subnet_mappings: [
       ...>   %{subnet_id: "1.2.3.4", allocation_id: "i2234342"}
       ...> ],
@@ -1886,7 +1886,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
           "Action" => "CreateLoadBalancer",
           "IpAddressType" => "ipv4",
           "Name" => "Loader",
-          "Schema" => "internet-facing",
+          "Scheme" => "internet-facing",
           "SecurityGroups.member.1" => "Secure123",
           "SecurityGroups.member.2" => "Secure456",
           "SubnetMappings.member.1.AllocationId" => "i2234342",

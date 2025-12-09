@@ -56,6 +56,42 @@ defmodule ExAws.ElasticLoadBalancing.FormatV2Test do
            } == result
   end
 
+  test "create_load_balancer_opts" do
+    result =
+      build_result(
+        customer_owned_ipv4_pool: "ipv4pool-coip-12345678",
+        enable_prefix_for_ipv6_source_nat: "on",
+        ip_address_type: "dualstack",
+        ipam_pools: [%{ipv4_ipam_pool_id: "ipam-pool-1"}, %{ipv4_ipam_pool_id: "ipam-pool-2"}],
+        scheme: "internet-facing",
+        security_groups: ["Secure123", "Secure456"],
+        subnets: ["1.2.3.4", "5.6.7.8"],
+        subnet_mappings: [%{subnet_id: "1.2.3.4", allocation_id: "i2234342"}],
+        tags: [%{key: "key1", value: "value1"}, %{key: "key2", value: "value2"}],
+        type: "application"
+      )
+
+    assert %{
+             "CustomerOwnedIpv4Pool" => "ipv4pool-coip-12345678",
+             "EnablePrefixForIpv6SourceNat" => "on",
+             "IpAddressType" => "dualstack",
+             "IpamPools.member.1.Ipv4IpamPoolId" => "ipam-pool-1",
+             "IpamPools.member.2.Ipv4IpamPoolId" => "ipam-pool-2",
+             "Scheme" => "internet-facing",
+             "SecurityGroups.member.1" => "Secure123",
+             "SecurityGroups.member.2" => "Secure456",
+             "SubnetMappings.member.1.AllocationId" => "i2234342",
+             "SubnetMappings.member.1.SubnetId" => "1.2.3.4",
+             "Subnets.member.1" => "1.2.3.4",
+             "Subnets.member.2" => "5.6.7.8",
+             "Tags.member.1.Key" => "key1",
+             "Tags.member.1.Value" => "value1",
+             "Tags.member.2.Key" => "key2",
+             "Tags.member.2.Value" => "value2",
+             "Type" => "application"
+           } == result
+  end
+
   defp build_result(opts) do
     opts
     |> Enum.flat_map(&FormatV2.format_param/1)
