@@ -81,6 +81,13 @@ defmodule ExAws.ElasticLoadBalancing.FormatV2 do
     values |> format(prefix: "Values.member")
   end
 
+  def format_param({:transforms, transforms}) do
+    Enum.map(transforms, fn transform ->
+      normalize_transform(transform)
+    end)
+    |> format(prefix: "Transforms.member")
+  end
+
   def format_param({:tags, tags}) do
     tags
     |> Enum.map(&normalize_tag_or_attribute/1)
@@ -133,4 +140,16 @@ defmodule ExAws.ElasticLoadBalancing.FormatV2 do
   end
 
   def normalize_tag_or_attribute(val), do: val
+
+  def normalize_transform(%{url_rewrite_config: url_rewrite_config} = transform) do
+    val = Enum.flat_map(url_rewrite_config, &format_param/1)
+    Map.put(transform, :url_rewrite_config, val)
+  end
+
+  def normalize_transform(%{host_header_rewrite_config: host_header_rewrite_config} = transform) do
+    val = Enum.flat_map(host_header_rewrite_config, &format_param/1)
+    Map.put(transform, :host_header_rewrite_config, val)
+  end
+
+  def normalize_transform(transform), do: transform
 end

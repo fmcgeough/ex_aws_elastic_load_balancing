@@ -92,6 +92,28 @@ defmodule ExAws.ElasticLoadBalancing.FormatV2Test do
            } == result
   end
 
+  test "create_rule_opts" do
+    result =
+      build_result(
+        transforms: [
+          %{
+            type: "url-rewrite",
+            url_rewrite_config: [
+              rewrites: [%{regex: "test1", replace: "replace1"}, %{regex: "test2", replace: "replace2"}]
+            ]
+          }
+        ]
+      )
+
+    assert %{
+             "Transforms.member.1.Type" => "url-rewrite",
+             "Transforms.member.1.UrlRewriteConfig.Rewrites.member.1.Regex" => "test1",
+             "Transforms.member.1.UrlRewriteConfig.Rewrites.member.1.Replace" => "replace1",
+             "Transforms.member.1.UrlRewriteConfig.Rewrites.member.2.Regex" => "test2",
+             "Transforms.member.1.UrlRewriteConfig.Rewrites.member.2.Replace" => "replace2"
+           } == result
+  end
+
   defp build_result(opts) do
     opts
     |> Enum.flat_map(&FormatV2.format_param/1)

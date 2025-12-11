@@ -467,9 +467,9 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   Request parameters to use when integrating with Amazon Cognito to authenticate users.
   """
   @type authenticate_cognito_action_config :: %{
-          required(:user_pool_arn) => binary,
-          required(:user_pool_client_id) => binary,
-          required(:user_pool_domain) => binary,
+          :user_pool_arn => binary,
+          :user_pool_client_id => binary,
+          :user_pool_domain => binary,
           optional(:session_cookie_name) => binary,
           optional(:scope) => binary,
           optional(:session_timeout) => integer,
@@ -483,11 +483,11 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   Connect (OIDC) to authenticate users.
   """
   @type authenticate_oidc_action_config :: %{
-          required(:issuer) => binary,
-          required(:authorization_endpoint) => binary,
-          required(:token_endpoint) => binary,
-          required(:user_info_endpoint) => binary,
-          required(:client_id) => binary,
+          :issuer => binary,
+          :authorization_endpoint => binary,
+          :token_endpoint => binary,
+          :user_info_endpoint => binary,
+          :client_id => binary,
           optional(:client_secret) => binary,
           optional(:session_cookie_name) => binary,
           optional(:scope) => binary,
@@ -539,7 +539,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
             {:message_body, fixed_response_action_message()}
           ]
           | %{
-              required(:status_code) => fixed_response_action_status_code(),
+              :status_code => fixed_response_action_status_code(),
               optional(:content_type) => fixed_response_action_content_type(),
               optional(:message_body) => fixed_response_action_message()
             }
@@ -603,7 +603,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
           optional(:host) => binary,
           optional(:path) => binary,
           optional(:query) => binary,
-          required(:status_code) => binary
+          :status_code => binary
         }
 
   @typedoc """
@@ -1326,10 +1326,10 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   @typedoc """
   Information about a rewrite transform to match a pattern and replace it with the specified string.
   """
-  @type rewrite_config() :: [
-          {:regex, regex()},
-          {:replace, replace()}
-        ]
+  @type rewrite_config() :: %{
+          regex: regex(),
+          replace: replace()
+        }
 
   @typedoc """
   Information about a host header rewrite transform
@@ -1346,7 +1346,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
 
   This transform modifies the request URL.
 
-  Specify only when `:type` in `t:rule_transform/0` is "url-rewrite.
+  Specify only when `:type` in `t:rule_transform/0` is "url-rewrite".
   """
   @type url_rewrite_config() :: [
           {:rewrites, [rewrite_config()]}
@@ -1355,13 +1355,16 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   @typedoc """
   Information about a transform to apply to requests that match a rule
 
-  Transforms are applied to requests before they are sent to targets.
+  Transforms are applied to requests before they are sent to targets. The
+  `:type` is required and is set to "host-header-rewrite" or "url-rewrite".
+  Based on the type of transform, specify either `:host_header_rewrite_config` or
+  `:url_rewrite_config`.
   """
-  @type rule_transform :: [
-          {:type, rule_transform_type()},
-          {:host_header_rewrite_config, host_header_rewrite_config()},
-          {:url_rewrite_config, url_rewrite_config()}
-        ]
+  @type rule_transform :: %{
+          :type => rule_transform_type(),
+          optional(:host_header_rewrite_config) => host_header_rewrite_config(),
+          optional(:url_rewrite_config) => url_rewrite_config()
+        }
 
   @typedoc """
   A list of `t:rule_transform/0`
