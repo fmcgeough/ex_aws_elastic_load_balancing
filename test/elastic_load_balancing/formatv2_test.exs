@@ -101,6 +101,12 @@ defmodule ExAws.ElasticLoadBalancing.FormatV2Test do
             url_rewrite_config: [
               rewrites: [%{regex: "test1", replace: "replace1"}, %{regex: "test2", replace: "replace2"}]
             ]
+          },
+          %{
+            type: "host-header-rewrite",
+            host_header_rewrite_config: [
+              rewrites: [%{regex: "test1", replace: "replace1"}, %{regex: "test2", replace: "replace2"}]
+            ]
           }
         ]
       )
@@ -110,7 +116,118 @@ defmodule ExAws.ElasticLoadBalancing.FormatV2Test do
              "Transforms.member.1.UrlRewriteConfig.Rewrites.member.1.Regex" => "test1",
              "Transforms.member.1.UrlRewriteConfig.Rewrites.member.1.Replace" => "replace1",
              "Transforms.member.1.UrlRewriteConfig.Rewrites.member.2.Regex" => "test2",
-             "Transforms.member.1.UrlRewriteConfig.Rewrites.member.2.Replace" => "replace2"
+             "Transforms.member.1.UrlRewriteConfig.Rewrites.member.2.Replace" => "replace2",
+             "Transforms.member.2.HostHeaderRewriteConfig.Rewrites.member.1.Regex" => "test1",
+             "Transforms.member.2.HostHeaderRewriteConfig.Rewrites.member.1.Replace" => "replace1",
+             "Transforms.member.2.HostHeaderRewriteConfig.Rewrites.member.2.Regex" => "test2",
+             "Transforms.member.2.HostHeaderRewriteConfig.Rewrites.member.2.Replace" => "replace2",
+             "Transforms.member.2.Type" => "host-header-rewrite"
+           } == result
+  end
+
+  test "create_target_group_opts" do
+    result =
+      build_result(
+        health_check_enabled: true,
+        health_check_path: "/healthcheck",
+        health_check_port: "8080",
+        health_check_protocol: "HTTP",
+        health_check_timeout_seconds: 5,
+        healthy_threshold_count: 3,
+        matcher: %{http_code: "200-299"},
+        port: 80,
+        protocol: "HTTP",
+        target_type: "instance",
+        unhealthy_threshold_count: 2,
+        vpc_id: "vpc-12345678"
+      )
+
+    assert %{
+             "HealthCheckEnabled" => true,
+             "HealthCheckPath" => "/healthcheck",
+             "HealthCheckPort" => "8080",
+             "HealthCheckProtocol" => "HTTP",
+             "HealthCheckTimeoutSeconds" => 5,
+             "HealthyThresholdCount" => 3,
+             "Matcher.HttpCode" => "200-299",
+             "Port" => 80,
+             "Protocol" => "HTTP",
+             "TargetType" => "instance",
+             "UnhealthyThresholdCount" => 2,
+             "VpcId" => "vpc-12345678"
+           } == result
+  end
+
+  test "create_trust_store_opts" do
+    result =
+      build_result(
+        ca_certificates_bundle_s3_object_version: "version1",
+        tags: [%{key: "key1", value: "value1"}, %{key: "key2", value: "value2"}]
+      )
+
+    assert %{
+             "CaCertificatesBundleS3ObjectVersion" => "version1",
+             "Tags.member.1.Key" => "key1",
+             "Tags.member.1.Value" => "value1",
+             "Tags.member.2.Key" => "key2",
+             "Tags.member.2.Value" => "value2"
+           } == result
+  end
+
+  test "describe_account_limits_opts" do
+    result = build_result(marker: "marker-abc", page_size: 25)
+    assert %{"Marker" => "marker-abc", "PageSize" => 25} == result
+  end
+
+  test "describe_listener_certificates_opts" do
+    result = build_result(marker: "marker-abc", page_size: 25)
+    assert %{"Marker" => "marker-abc", "PageSize" => 25} == result
+  end
+
+  test "describe_listeners_opts" do
+    result = build_result(listener_arns: ["arn1", "arn2"], load_balancer_arn: "load_balancer_arn")
+
+    assert %{
+             "ListenerArns.member.1" => "arn1",
+             "ListenerArns.member.2" => "arn2",
+             "LoadBalancerArn" => "load_balancer_arn"
+           } == result
+  end
+
+  test "describe_load_balancers_opts" do
+    result =
+      build_result(
+        load_balancer_arns: ["arn1", "arn2"],
+        names: ["name1", "name2"],
+        marker: "marker-123",
+        page_size: 25
+      )
+
+    assert %{
+             "LoadBalancerArns.member.1" => "arn1",
+             "LoadBalancerArns.member.2" => "arn2",
+             "Names.member.1" => "name1",
+             "Names.member.2" => "name2",
+             "Marker" => "marker-123",
+             "PageSize" => 25
+           } == result
+  end
+
+  test "describe_rules_opts" do
+    result =
+      build_result(
+        listener_arn: "listener-arn-123",
+        rule_arns: ["rule-arn-1", "rule-arn-2"],
+        marker: "marker-abc",
+        page_size: 10
+      )
+
+    assert %{
+             "ListenerArn" => "listener-arn-123",
+             "RuleArns.member.1" => "rule-arn-1",
+             "RuleArns.member.2" => "rule-arn-2",
+             "Marker" => "marker-abc",
+             "PageSize" => 10
            } == result
   end
 
