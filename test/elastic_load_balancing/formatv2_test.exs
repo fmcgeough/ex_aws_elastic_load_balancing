@@ -231,6 +231,44 @@ defmodule ExAws.ElasticLoadBalancing.FormatV2Test do
            } == result
   end
 
+  test "describe_ssl_policies_opts" do
+    result = build_result(ssl_policy_names: ["policy1", "policy2"], marker: "marker-xyz", page_size: 5)
+
+    assert %{"Names.member.1" => "policy1", "Names.member.2" => "policy2", "Marker" => "marker-xyz", "PageSize" => 5} ==
+             result
+  end
+
+  test "describe_target_groups_opts" do
+    result =
+      build_result(
+        load_balancer_arn: "load-balancer-arn-123",
+        names: ["tg-name-1", "tg-name-2"],
+        target_group_arns: ["tg-arn-1", "tg-arn-2"],
+        marker: "marker-abc",
+        page_size: 15
+      )
+
+    assert %{
+             "LoadBalancerArn" => "load-balancer-arn-123",
+             "Names.member.1" => "tg-name-1",
+             "Names.member.2" => "tg-name-2",
+             "TargetGroupArns.member.1" => "tg-arn-1",
+             "TargetGroupArns.member.2" => "tg-arn-2",
+             "Marker" => "marker-abc",
+             "PageSize" => 15
+           } == result
+  end
+
+  test "describe_target_health_opts" do
+    result = build_result(include: ["AnomalyDetection"], targets: [%{id: "i-12345678"}, %{id: "i-87654321"}])
+
+    assert %{
+             "Include.member.1" => "AnomalyDetection",
+             "Targets.member.1.Id" => "i-12345678",
+             "Targets.member.2.Id" => "i-87654321"
+           } == result
+  end
+
   defp build_result(opts) do
     opts
     |> Enum.flat_map(&FormatV2.format_param/1)

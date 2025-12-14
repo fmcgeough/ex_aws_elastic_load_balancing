@@ -81,6 +81,19 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   @type load_balancer_name() :: binary()
 
   @typedoc """
+  Optional pagination parameters
+  """
+  @type paging() ::
+          [
+            marker: marker(),
+            page_size: page_size()
+          ]
+          | %{
+              optional(:marker) => marker(),
+              optional(:page_size) => page_size()
+            }
+
+  @typedoc """
   Information about a load balancer attribute.
   """
   @type load_balancer_attribute :: %{
@@ -950,15 +963,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   @typedoc """
   Optional parameters for `describe_trust_store_associations/2`.
   """
-  @type describe_trust_store_associations_opts() ::
-          [
-            {:page_size, page_size()},
-            {:marker, marker()}
-          ]
-          | %{
-              optional(:page_size) => page_size(),
-              optional(:marker) => marker()
-            }
+  @type describe_trust_store_associations_opts() :: paging()
 
   @typedoc """
   Optional parameters for `describe_trust_store_revocations/2`.
@@ -1192,16 +1197,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   @typedoc """
   Optional parameters for `describe_account_limits/1`.
   """
-  @type describe_account_limits_opts ::
-          [
-            marker: marker(),
-            # Minimum value of 1. Maximum value of 400
-            page_size: page_size()
-          ]
-          | %{
-              optional(:marker) => marker(),
-              optional(:page_size) => page_size()
-            }
+  @type describe_account_limits_opts :: paging()
 
   @typedoc """
   Optional parameters for `modify_target_group/2`.
@@ -1285,15 +1281,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   @typedoc """
   Optional parameters for `describe_listener_certificates/2`.
   """
-  @type describe_listener_certificates_opts ::
-          [
-            marker: marker(),
-            page_size: page_size()
-          ]
-          | %{
-              optional(:marker) => marker(),
-              optional(:page_size) => page_size()
-            }
+  @type describe_listener_certificates_opts :: paging()
 
   @typedoc """
   The type of transform.
@@ -2574,8 +2562,8 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         path: "/",
         params: %{
           "Action" => "DescribeSslPolicies",
-          "SslPolicyNames.1" => "policy1",
-          "SslPolicyNames.2" => "policy2",
+          "Names.member.1" => "policy1",
+          "Names.member.2" => "policy2",
           "Version" => "2015-12-01"
         },
         content_encoding: "identity",

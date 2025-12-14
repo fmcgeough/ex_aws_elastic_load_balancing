@@ -37,7 +37,7 @@ defmodule ExAws.ElasticLoadBalancing.FormatV2 do
     load_balancer_arns |> format(prefix: "LoadBalancerArns.member")
   end
 
-  def format_param({:names, names}) do
+  def format_param({key, names}) when key in [:names, :ssl_policy_names] do
     names |> format(prefix: "Names.member")
   end
 
