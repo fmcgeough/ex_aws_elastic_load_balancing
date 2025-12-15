@@ -269,6 +269,46 @@ defmodule ExAws.ElasticLoadBalancing.FormatV2Test do
            } == result
   end
 
+  test "describe_trust_store_revocations_opts" do
+    result = build_result(marker: "marker-abc", page_size: 20, revocation_ids: [12_343, 67_890])
+
+    assert %{
+             "Marker" => "marker-abc",
+             "PageSize" => 20,
+             "RevocationIds.member.1" => 12_343,
+             "RevocationIds.member.2" => 67_890
+           } == result
+  end
+
+  test "describe_trust_stores_opts" do
+    result =
+      build_result(
+        marker: "marker-xyz",
+        page_size: 30,
+        names: ["trust-store-1", "trust-store-2"],
+        trust_store_arns: ["arn1", "arn2"]
+      )
+
+    assert %{
+             "Marker" => "marker-xyz",
+             "PageSize" => 30,
+             "TrustStoreArns.member.1" => "arn1",
+             "TrustStoreArns.member.2" => "arn2",
+             "Names.member.1" => "trust-store-1",
+             "Names.member.2" => "trust-store-2"
+           } == result
+  end
+
+  test "modify_capacity_reservation_opts" do
+    result = build_result(minimum_load_balancer_capacity: %{capacity_units: 5}, reset_capacity_reservation: true)
+    assert %{"MinimumLoadBalancerCapacity.CapacityUnits" => 5, "ResetCapacityReservation" => true} == result
+  end
+
+  test "modify_ip_pools_opts" do
+    result = build_result(ipam_pools: [%{ipv4_ipam_pool_id: "pool1"}], remove_ipam_pools: ["ipv4"])
+    assert %{"IpamPools.member.1.Ipv4IpamPoolId" => "pool1", "RemoveIpamPools.member.1" => "ipv4"} == result
+  end
+
   defp build_result(opts) do
     opts
     |> Enum.flat_map(&FormatV2.format_param/1)
