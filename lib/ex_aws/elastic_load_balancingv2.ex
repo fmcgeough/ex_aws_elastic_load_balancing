@@ -1931,7 +1931,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
           "Actions.member.1.TargetGroupArn" => "target_arn",
           "Actions.member.1.Type" => "forward",
           "Conditions.member.1.Field" => "path-pattern",
-          "Conditions.member.1.Values.1" => "/images/*",
+          "Conditions.member.1.Values.member.1" => "/images/*",
           "ListenerArn" => "arn:aws:test_arn",
           "Priority" => 10,
           "Version" => "2015-12-01"

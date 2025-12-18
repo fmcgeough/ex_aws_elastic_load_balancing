@@ -22,7 +22,9 @@ defmodule ExAws.ElasticLoadBalancing.FormatV2 do
   end
 
   def format_param({:conditions, conditions}) do
-    conditions |> format(prefix: "Conditions.member")
+    conditions
+    |> Enum.map(&normalize_condition/1)
+    |> format(prefix: "Conditions.member")
   end
 
   def format_param({:default_actions, actions}) do
@@ -152,4 +154,12 @@ defmodule ExAws.ElasticLoadBalancing.FormatV2 do
   end
 
   def normalize_transform(transform), do: transform
+
+  def normalize_condition(%{values: values} = condition) do
+    condition
+    |> Map.delete(:values)
+    |> Map.put(:"values.member", values)
+  end
+
+  def normalize_condition(condition), do: condition
 end

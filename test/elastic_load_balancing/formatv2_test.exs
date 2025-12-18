@@ -309,6 +309,80 @@ defmodule ExAws.ElasticLoadBalancing.FormatV2Test do
     assert %{"IpamPools.member.1.Ipv4IpamPoolId" => "pool1", "RemoveIpamPools.member.1" => "ipv4"} == result
   end
 
+  test " modify_listener_opt" do
+    result =
+      build_result(
+        alpn_policy: ["HTTP2Only", "HTTP2Preferred"],
+        port: 8080,
+        ssl_policy: "NewPolicy",
+        certificates: [%{certificate_arn: "new-arn"}],
+        mutual_authentications: %{
+          advertise_trust_store_ca_names: "off",
+          ignore_client_certificate_expiry: true,
+          mode: "passthrough",
+          trust_store_association_status: "active"
+        }
+      )
+
+    assert %{
+             "Port" => 8080,
+             "SslPolicy" => "NewPolicy",
+             "Certificates.member.1.CertificateArn" => "new-arn",
+             "AlpnPolicy.member.1" => "HTTP2Only",
+             "AlpnPolicy.member.2" => "HTTP2Preferred",
+             "MutualAuthentications.AdvertiseTrustStoreCaNames" => "off",
+             "MutualAuthentications.IgnoreClientCertificateExpiry" => true,
+             "MutualAuthentications.Mode" => "passthrough",
+             "MutualAuthentications.TrustStoreAssociationStatus" => "active"
+           } == result
+  end
+
+  test "modify_rule_opts" do
+    result =
+      build_result(
+        actions: [
+          %{
+            type: "forward",
+            target_group_arn: "arn:aws:elasticloadbalancing:...:targetgroup/my-targets/1234567890abcdef"
+          }
+        ],
+        conditions: [%{field: "path-pattern", values: ["/images/*", "/videos/*"]}],
+        transforms: [
+          %{
+            type: "url-rewrite",
+            url_rewrite_config: [
+              rewrites: [%{regex: "test1", replace: "replace1"}, %{regex: "test2", replace: "replace2"}]
+            ]
+          },
+          %{
+            type: "host-header-rewrite",
+            host_header_rewrite_config: [
+              rewrites: [%{regex: "test1", replace: "replace1"}, %{regex: "test2", replace: "replace2"}]
+            ]
+          }
+        ]
+      )
+
+    assert %{
+             "Actions.member.1.Type" => "forward",
+             "Actions.member.1.TargetGroupArn" =>
+               "arn:aws:elasticloadbalancing:...:targetgroup/my-targets/1234567890abcdef",
+             "Conditions.member.1.Field" => "path-pattern",
+             "Conditions.member.1.Values.member.1" => "/images/*",
+             "Conditions.member.1.Values.member.2" => "/videos/*",
+             "Transforms.member.1.Type" => "url-rewrite",
+             "Transforms.member.1.UrlRewriteConfig.Rewrites.member.1.Regex" => "test1",
+             "Transforms.member.1.UrlRewriteConfig.Rewrites.member.1.Replace" => "replace1",
+             "Transforms.member.1.UrlRewriteConfig.Rewrites.member.2.Regex" => "test2",
+             "Transforms.member.1.UrlRewriteConfig.Rewrites.member.2.Replace" => "replace2",
+             "Transforms.member.2.HostHeaderRewriteConfig.Rewrites.member.1.Regex" => "test1",
+             "Transforms.member.2.HostHeaderRewriteConfig.Rewrites.member.1.Replace" => "replace1",
+             "Transforms.member.2.HostHeaderRewriteConfig.Rewrites.member.2.Regex" => "test2",
+             "Transforms.member.2.HostHeaderRewriteConfig.Rewrites.member.2.Replace" => "replace2",
+             "Transforms.member.2.Type" => "host-header-rewrite"
+           } == result
+  end
+
   defp build_result(opts) do
     opts
     |> Enum.flat_map(&FormatV2.format_param/1)
