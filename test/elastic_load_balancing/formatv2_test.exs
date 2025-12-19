@@ -383,6 +383,52 @@ defmodule ExAws.ElasticLoadBalancing.FormatV2Test do
            } == result
   end
 
+  test "modify_target_group_opts" do
+    result =
+      build_result(
+        health_check_enabled: false,
+        health_check_path: "/newpath",
+        health_check_port: "9090",
+        health_check_protocol: "HTTPS",
+        health_check_timeout_seconds: 10,
+        healthy_threshold_count: 5,
+        matcher: %{http_code: "302"},
+        port: 8080,
+        protocol: "HTTPS",
+        target_type: "ip",
+        unhealthy_threshold_count: 4
+      )
+
+    assert %{
+             "HealthCheckEnabled" => false,
+             "HealthCheckPath" => "/newpath",
+             "HealthCheckPort" => "9090",
+             "HealthCheckProtocol" => "HTTPS",
+             "HealthCheckTimeoutSeconds" => 10,
+             "HealthyThresholdCount" => 5,
+             "Matcher.HttpCode" => "302",
+             "Port" => 8080,
+             "Protocol" => "HTTPS",
+             "TargetType" => "ip",
+             "UnhealthyThresholdCount" => 4
+           } == result
+  end
+
+  test "modify_trust_store_opts" do
+    result = build_result(ca_certificates_bundle_s3_object_version: "new-version")
+    assert %{"CaCertificatesBundleS3ObjectVersion" => "new-version"} == result
+  end
+
+  test "set_security_groups_opts" do
+    result = build_result(enforce_security_group_inbound_rules_on_private_link_traffic: "on")
+    assert %{"EnforceSecurityGroupInboundRulesOnPrivateLinkTraffic" => "on"} == result
+  end
+
+  test "set_subnets_opts" do
+    result = build_result(subnets: ["subnet-12345678", "subnet-87654321"])
+    assert %{"Subnets.member.1" => "subnet-12345678", "Subnets.member.2" => "subnet-87654321"} == result
+  end
+
   defp build_result(opts) do
     opts
     |> Enum.flat_map(&FormatV2.format_param/1)
