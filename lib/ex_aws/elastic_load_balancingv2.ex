@@ -1919,7 +1919,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
 
   ## Examples
 
-      iex> conditions = [%{field: "path-pattern", values: ["/images/*"]}]
+      iex> conditions = [%{field: "path-pattern", values: ["/images/*", "/videos/*"]}]
       iex> actions = [%{type: "forward", target_group_arn: "target_arn"}]
       iex> priority = 10
       iex> listener_arn = "arn:aws:test_arn"
@@ -1932,6 +1932,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
           "Actions.member.1.Type" => "forward",
           "Conditions.member.1.Field" => "path-pattern",
           "Conditions.member.1.Values.member.1" => "/images/*",
+          "Conditions.member.1.Values.member.2" => "/videos/*",
           "ListenerArn" => "arn:aws:test_arn",
           "Priority" => 10,
           "Version" => "2015-12-01"

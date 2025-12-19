@@ -346,7 +346,13 @@ defmodule ExAws.ElasticLoadBalancing.FormatV2Test do
             target_group_arn: "arn:aws:elasticloadbalancing:...:targetgroup/my-targets/1234567890abcdef"
           }
         ],
-        conditions: [%{field: "path-pattern", values: ["/images/*", "/videos/*"]}],
+        conditions: [
+          %{
+            field: "path-pattern",
+            values: ["/images/*", "/videos/*"],
+            host_header_config: %{values: ["test1", "test2"]}
+          }
+        ],
         transforms: [
           %{
             type: "url-rewrite",
@@ -370,6 +376,8 @@ defmodule ExAws.ElasticLoadBalancing.FormatV2Test do
              "Conditions.member.1.Field" => "path-pattern",
              "Conditions.member.1.Values.member.1" => "/images/*",
              "Conditions.member.1.Values.member.2" => "/videos/*",
+             "Conditions.member.1.HostHeaderConfig.Values.1" => "test1",
+             "Conditions.member.1.HostHeaderConfig.Values.2" => "test2",
              "Transforms.member.1.Type" => "url-rewrite",
              "Transforms.member.1.UrlRewriteConfig.Rewrites.member.1.Regex" => "test1",
              "Transforms.member.1.UrlRewriteConfig.Rewrites.member.1.Replace" => "replace1",
