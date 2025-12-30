@@ -2,6 +2,26 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   @moduledoc """
   Operations on AWS ELB (Elastic Load Balancing) V2 API
 
+  The doc provided here is extracted from the [AWS ELB V2 API Reference](https://docs.aws.amazon.com/elasticloadbalancing/latest/APIReference/Welcome.html).
+  The public functions in this module mirror the API actions documented there. The Elixir function
+  names are the snake_case versions of the API action names. For example, `CreateLoadBalancer` in the API
+  becomes `create_load_balancer/2` in this module. The names of the parameters to the functions are
+  also the snake_case versions of the parameter names used in the API. For example, `LoadBalancerName` in
+  the API is `load_balancer_name` in this module).
+
+  The arity of functions is based on what is required vs what is optional. Required parameters are
+  passed as individual parameters, and optional parameters are passed as a keyword list or map in the final
+  parameter. If there are multiple required parameters, they are passed in the order that seemed to make
+  the most sense (in general, from most general to most specific).
+
+  Optional parameters have an associated type that aligns with the function name with the suffix `_opts`. For
+  example, the optional parameters for the function `create_load_balancer/2` are defined by the type
+  `t:create_load_balancer_opts/0`.
+
+  There are also type definitions for many of the complex types used in the API. These types are used
+  in the function specs for the public functions. They also provide some documentation that appears in
+  the AWS API Reference.
+
   AWS Elastic Load Balancing supports three types of load balancers: Application
   Load Balancers (ALB), Network Load Balancers (NLB), and Classic Load Balancers. You can
   select a load balancer based on your application needs. This API covers the
@@ -21,50 +41,1538 @@ defmodule ExAws.ElasticLoadBalancingV2 do
     format_type: :xml,
     non_standard_keys: %{}
 
+  alias ExAws.ElasticLoadBalancing.FormatV2
   alias ExAws.ElasticLoadBalancingV2.Parsers, as: V2Parser
 
   # version of the AWS API
   @version "2015-12-01"
 
-  @type tag :: {key :: atom, value :: binary} | %{key: binary, value: binary}
-  @type load_balancer_attribute :: {key :: atom, value :: binary}
-  @type target_group_attribute :: {key :: atom, value :: binary}
+  @typedoc """
+  A list of binaries
+  """
+  @type binary_list() :: [binary(), ...]
 
-  @type action :: [
-          type: binary,
-          target_group_arn: binary
-        ]
+  @typedoc """
+  Information about a tag
+  """
+  @type tag() :: {atom(), binary()} | %{key: binary, value: binary}
 
-  @type certificate :: [
-          certificate_arn: binary,
-          is_default: boolean
-        ]
+  @typedoc """
+  A list of `t:tag/0`
+  """
+  @type tags :: [tag, ...]
 
+  @typedoc """
+  The tag keys for the tags to remove.
+
+  Length Constraints: Minimum length of 1. Maximum length of 128.
+
+  Pattern: ^([\p{L}\p{Z}\p{N}_.:/=+\-@]*)$
+  """
+  @type tag_keys :: [binary, ...]
+
+  @typedoc """
+  The name of the load balancer.
+
+  This name must be unique per region per account, can have a maximum of 32 characters,
+  must contain only alphanumeric characters or hyphens, must not begin or end with
+  a hyphen, and must not begin with "internal-".
+  """
+  @type load_balancer_name() :: binary()
+
+  @typedoc """
+  Optional pagination parameters
+  """
+  @type paging() ::
+          [
+            marker: marker(),
+            page_size: page_size()
+          ]
+          | %{
+              optional(:marker) => marker(),
+              optional(:page_size) => page_size()
+            }
+
+  @typedoc """
+  Information about a load balancer attribute.
+  """
+  @type load_balancer_attribute :: %{
+          optional(:key) => binary(),
+          optional(:value) => binary()
+        }
+
+  @typedoc """
+  Information about a target group attribute.
+  """
+  @type target_group_attribute() :: {atom(), binary()} | %{key: binary, value: binary}
+
+  @typedoc """
+  A list of `t:target_group_attribute/0`
+  """
+  @type target_group_attributes() :: [target_group_attribute(), ...]
+
+  @typedoc """
+  The Amazon Resource Name (ARN) of the listener
+  """
+  @type listener_arn() :: binary()
+
+  @typedoc """
+  The Amazon Resource Name (ARN) of the rule
+  """
+  @type rule_arn :: binary()
+
+  @typedoc """
+  A list of `t:rule_arn/0`
+  """
+  @type rule_arns :: [rule_arn(), ...]
+
+  @typedoc """
+  The Amazon Resource Name (ARN) of the target group
+  """
+  @type target_group_arn() :: binary()
+
+  @typedoc """
+  A single Amazon Resource Name (ARN)
+  """
+  @type resource_arn() :: binary()
+
+  @typedoc """
+  A list of `t:resource_arn/0`
+  """
+  @type resource_arns :: [resource_arn(), ...]
+
+  @typedoc """
+  The port on which the load balancer is listening. You can't specify a port for a Gateway Load Balancer.
+
+  Valid Range: Minimum value of 1. Maximum value of 65535.
+  """
+  @type port_num() :: pos_integer()
+
+  @typedoc """
+  The rule priority
+
+  A listener can't have multiple rules with the same priority.
+
+  Valid Range: Minimum value of 1. Maximum value of 50000.
+  """
+  @type priority() :: pos_integer()
+
+  @typedoc """
+  The IP address type. Internal load balancers must use ipv4
+
+  [Application Load Balancers] The possible values are ipv4 (IPv4 addresses),
+  dualstack (IPv4 and IPv6 addresses), and dualstack-without-public-ipv4 (public
+  IPv6 addresses and private IPv4 and IPv6 addresses).
+
+  Application Load Balancer authentication supports IPv4 addresses only when
+  connecting to an Identity Provider (IdP) or Amazon Cognito endpoint. Without
+  a public IPv4 address the load balancer can't complete the authentication
+  process, resulting in HTTP 500 errors.
+
+  [Network Load Balancers and Gateway Load Balancers] The possible values are ipv4 (IPv4
+  addresses) and dualstack (IPv4 and IPv6 addresses).
+
+  Valid Values
+  ```
+  "ipv4" | "dualstack" | "dualstack-without-public-ipv4"
+  ```
+  """
+  @type ip_address_type() :: binary
+
+  @typedoc """
+  The protocol for connections from clients to the load balancer. For Application Load
+  Balancers, the supported protocols are HTTP and HTTPS. For Network Load Balancers, the
+  supported protocols are TCP, TLS, UDP, and TCP_UDP. You can’t specify the UDP or
+  TCP_UDP protocol if dual-stack mode is enabled. You can't specify a protocol for a
+  Gateway Load Balancer.
+
+  Valid Values
+  ```
+  "HTTP" | "HTTPS" | "TCP" | "TLS" | "UDP" | "TCP_UDP" | "GENEVE"
+  ```
+  """
+  @type protocol() :: binary
+
+  @typedoc """
+  [HTTP/HTTPS protocol] The protocol version
+
+  Specify "GRPC" to send requests to targets using gRPC. Specify "HTTP2" to send
+  requests to targets using HTTP/2. The default is "HTTP1", which sends requests
+  to targets using HTTP/1.1.
+  """
+  @type protocol_version() :: binary
+
+  @typedoc """
+  The protocol the load balancer uses when performing health checks on targets
+
+  For Application Load Balancers, the default is HTTP. For Network Load Balancers
+  and Gateway Load Balancers, the default is TCP. The TCP protocol is not supported
+  for health checks if the protocol of the target group is HTTP or HTTPS. The
+  GENEVE, TLS, UDP, and TCP_UDP protocols are not supported for health checks.
+
+  Valid Values
+  ```
+  "HTTP" | "HTTPS" | "TCP" | "TLS" | "UDP" | "TCP_UDP" | "GENEVE"
+  ```
+  """
+  @type health_check_protocol() :: binary()
+
+  @typedoc """
+  The protocol the load balancer uses when performing health checks on targets
+
+  For Application Load Balancers, the default is HTTP. For Network Load Balancers
+  and Gateway Load Balancers, the default is TCP. The TCP protocol is not supported
+  for health checks if the protocol of the target group is HTTP or HTTPS. The
+  GENEVE, TLS, UDP, and TCP_UDP protocols are not supported for health checks.
+  """
+  @type health_check_port() :: binary()
+
+  @typedoc """
+  The number of consecutive health check successes required before considering
+  a target healthy
+
+  The range is 2-10. If the target group protocol is TCP, TCP_UDP, UDP, TLS,
+  HTTP or HTTPS, the default is 5. For target groups with a protocol of GENEVE,
+  the default is 5. If the target type is lambda, the default is 5.
+
+  Valid Range
+  ```
+  Minimum value of 2. Maximum value of 10.
+  ```
+  """
+  @type healthy_threshold_count() :: pos_integer()
+
+  @typedoc """
+  Indicates whether health checks are enabled
+
+  If the target type is lambda, health checks are disabled by default
+  but can be enabled. If the target type is instance, ip, or alb,
+  health checks are always enabled and can't be disabled.
+  """
+  @type health_check_enabled() :: boolean()
+
+  @typedoc """
+  The number of consecutive health check failures required before considering the target unhealthy.
+
+  ```
+  Valid Range: Minimum value of 2. Maximum value of 10.
+  ```
+  """
+  @type unhealthy_threshold_count() :: pos_integer()
+
+  @typedoc """
+  For Application Load Balancers, you can specify values between 200
+  and 499, with the default value being 200
+
+  You can specify multiple values (for example, "200,202") or a range
+  of values (for example, "200-299").
+
+  For Network Load Balancers, you can specify values between 200 and
+  599, with the default value being 200-399. You can specify multiple
+  values (for example, "200,202") or a range of values (for example, "200-299").
+
+  For Gateway Load Balancers, this must be "200–399".
+
+  Note that when using shorthand syntax, some values such as commas need to be escaped
+  """
+  @type http_code() :: binary()
+
+  @typedoc """
+  You can specify values between 0 and 99.
+  You can specify multiple values (for example, "0,1") or a range of
+  values (for example, "0-5"). The default value is 12.
+  """
+  @type grpc_code() :: binary()
+
+  @typedoc """
+  The codes to use when checking for a successful response from a target
+
+  If the protocol version is gRPC, these are gRPC codes. Otherwise, these are HTTP codes.
+  """
+  @type matcher() ::
+          [{:grpc_code, grpc_code()}, {:http_code, http_code()}]
+          | %{
+              optional(:grpc_code) => grpc_code(),
+              optional(:http_code) => http_code()
+            }
+
+  @typedoc """
+  The name of the target group.
+
+  This name must be unique per region per account, can have a maximum of 32
+  characters, must contain only alphanumeric characters or hyphens, and must
+  not begin or end with a hyphen.
+  """
+  @type target_group_name() :: binary
+
+  @typedoc """
+  The identifier of the virtual private cloud (VPC)
+
+  If the target is a Lambda function, this parameter does not apply. Otherwise, this
+  parameter is required.
+  """
+  @type vpc_id() :: binary
+
+  @typedoc """
+  The type of target that you must specify when registering targets with this target group
+
+  You can't specify targets for a target group using more than one target type.
+
+  - "instance" - Register targets by instance ID. This is the default value.
+  - "ip" - Register targets by IP address. You can specify IP addresses from the
+           subnets of the virtual private cloud (VPC) for the target group, the
+           RFC 1918 range (10.0.0.0/8, 172.16.0.0/12, and 192.168.0.0/16), and
+           the RFC 6598 range (100.64.0.0/10). You can't specify publicly routable
+           IP addresses.
+  - "lambda" - Register a single Lambda function as a target.
+  - "alb" - Register a single Application Load Balancer as a target.
+
+  Valid Values
+  ```
+  "instance" | "ip" | "lambda" | "alb"
+  ```
+  """
+  @type target_type() :: binary
+
+  @typedoc """
+  The approximate amount of time, in seconds, between health checks of an individual target
+
+  The range is 5-300. If the target group protocol is TCP, TLS, UDP, TCP_UDP, HTTP or HTTPS,
+  the default is 30 seconds. If the target group protocol is GENEVE, the default is 10 seconds.
+  If the target type is lambda, the default is 35 seconds.
+
+  Valid Range
+  ```
+  Minimum value of 5. Maximum value of 300
+  ```
+  """
+  @type health_check_interval_seconds() :: pos_integer()
+
+  @typedoc """
+  The amount of time, in seconds, during which no response from
+  a target means a failed health check
+
+  The range is 2–120 seconds. For target groups with a protocol of HTTP,
+  the default is 6 seconds. For target groups with a protocol of TCP, TLS
+  or HTTPS, the default is 10 seconds. For target groups with a protocol
+  of GENEVE, the default is 5 seconds. If the target type is lambda, the
+  default is 30 seconds.
+
+
+  Valid Range
+  ```
+  Minimum value of 2. Maximum value of 120.
+  ```
+  """
+  @type health_check_timeout_seconds() :: pos_integer()
+
+  @typedoc """
+  [HTTP/HTTPS health checks] The destination for health checks on the targets
+
+  - [HTTP1 or HTTP2 protocol version] The ping path. The default is /.
+  - [GRPC protocol version] The path of a custom health check method with the
+  format /package.service/method. The default is "/AWS.ALB/healthcheck".
+
+  Length Constraints
+  ```
+  Minimum length of 1. Maximum length of 1024.
+  ```
+  """
+  @type health_check_path() :: binary()
+
+  @typedoc """
+  The Amazon Resource Name (ARN) of the load balancer
+  """
+  @type load_balancer_arn() :: binary()
+
+  @typedoc """
+  A list of `t:load_balancer_arn/0`
+  """
+  @type load_balancer_arns() :: [load_balancer_arn(), ...]
+
+  @typedoc """
+  The type of revocation file.
+
+  Valid Values:
+  ```
+  "CRL"
+  ```
+  """
+  @type revocation_type() :: binary()
+
+  @typedoc """
+  The Amazon S3 bucket
+  """
+  @type s3_bucket() :: binary()
+
+  @typedoc """
+  The Amazon S3 path
+  """
+  @type s3_key() :: binary()
+
+  @typedoc """
+  The Amazon S3 object version
+  """
+  @type s3_object_version() :: binary()
+
+  @typedoc """
+  The Amazon Resource Name (ARN) of the trust store.
+  """
+  @type trust_store_arn() :: binary()
+
+  @typedoc """
+  The revocation ID of the revocation file
+  """
+  @type revocation_id() :: integer()
+
+  @typedoc """
+  A list of `t:revocation_id/0`
+  """
+  @type revocation_ids() :: [revocation_id(), ...]
+
+  @typedoc """
+  The maximum number of results to return with this call
+
+  Valid Range: Minimum value of 1. Maximum value of 400.
+  """
+  @type page_size() :: pos_integer()
+
+  @typedoc """
+  The marker for the next set of results
+
+  You received this marker from a previous call.
+  """
+  @type marker() :: binary()
+
+  @typedoc """
+  Information about a revocation file.
+  """
+  @type revocation_content() ::
+          [
+            {:revocation_type, revocation_type()},
+            {:s3_bucket, s3_bucket()},
+            {:s3_key, s3_key()},
+            {:s3_object_version, s3_object_version()}
+          ]
+          | %{
+              optional(:revocation_type) => revocation_type(),
+              optional(:s3_bucket) => s3_bucket(),
+              optional(:s3_key) => s3_key(),
+              optional(:s3_object_version) => s3_object_version()
+            }
+
+  @typedoc """
+  A list of `t:revocation_content/0`
+  """
+  @type revocation_contents :: [revocation_content(), ...]
+
+  @typedoc """
+  The type of action.
+
+  Valid Values
+  ```
+  "forward" | "authenticate-oidc" | "authenticate-cognito" | "redirect" | "fixed-response"
+  ```
+  """
+  @type action_type() :: binary
+
+  @typedoc """
+  Request parameters to use when integrating with Amazon Cognito to authenticate users.
+  """
+  @type authenticate_cognito_action_config :: %{
+          :user_pool_arn => binary,
+          :user_pool_client_id => binary,
+          :user_pool_domain => binary,
+          optional(:session_cookie_name) => binary,
+          optional(:scope) => binary,
+          optional(:session_timeout) => integer,
+          optional(:authentication_request_extra_params) => %{optional(binary) => binary},
+          optional(:on_unauthenticated_request) => binary,
+          optional(:use_existing_client_secret) => boolean
+        }
+
+  @typedoc """
+  Request parameters when using an identity provider (IdP) that is compliant with OpenID
+  Connect (OIDC) to authenticate users.
+  """
+  @type authenticate_oidc_action_config :: %{
+          :issuer => binary,
+          :authorization_endpoint => binary,
+          :token_endpoint => binary,
+          :user_info_endpoint => binary,
+          :client_id => binary,
+          optional(:client_secret) => binary,
+          optional(:session_cookie_name) => binary,
+          optional(:scope) => binary,
+          optional(:session_timeout) => integer,
+          optional(:authentication_request_extra_params) => %{optional(binary) => binary},
+          optional(:on_unauthenticated_request) => binary,
+          optional(:use_existing_client_secret) => boolean
+        }
+
+  @typedoc """
+  The HTTP response code (2XX, 4XX, or 5XX).
+
+  Pattern: `^(2|4|5)\d\d$`
+  """
+  @type fixed_response_action_status_code() :: binary()
+
+  @typedoc """
+  The content type
+
+  Valid Values
+  ```
+  "text/plain" | "text/css" | "text/html" | "application/javascript" | "application/json"
+  ```
+
+  Length Constraints
+  ```
+  Minimum length of 0. Maximum length of 32.
+  ```
+  """
+  @type fixed_response_action_content_type() :: binary()
+
+  @typedoc """
+  The message body
+
+  Length Constraints
+  ```
+  Minimum length of 0. Maximum length of 1024.
+  ```
+  """
+  @type fixed_response_action_message() :: binary()
+
+  @typedoc """
+  Information about an action that returns a custom HTTP response
+  """
+  @type fixed_response_config() ::
+          [
+            {:status_code, fixed_response_action_status_code()},
+            {:content_type, fixed_response_action_content_type()},
+            {:message_body, fixed_response_action_message()}
+          ]
+          | %{
+              :status_code => fixed_response_action_status_code(),
+              optional(:content_type) => fixed_response_action_content_type(),
+              optional(:message_body) => fixed_response_action_message()
+            }
+
+  @typedoc """
+  Information about the target group stickiness for a rule.
+  """
+  @type target_group_stickiness_config() :: %{
+          optional(:enabled) => boolean(),
+          optional(:duration_seconds) => integer
+        }
+
+  @typedoc """
+  Information about how traffic will be distributed between multiple target groups
+  in a forward rule
+  """
+  @type target_group_tuple() :: %{
+          optional(:target_group_arn) => target_group_arn(),
+          optional(:weight) => integer
+        }
+
+  @typedoc """
+  Information about a forward action.
+  """
+  @type forward_action_config() :: %{
+          optional(:target_groups) => [target_group_tuple()],
+          optional(:target_group_stickiness_config) => target_group_stickiness_config()
+        }
+
+  @typedoc """
+  The order for the action
+
+  This value is required for rules with multiple actions. The action
+  with the lowest value for order is performed first.
+
+  Valid Range: Minimum value of 1. Maximum value of 50000.
+  """
+  @type order_action :: pos_integer()
+
+  @typedoc """
+  Information about a redirect action
+
+  A URI consists of the following components: protocol://hostname:port/path?query. You must modify
+  at least one of the following components to avoid a redirect loop: protocol, hostname, port, or
+  path. Any components that you do not modify retain their original values.
+
+  You can reuse URI components using the following reserved keywords:
+
+  - "\#{protocol}"
+  - "\#{host}"
+  - "\#{port}"
+  - "\#{path}" (the leading "/" is removed)
+  - "\#{query}"
+
+  For example, you can change the path to "/new/\#{path}", the hostname to "example.\#{host}", or the
+  query to "\#{query}&value=xyz".
+  """
+  @type redirect_action_config :: %{
+          optional(:protocol) => binary,
+          optional(:port) => binary,
+          optional(:host) => binary,
+          optional(:path) => binary,
+          optional(:query) => binary,
+          :status_code => binary
+        }
+
+  @typedoc """
+  Information about an action.
+
+  Each rule must include exactly one of the following types of actions: forward, fixed-response,
+  or redirect, and it must be the last action to be performed.
+  """
+  @type action() ::
+          [
+            type: action_type(),
+            authenticate_cognito_config: authenticate_cognito_action_config(),
+            authenticate_oidc_config: authenticate_oidc_action_config(),
+            fixed_response_config: fixed_response_config(),
+            forward_config: forward_action_config(),
+            order: order_action(),
+            redirect_config: redirect_action_config(),
+            target_group_arn: target_group_arn()
+          ]
+          | %{
+              optional(:type) => action_type(),
+              optional(:authenticate_cognito_config) => authenticate_cognito_action_config(),
+              optional(:authenticate_oidc_config) => authenticate_oidc_action_config(),
+              optional(:fixed_response_config) => fixed_response_config(),
+              optional(:forward_config) => forward_action_config(),
+              optional(:order) => order_action(),
+              optional(:redirect_config) => redirect_action_config(),
+              optional(:target_group_arn) => target_group_arn()
+            }
+
+  @typedoc """
+  A list of `t:action/0`
+  """
+  @type actions() :: [action, ...]
+
+  @typedoc """
+  The Amazon Resource Name (ARN) of the certificate.
+  """
+  @type certificate_arn :: binary
+
+  @typedoc """
+  [HTTPS and TLS listeners] The security policy that defines which protocols and ciphers are supported.
+
+  For more information, see Security policies in the Application Load Balancers
+  Guide and Security policies in the Network Load Balancers Guide.
+  """
+  @type ssl_policy() :: binary
+
+  @typedoc """
+  Information about an SSL server certificate.
+  """
+  @type certificate ::
+          [
+            {:certificate_arn, certificate_arn()},
+            {:is_default, boolean}
+          ]
+          | %{
+              optional(:certificate_arn) => certificate_arn(),
+              optional(:is_default) => boolean
+            }
+
+  @typedoc """
+  A list of `t:certificate/0`
+  """
+  @type certificates() :: [certificate(), ...]
+
+  @typedoc """
+  Information about a host header condition.
+
+  - regex_values - The regular expressions to compare against the host header. The maximum
+    length of each string is 128 characters.
+  - values - The host names. The maximum length of each string is 128 characters. The
+    comparison is case insensitive. The following wildcard characters are
+    supported: * (matches 0 or more characters) and ? (matches exactly 1 character). You
+    must include at least one "." character. You can include only alphabetical characters
+    after the final "." character.
+  """
+  @type host_header_config() ::
+          [
+            {:regex_values, binary_list()},
+            {:values, binary_list()}
+          ]
+          | %{
+              optional(:regex_values) => binary_list(),
+              optional(:values) => binary_list()
+            }
+
+  @typedoc """
+  [TLS listeners] The name of the Application-Layer Protocol Negotiation (ALPN) policy.
+
+  You can specify one policy name.
+
+  Valid Values
+  ```
+  "HTTP1Only" | "HTTP2Only" | "HTTP2Optional" | "HTTP2Preferred" | "None"
+  ```
+
+  For more information, see ALPN policies in the Network Load Balancers Guide.
+  """
+  @type alpn_policy() :: binary()
+
+  @typedoc """
+  The IDs of the security groups.
+  """
+  @type security_groups() :: binary_list()
+
+  @typedoc """
+  The type of load balancer. The default is "application".
+
+  Valid Values
+  ```
+  "application" | "network" | "gateway"
+  ```
+  """
+  @type load_balancer_type() :: binary()
+
+  @typedoc """
+  The nodes of an Internet-facing load balancer have public IP addresses.
+  The DNS name of an Internet-facing load balancer is publicly resolvable
+  to the public IP addresses of the nodes. Therefore, Internet-facing load
+  balancers can route requests from clients over the internet.
+
+  The nodes of an internal load balancer have only private IP addresses.
+  The DNS name of an internal load balancer is publicly resolvable to the
+  private IP addresses of the nodes. Therefore, internal load balancers
+  can route requests only from clients with access to the VPC for the load balancer.
+
+  The default is an Internet-facing load balancer.
+
+  You can't specify a scheme for a Gateway Load Balancer.
+
+  Valid Values
+  ```
+  "internet-facing" | "internal"
+  ```
+  """
+  @type load_balancer_scheme() :: binary()
+
+  @typedoc """
+  Information about a target.
+  """
   @type target_description :: %{
           required(:id) => binary,
-          optional(:port) => integer,
+          optional(:port) => port_num(),
           optional(:availability_zone) => binary
         }
 
+  @typedoc """
+  A list of `t:target_description/0`
+  """
   @type target_descriptions :: [target_description()]
 
-  @type rule_condition :: [
-          field: binary,
-          values: [binary, ...]
+  @typedoc """
+  Information about a subnet mapping
+
+  - allocation_id - [Network Load Balancer] The allocation ID of the Elastic IP address for
+    an internet-facing load balancer.
+  - ipv6_address - [Network Load Balancer] The IPv6 address.
+  - private_ipv4_address - [Network Load Balancer] The private IPv4 address for an internal
+    load balancer.
+  - source_native_ipv6_prefix - [Network Load Balancer with UDP listeners] The ID of the IPv6
+    prefix to use for source NAT. Specify an IPv6 prefix (/80 netmask) from the subnet CIDR
+    block or "auto_assigned" to use an IPv6 prefix selected at random from the subnet CIDR block.
+  - subnet_id - The ID of the subnet.
+  """
+  @type subnet_mapping ::
+          [
+            allocation_id: binary(),
+            ipv6_address: binary(),
+            private_ipv4_address: binary(),
+            source_native_ipv6_prefix: binary(),
+            subnet_id: binary()
+          ]
+          | %{
+              optional(:allocation_id) => binary(),
+              optional(:ipv6_address) => binary(),
+              optional(:private_ipv4_address) => binary(),
+              optional(:source_native_ipv6_prefix) => binary(),
+              optional(:subnet_id) => binary()
+            }
+
+  @typedoc """
+  A list of `t:subnet_mapping/0`
+  """
+  @type subnet_mappings :: [subnet_mapping(), ...]
+
+  @typedoc """
+  The values "on" and "off"
+
+  Valid Values:
+  ```
+  "on" | "off"
+  ```
+  """
+  @type on_or_off() :: binary()
+
+  @typedoc """
+  The client certificate handling method
+
+  Valid Values:
+  ```
+  "off" | "passthrough" | "verify"
+  ```
+  """
+  @type mode() :: binary()
+
+  @typedoc """
+  Indicates a shared trust stores association status.
+
+  Valid Values:
+  ```
+  "active" | "removed"
+  ```
+  """
+  @type trust_store_association_status() :: binary()
+
+  @typedoc """
+  Information about the mutual authentication attributes of a listener
+
+  """
+  @type mutual_authentication_attributes() :: %{
+          optional(:advertise_trust_store_ca_names) => on_or_off(),
+          optional(:ignore_client_certificate_expiry) => boolean(),
+          optional(:mode) => mode(),
+          optional(:trust_store_arn) => trust_store_arn(),
+          optional(:trust_store_association_status) => trust_store_association_status()
+        }
+
+  @typedoc """
+  The IDs of the public subnets. You can specify only one subnet
+  per Availability Zone
+
+  You must specify either subnets or subnet mappings.
+
+  - [Application Load Balancers] You must specify subnets from at least
+    two Availability Zones. You can't specify Elastic IP addresses for your subnets.
+  - [Application Load Balancers on Outposts] You must specify one Outpost subnet.
+  - [Application Load Balancers on Local Zones] You can specify subnets from one
+    or more Local Zones.
+  - [Network Load Balancers] You can specify subnets from one or more Availability
+    Zones. You can specify one Elastic IP address per subnet if you need static IP
+    addresses for your internet-facing load balancer. For internal load balancers,
+    you can specify one private IP address per subnet from the IPv4 range of the
+    subnet. For internet-facing load balancer, you can specify one IPv6 address
+    per subnet.
+  - [Gateway Load Balancers] You can specify subnets from one or more Availability
+    Zones.
+  """
+  @type subnets() :: binary_list()
+
+  @typedoc """
+  [Application Load Balancers on Outposts] The ID of the customer-owned address pool (CoIP pool)
+
+  Length Constraints: Maximum length of 256.
+  Pattern: `^(ipv4pool-coip-)[a-zA-Z0-9]+$`
+  """
+  @type customer_owned_ipv4_pool() :: binary()
+
+  @typedoc """
+  [Network Load Balancers with UDP listeners] Indicates whether to
+  use an IPv6 prefix from each subnet for source NAT.
+
+  The IP address type must be dualstack. The default value is "off".
+
+  Valid Values:
+  ```
+  "on" | "off"
+  ```
+  """
+  @type enable_prefix_for_ipv6_source_nat() :: binary()
+
+  @typedoc """
+  An IPAM pool is a collection of IP address CIDRs
+
+  IPAM pools enable you to organize your IP addresses according to your
+  routing and security needs.
+
+  Length Constraints: Maximum length of 1000.
+  Pattern: `^(ipam-pool-)[a-zA-Z0-9]+$`
+  """
+  @type ipv4_ipam_pool_id() :: binary()
+
+  @typedoc """
+  The name of the trust store.
+
+  Length Constraints: `Minimum length of 1. Maximum length of 32.`
+  Pattern: `^([a-zA-Z0-9]+-)*[a-zA-Z0-9]+$`
+  """
+  @type trust_store_name() :: binary()
+
+  @typedoc """
+  The Amazon S3 bucket for the ca certificates bundle.
+  """
+  @type ca_certificates_bundle_s3_bucket() :: binary()
+
+  @typedoc """
+  The Amazon S3 path for the ca certificates bundle.
+  """
+  @type ca_certificates_bundle_s3_key() :: binary()
+
+  @typedoc """
+  The Amazon S3 object version for the ca certificates bundle
+
+  If undefined the current version is used.
+  """
+  @type ca_certificates_bundle_s3_object_version() :: binary()
+
+  @typedoc """
+  Information about the priorities for the rules for a listener
+  """
+  @type rule_priority_pair() ::
+          [{:rule_arn, rule_arn()}, {:priority, priority()}]
+          | %{
+              optional(:rule_arn) => rule_arn(),
+              optional(:priority) => priority()
+            }
+
+  @typedoc """
+  A list of `t:rule_priority_pair/0`
+  """
+  @type rule_priorities() :: [rule_priority_pair(), ...]
+
+  @type create_trust_store_opts() ::
+          [
+            {:ca_certificates_bundle_s3_object_version, ca_certificates_bundle_s3_object_version()},
+            {:tags, tags()}
+          ]
+          | %{
+              optional(:ca_certificates_bundle_s3_object_version) => ca_certificates_bundle_s3_object_version(),
+              optional(:tags) => tags()
+            }
+
+  @typedoc """
+  Optional parameters for `add_trust_store_revocations/2`.
+  """
+  @type add_trust_store_revocations_opts() ::
+          [
+            {:revocation_contents, revocation_contents()}
+          ]
+          | %{
+              optional(:revocation_contents) => revocation_contents()
+            }
+
+  @typedoc """
+  Optional parameters for `describe_trust_store_associations/2`.
+  """
+  @type describe_trust_store_associations_opts() :: paging()
+
+  @typedoc """
+  Optional parameters for `describe_trust_store_revocations/2`.
+  """
+  @type describe_trust_store_revocations_opts() ::
+          [
+            {:page_size, page_size()},
+            {:marker, marker()},
+            {:revocation_ids, revocation_ids()}
+          ]
+          | %{
+              optional(:page_size) => page_size(),
+              optional(:marker) => marker(),
+              optional(:revocation_ids) => revocation_ids()
+            }
+
+  @typedoc """
+  Optional parameters for `describe_trust_stores/1`.
+  """
+  @type describe_trust_stores_opts() ::
+          [
+            {:page_size, page_size()},
+            {:marker, marker()},
+            {:names, [trust_store_name(), ...]},
+            {:trust_store_arns, [trust_store_arn(), ...]}
+          ]
+          | %{
+              optional(:page_size) => page_size(),
+              optional(:marker) => marker(),
+              optional(:names) => [trust_store_name(), ...],
+              optional(:trust_store_arns) => [trust_store_arn(), ...]
+            }
+
+  @typedoc """
+  Optional parameters for `create_listener/3`.
+  """
+  @type create_listener_opts ::
+          [
+            {:alpn_policy, [alpn_policy()]},
+            {:certificates, certificates()},
+            {:mutual_authentication, mutual_authentication_attributes()},
+            {:port, port_num()},
+            {:protocol, protocol()},
+            {:ssl_policy, ssl_policy()},
+            {:tags, tags()}
+          ]
+          | %{
+              optional(:alpn_policy) => [alpn_policy()],
+              optional(:certificates) => certificates(),
+              optional(:mutual_authentication) => mutual_authentication_attributes(),
+              optional(:port) => port_num(),
+              optional(:protocol) => protocol(),
+              optional(:ssl_policy) => ssl_policy(),
+              optional(:tags) => tags()
+            }
+
+  @typedoc """
+  Optional parameters for `create_listener/5`.
+  """
+  @type deprecated_create_listener_opts ::
+          [
+            {:alpn_policy, [alpn_policy()]},
+            {:certificates, certificates()},
+            {:mutual_authentication, mutual_authentication_attributes()},
+            {:ssl_policy, ssl_policy()},
+            {:tags, tags()}
+          ]
+          | %{
+              optional(:alpn_policy) => [alpn_policy()],
+              optional(:certificates) => certificates(),
+              optional(:mutual_authentication) => mutual_authentication_attributes(),
+              optional(:ssl_policy) => ssl_policy(),
+              optional(:tags) => tags()
+            }
+
+  @typedoc """
+  Optional parameters for `create_load_balancer/2`.
+  """
+  @type create_load_balancer_opts ::
+          [
+            customer_owned_ipv4_pool: customer_owned_ipv4_pool(),
+            enable_prefix_for_ipv6_source_nat: enable_prefix_for_ipv6_source_nat(),
+            ip_address_type: ip_address_type(),
+            ipam_pools: ipam_pools(),
+            scheme: load_balancer_scheme(),
+            security_groups: binary_list(),
+            subnets: subnets(),
+            subnet_mappings: subnet_mappings(),
+            tags: tags(),
+            type: load_balancer_type()
+          ]
+          | %{
+              optional(:customer_owned_ipv4_pool) => customer_owned_ipv4_pool(),
+              optional(:enable_prefix_for_ipv6_source_nat) => enable_prefix_for_ipv6_source_nat(),
+              optional(:ip_address_type) => ip_address_type(),
+              optional(:ipam_pools) => ipam_pools(),
+              optional(:scheme) => load_balancer_scheme(),
+              optional(:security_groups) => binary_list(),
+              optional(:subnets) => subnets(),
+              optional(:subnet_mappings) => subnet_mappings(),
+              optional(:tags) => tags(),
+              optional(:type) => load_balancer_type()
+            }
+
+  @typedoc """
+  Optional parameters for `create_target_group/3`.
+  """
+  @type create_target_group_opts ::
+          [
+            health_check_enabled: health_check_enabled(),
+            health_check_interval_seconds: health_check_interval_seconds(),
+            health_check_path: health_check_path(),
+            health_check_port: health_check_port(),
+            health_check_protocol: health_check_protocol(),
+            health_check_timeout_seconds: health_check_timeout_seconds(),
+            healthy_threshold_count: healthy_threshold_count(),
+            ip_address_type: ip_address_type(),
+            matcher: matcher(),
+            port: port_num(),
+            protocol: protocol(),
+            protocol_version: protocol_version(),
+            tags: tags(),
+            target_type: target_type(),
+            unhealthy_threshold_count: unhealthy_threshold_count(),
+            vpc_id: vpc_id()
+          ]
+          | %{
+              optional(:health_check_enabled) => health_check_enabled(),
+              optional(:health_check_interval_seconds) => health_check_interval_seconds(),
+              optional(:health_check_path) => health_check_path(),
+              optional(:health_check_port) => health_check_port(),
+              optional(:health_check_protocol) => health_check_protocol(),
+              optional(:health_check_timeout_seconds) => health_check_timeout_seconds(),
+              optional(:healthy_threshold_count) => healthy_threshold_count(),
+              optional(:ip_address_type) => ip_address_type(),
+              optional(:matcher) => matcher(),
+              optional(:port) => port_num(),
+              optional(:protocol) => protocol(),
+              optional(:protocol_version) => protocol_version(),
+              optional(:tags) => tags(),
+              optional(:target_type) => target_type(),
+              optional(:unhealthy_threshold_count) => unhealthy_threshold_count(),
+              optional(:vpc_id) => vpc_id()
+            }
+
+  @typedoc """
+  Optional parameters for `modify_listener/2`.
+  """
+  @type modify_listener_opts ::
+          [
+            alpn_policy: [alpn_policy()],
+            certificates: certificates(),
+            default_actions: actions(),
+            mutual_authentication: mutual_authentication_attributes(),
+            port: port_num(),
+            protocol: protocol(),
+            ssl_policy: ssl_policy()
+          ]
+          | %{
+              optional(:alpn_policy) => [alpn_policy()],
+              optional(:certificates) => certificates(),
+              optional(:default_actions) => actions(),
+              optional(:mutual_authentication) => mutual_authentication_attributes(),
+              optional(:port) => port_num(),
+              optional(:protocol) => protocol(),
+              optional(:ssl_policy) => ssl_policy()
+            }
+
+  @typedoc """
+  Information about a condition for a rule.
+
+  Each rule can optionally include up to one of each of the following
+  conditions: http-request-method, host-header, path-pattern, and source-ip.
+  Each rule can also optionally include one or more of each of the following
+  conditions: http-header and query-string. Note that the value for a condition
+  can't be empty.
+
+  For more information, see Quotas for your Application Load Balancers.
+  """
+  @type rule_condition ::
+          [
+            field: binary(),
+            values: binary_list(),
+            host_header_config: host_header_config()
+          ]
+          | %{
+              optional(:field) => binary(),
+              optional(:values) => binary_list(),
+              optional(:host_header_config) => host_header_config()
+            }
+
+  @typedoc """
+  A list of `t:rule_condition/0`
+  """
+  @type conditions() :: [rule_condition, ...]
+
+  @typedoc """
+  Optional parameters for `modify_rule/2`.
+  """
+  @type modify_rule_opts ::
+          [
+            actions: actions(),
+            conditions: conditions(),
+            reset_transforms: boolean(),
+            transforms: rule_transforms()
+          ]
+          | %{
+              optional(:actions) => actions(),
+              optional(:conditions) => conditions(),
+              optional(:reset_transforms) => boolean(),
+              optional(:transforms) => rule_transforms()
+            }
+
+  @typedoc """
+  Optional parameters for `describe_rules/1`.
+  """
+  @type describe_rules_opts ::
+          [
+            listener_arn: listener_arn(),
+            rule_arns: rule_arns(),
+            marker: marker(),
+            page_size: page_size()
+          ]
+          | %{
+              optional(:listener_arn) => listener_arn(),
+              optional(:rule_arns) => rule_arns(),
+              optional(:marker) => marker(),
+              optional(:page_size) => page_size()
+            }
+
+  @typedoc """
+  Optional parameters for `describe_account_limits/1`.
+  """
+  @type describe_account_limits_opts :: paging()
+
+  @typedoc """
+  Optional parameters for `modify_target_group/2`.
+  """
+  @type modify_target_group_opts ::
+          [
+            health_check_enabled: health_check_enabled(),
+            health_check_interval_seconds: health_check_interval_seconds(),
+            health_check_path: health_check_path(),
+            health_check_port: health_check_port(),
+            health_check_protocol: health_check_protocol(),
+            health_check_timeout_seconds: health_check_timeout_seconds(),
+            healthy_threshold_count: healthy_threshold_count(),
+            matcher: matcher(),
+            unhealthy_threshold_count: unhealthy_threshold_count()
+          ]
+          | %{
+              optional(:health_check_enabled) => health_check_enabled(),
+              optional(:health_check_interval_seconds) => health_check_interval_seconds(),
+              optional(:health_check_path) => health_check_path(),
+              optional(:health_check_port) => health_check_port(),
+              optional(:health_check_protocol) => health_check_protocol(),
+              optional(:health_check_timeout_seconds) => health_check_timeout_seconds(),
+              optional(:healthy_threshold_count) => healthy_threshold_count(),
+              optional(:matcher) => matcher(),
+              optional(:unhealthy_threshold_count) => unhealthy_threshold_count()
+            }
+
+  @typedoc """
+  Optional parameters for `modify_trust_store/4`.
+  """
+  @type modify_trust_store_opts() ::
+          [{:ca_certificates_bundle_s3_object_version, ca_certificates_bundle_s3_object_version()}]
+          | %{
+              optional(:ca_certificates_bundle_s3_object_version) => ca_certificates_bundle_s3_object_version()
+            }
+
+  @typedoc """
+  Optional parameters for `describe_listeners/1`.
+  """
+  @type describe_listeners_opts ::
+          [
+            listener_arns: [listener_arn(), ...],
+            load_balancer_arn: load_balancer_arn(),
+            marker: marker(),
+            page_size: page_size()
+          ]
+          | %{
+              optional(:listener_arns) => [listener_arn(), ...],
+              optional(:load_balancer_arn) => load_balancer_arn(),
+              optional(:marker) => marker(),
+              optional(:page_size) => page_size()
+            }
+
+  @typedoc """
+  Indicates whether to evaluate inbound security group rules for traffic
+  sent to a Network Load Balancer through AWS PrivateLink
+
+  Applies only if the load balancer has an associated security group. The default is "on".
+
+  Valid Values
+  ```
+  "on" | "off"
+  ```
+  """
+  @type enforce_security_group_inbound_rules_on_private_link_traffic() :: binary()
+
+  @typedoc """
+  Optional parameters for `set_security_groups/3`.
+  """
+  @type set_security_groups_opts ::
+          [
+            enforce_security_group_inbound_rules_on_private_link_traffic:
+              enforce_security_group_inbound_rules_on_private_link_traffic()
+          ]
+          | %{
+              optional(:enforce_security_group_inbound_rules_on_private_link_traffic) =>
+                enforce_security_group_inbound_rules_on_private_link_traffic()
+            }
+
+  @typedoc """
+  Optional parameters for `describe_listener_certificates/2`.
+  """
+  @type describe_listener_certificates_opts :: paging()
+
+  @typedoc """
+  The type of transform.
+
+  - "host-header-rewrite" - Rewrite the host header.
+  - "url-rewrite" - Rewrite the request URL.
+
+  Valid Values
+  ```
+  "host-header-rewrite" | "url-rewrite"
+  ```
+  """
+  @type rule_transform_type() :: binary
+
+  @typedoc """
+  The regular expression to match in the input string
+
+  The maximum length of the string is 1,024 characters.
+  """
+  @type regex() :: binary()
+
+  @typedoc """
+  The replacement string to use when rewriting the matched input
+
+  The maximum length of the string is 1,024 characters.
+  You can specify capture groups in the regular expression (for example, $1 and $2).
+  """
+  @type replace() :: binary()
+
+  @typedoc """
+  Information about a rewrite transform to match a pattern and replace it with the specified string.
+  """
+  @type rewrite_config() :: %{
+          regex: regex(),
+          replace: replace()
+        }
+
+  @typedoc """
+  Information about a host header rewrite transform
+
+  This transform matches a pattern in the host header in an HTTP request and replaces it
+  with the specified string.
+  """
+  @type host_header_rewrite_config() :: [
+          {:rewrites, [rewrite_config()]}
         ]
 
-  @type subnet_mapping :: [
-          subnet_id: binary,
-          allocation_id: binary
+  @typedoc """
+  Information about a URL rewrite transform
+
+  This transform modifies the request URL.
+
+  Specify only when `:type` in `t:rule_transform/0` is "url-rewrite".
+  """
+  @type url_rewrite_config() :: [
+          {:rewrites, [rewrite_config()]}
         ]
+
+  @typedoc """
+  Information about a transform to apply to requests that match a rule
+
+  Transforms are applied to requests before they are sent to targets. The
+  `:type` is required and is set to "host-header-rewrite" or "url-rewrite".
+  Based on the type of transform, specify either `:host_header_rewrite_config` or
+  `:url_rewrite_config`.
+  """
+  @type rule_transform :: %{
+          :type => rule_transform_type(),
+          optional(:host_header_rewrite_config) => host_header_rewrite_config(),
+          optional(:url_rewrite_config) => url_rewrite_config()
+        }
+
+  @typedoc """
+  A list of `t:rule_transform/0`
+  """
+  @type rule_transforms() :: [rule_transform(), ...]
+
+  @typedoc """
+  Optional parameters for `create_rule/5`.
+  """
+  @type create_rule_opts ::
+          [
+            {:transforms, [rule_transform()]},
+            {:tags, tags()}
+          ]
+          | %{
+              optional(:transforms) => rule_transform(),
+              optional(:tags) => tags()
+            }
+
+  @typedoc """
+  Optional parameters for `describe_load_balancers/1`.
+  """
+  @type describe_load_balancers_opts ::
+          [
+            load_balancer_arns: [load_balancer_arn()],
+            names: [binary, ...],
+            marker: marker(),
+            page_size: page_size()
+          ]
+          | %{
+              optional(:load_balancer_arns) => [load_balancer_arn()],
+              optional(:names) => [binary, ...],
+              optional(:marker) => marker(),
+              optional(:page_size) => page_size()
+            }
+
+  @typedoc """
+  Optional parameters for `describe_ssl_policies/1`.
+  """
+  @type describe_ssl_policies_opts ::
+          [
+            ssl_policy_names: [binary, ...],
+            marker: marker(),
+            page_size: page_size()
+          ]
+          | %{
+              optional(:ssl_policy_names) => [binary, ...],
+              optional(:marker) => marker(),
+              optional(:page_size) => page_size()
+            }
+
+  @typedoc """
+  Optional parameters for `describe_target_groups/1`.
+  """
+  @type describe_target_groups_opts ::
+          [
+            load_balancer_arn: load_balancer_arn(),
+            target_group_arns: [target_group_arn()],
+            names: [binary, ...],
+            marker: marker(),
+            page_size: page_size()
+          ]
+          | %{
+              optional(:load_balancer_arn) => load_balancer_arn(),
+              optional(:target_group_arns) => [target_group_arn()],
+              optional(:names) => [binary, ...],
+              optional(:marker) => marker(),
+              optional(:page_size) => page_size()
+            }
+
+  @typedoc """
+  Used to include anomaly detection information.
+
+  Valid Values
+  ```
+  "AnomalyDetection" | "All"
+  ```
+  """
+  @type target_health_include_option() :: binary()
+
+  @typedoc """
+  List of `t:target_health_include_option/0`
+  """
+  @type target_health_include_options() :: [target_health_include_option(), ...]
+
+  @typedoc """
+  Optional parameters for `describe_target_health/2`.
+  """
+  @type describe_target_health_opts ::
+          [targets: target_descriptions(), include: target_health_include_options()]
+          | %{
+              optional(:targets) => target_descriptions(),
+              optional(:include) => target_health_include_options()
+            }
+
+  @typedoc """
+  Optional parameters for `set_subnets/3`.
+  """
+  @type set_subnets_opts ::
+          [
+            enable_prefix_for_ipv6_source_nat: enable_prefix_for_ipv6_source_nat(),
+            ip_address_type: ip_address_type(),
+            subnet_mappings: subnet_mappings(),
+            subnets: subnets()
+          ]
+          | %{
+              optional(:enable_prefix_for_ipv6_source_nat) => enable_prefix_for_ipv6_source_nat(),
+              optional(:ip_address_type) => ip_address_type(),
+              optional(:subnet_mappings) => subnet_mappings(),
+              optional(:subnets) => subnets()
+            }
+
+  @typedoc """
+  The minimum capacity for a load balancer.
+  """
+  @type minimum_load_balancer_capacity() :: [{:capacity_units, integer()}] | %{optional(:capacity_units) => integer()}
+
+  @typedoc """
+  Optional parameters for `modify_capacity_reservation/2`.
+  """
+  @type modify_capacity_reservation_opts() ::
+          [
+            {:minimum_load_balancer_capacity, minimum_load_balancer_capacity()},
+            {:reset_capacity_reservation, boolean()}
+          ]
+          | %{
+              optional(:minimum_load_balancer_capacity) => minimum_load_balancer_capacity(),
+              optional(:reset_capacity_reservation) => boolean()
+            }
+
+  @typedoc """
+  An IPAM pool is a collection of IP address CIDRs
+
+  IPAM pools enable you to organize your IP addresses according to your routing and security needs.
+  """
+  @type ipam_pools() :: [%{ipv4_ipam_pool_id: ipv4_ipam_pool_id()}]
+
+  @typedoc """
+  Optional parameters for `modify_ip_pools/2`.
+  """
+  @type modify_ip_pools_opts() ::
+          [{:ipam_pools, ipam_pools()}, {:remove_ipam_pools, binary_list()}]
+          | %{optional(:ipam_pools) => ipam_pools(), optional(:remove_ipam_pools) => binary_list()}
+
+  @typedoc """
+  The name of the attribute.
+
+  The following attribute is supported by Network Load Balancers, and Gateway Load Balancers.
+
+  - "tcp.idle_timeout.seconds" - The tcp idle timeout value, in seconds. The valid range
+    is 60-6000 seconds. The default is 350 seconds.
+
+  The following attributes are only supported by Application Load Balancers.
+
+  - "routing.http.request.x_amzn_mtls_clientcert_serial_number.header_name" - Enables you to modify the
+    header name of the X-Amzn-Mtls-Clientcert-Serial-Number HTTP request header.
+  - "routing.http.request.x_amzn_mtls_clientcert_issuer.header_name" - Enables you to modify the header
+    name of the X-Amzn-Mtls-Clientcert-Issuer HTTP request header.
+  - "routing.http.request.x_amzn_mtls_clientcert_subject.header_name" - Enables you to modify the header name
+    of the X-Amzn-Mtls-Clientcert-Subject HTTP request header.
+  - "routing.http.request.x_amzn_mtls_clientcert_validity.header_name" - Enables you to modify the header
+    name of the X-Amzn-Mtls-Clientcert-Validity HTTP request header.
+  - "routing.http.request.x_amzn_mtls_clientcert_leaf.header_name" - Enables you to modify the header name
+    of the X-Amzn-Mtls-Clientcert-Leaf HTTP request header.
+  - "routing.http.request.x_amzn_mtls_clientcert.header_name" - Enables you to modify the header name of
+    the X-Amzn-Mtls-Clientcert HTTP request header.
+  - "routing.http.request.x_amzn_tls_version.header_name" - Enables you to modify the header name of the
+    X-Amzn-Tls-Version HTTP request header.
+  - "routing.http.request.x_amzn_tls_cipher_suite.header_name" - Enables you to modify the header name of
+    the X-Amzn-Tls-Cipher-Suite HTTP request header.
+  - "routing.http.response.server.enabled" - Enables you to allow or remove the HTTP response server header.
+  - "routing.http.response.strict_transport_security.header_value" - Informs browsers that the site should
+    only be accessed using HTTPS, and that any future attempts to access it using HTTP should automatically
+    be converted to HTTPS.
+  - "routing.http.response.access_control_allow_origin.header_value" - Specifies which origins are allowed
+    to access the server.
+  - "routing.http.response.access_control_allow_methods.header_value" - Returns which HTTP methods are allowed
+    when accessing the server from a different origin.
+  - "routing.http.response.access_control_allow_headers.header_value" - Specifies which headers can be used
+    during the request.
+  - "routing.http.response.access_control_allow_credentials.header_value" - Indicates whether the browser should
+    include credentials such as cookies or authentication when making requests.
+  - "routing.http.response.access_control_expose_headers.header_value" - Returns which headers the browser can
+    expose to the requesting client.
+  - "routing.http.response.access_control_max_age.header_value" - Specifies how long the results of a preflight
+    request can be cached, in seconds.
+  - "routing.http.response.content_security_policy.header_value" - Specifies restrictions enforced by the browser
+    to help minimize the risk of certain types of security threats.
+  - "routing.http.response.x_content_type_options.header_value" - Indicates whether the MIME types advertised in
+    the Content-Type headers should be followed and not be changed.
+  - "routing.http.response.x_frame_options.header_value" - Indicates whether the browser is allowed to render a
+    page in a frame, iframe, embed or object.
+
+  Length Constraints: `Maximum length of 256`
+  Pattern: `^[a-zA-Z0-9._]+$`
+  """
+  @type listener_attribute_key() :: binary()
+
+  @typedoc """
+  The value of the attribute.
+  """
+  @type listener_attribute_value() :: binary()
+
+  @typedoc """
+  Information about a listener attribute.
+  """
+  @type listener_attribute() ::
+          [{:key, listener_attribute_key()}, {:value, listener_attribute_value()}]
+          | %{
+              optional(:key) => listener_attribute_key(),
+              optional(:value) => listener_attribute_value()
+            }
+
   @doc """
-  Adds the specified certificate to the specified secure listener.
+  Adds the specified SSL server certificate to the certificate list for the specified HTTPS or TLS listener.
 
-  If the certificate was already added, the call is successful but the certificate
-  is not added again.
+  If the certificate in already in the certificate list, the call is successful but the certificate is not added again.
 
   To list the certificates for your listener, use `describe_listener_certificates/1`.
-  To remove certificates from your listener, use `remove_listener_certificates/1`.
+  To remove certificates from your listener, use `remove_listener_certificates/2`.
 
   ## Examples:
 
@@ -93,27 +1601,28 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @spec add_listener_certificates(listener_arn :: binary, certificates :: [certificate, ...]) ::
-          ExAws.Operation.Query.t()
-  def add_listener_certificates(listener_arn, certificates, opts \\ []) do
-    [{:listener_arn, listener_arn}, {:certificates, certificates} | opts]
+  @spec add_listener_certificates(listener_arn(), certificates()) :: ExAws.Operation.Query.t()
+  def add_listener_certificates(listener_arn, certificates) do
+    [{:listener_arn, listener_arn}, {:certificates, certificates}]
     |> build_request(:add_listener_certificates)
   end
 
   @doc """
   Adds the specified tags to the specified Elastic Load Balancing resource.
 
-  You can tag your Application Load Balancers, Network Load Balancers, and your target groups.
+  You can tag your Application Load Balancers, Network Load Balancers, Gateway Load
+  Balancers, target groups, trust stores, listeners, and rules.
 
   Each tag consists of a key and an optional value. If a resource already has a tag with the same
-  key, `add_tags/1` updates its value.
+  key, `add_tags/2` updates its value.
 
   To list the current tags for your resources, use `describe_tags/1`. To remove tags from
-  your resources, use `remove_tags/1`.
+  your resources, use `remove_tags/2`.
 
   ## Examples:
 
-      iex> ExAws.ElasticLoadBalancingV2.add_tags(["resource_arn1", "resource_arn2"], [%{key: "hello", value: "test"}])
+      iex> tags = [%{key: "hello", value: "test"}, %{key: "foo", value: "bar"}]
+      iex> ExAws.ElasticLoadBalancingV2.add_tags(["resource_arn1", "resource_arn2"], tags)
       %ExAws.Operation.Query{
         path: "/",
         params: %{
@@ -122,6 +1631,8 @@ defmodule ExAws.ElasticLoadBalancingV2 do
           "ResourceArns.member.2" => "resource_arn2",
           "Tags.member.1.Key" => "hello",
           "Tags.member.1.Value" => "test",
+          "Tags.member.2.Key" => "foo",
+          "Tags.member.2.Value" => "bar",
           "Version" => "2015-12-01"
         },
         content_encoding: "identity",
@@ -130,7 +1641,8 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
 
-      iex> ExAws.ElasticLoadBalancingV2.add_tags(["resource_arn1", "resource_arn2"], [hello: "test"])
+      iex> tags = [hello: "test", foo: "bar"]
+      iex> ExAws.ElasticLoadBalancingV2.add_tags(["resource_arn1", "resource_arn2"], tags)
       %ExAws.Operation.Query{
         path: "/",
         params: %{
@@ -139,23 +1651,8 @@ defmodule ExAws.ElasticLoadBalancingV2 do
           "ResourceArns.member.2" => "resource_arn2",
           "Tags.member.1.Key" => "hello",
           "Tags.member.1.Value" => "test",
-          "Version" => "2015-12-01"
-        },
-        content_encoding: "identity",
-        service: :elasticloadbalancing,
-        action: :add_tags,
-        parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
-      }
-
-      iex> ExAws.ElasticLoadBalancingV2.add_tags(["resource_arn1", "resource_arn2"], [{:hello, "test"}])
-      %ExAws.Operation.Query{
-        path: "/",
-        params: %{
-          "Action" => "AddTags",
-          "ResourceArns.member.1" => "resource_arn1",
-          "ResourceArns.member.2" => "resource_arn2",
-          "Tags.member.1.Key" => "hello",
-          "Tags.member.1.Value" => "test",
+          "Tags.member.2.Key" => "foo",
+          "Tags.member.2.Value" => "bar",
           "Version" => "2015-12-01"
         },
         content_encoding: "identity",
@@ -164,10 +1661,45 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @spec add_tags(resource_arns :: [binary, ...], tags :: [tag, ...]) :: ExAws.Operation.Query.t()
-  def add_tags(resource_arns, tags, opts \\ []) do
-    [{:resource_arns, resource_arns}, {:tags, tags} | opts]
+  @spec add_tags(resource_arns(), tags()) :: ExAws.Operation.Query.t()
+  def add_tags(resource_arns, tags) do
+    [{:resource_arns, resource_arns}, {:tags, tags}]
     |> build_request(:add_tags)
+  end
+
+  @doc """
+  Adds the specified revocation file to the specified trust store.
+
+  ## Examples:
+
+      iex> revocation1 = %{revocation_type: "CRL", s3_bucket: "test_bucket"}
+      iex> revocation2 = %{revocation_type: "CRL", s3_bucket: "test_bucket2"}
+      iex> opts = [{:revocation_contents, [revocation1, revocation2]}]
+      iex> trust_store_arn = "trust_store_arn"
+      iex> ExAws.ElasticLoadBalancingV2.add_trust_store_revocations(trust_store_arn, opts)
+      %ExAws.Operation.Query{
+              action: :add_trust_store_revocations,
+              content_encoding: "identity",
+              params: %{
+                "Action" => "AddTrustStoreRevocations",
+                "RevocationContents.member.1.RevocationType" => "CRL",
+                "RevocationContents.member.1.S3Bucket" => "test_bucket",
+                "RevocationContents.member.2.RevocationType" => "CRL",
+                "RevocationContents.member.2.S3Bucket" => "test_bucket2",
+                "TrustStoreArn" => "trust_store_arn",
+                "Version" => "2015-12-01"
+              },
+              parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2,
+              path: "/",
+              service: :elasticloadbalancing
+            }
+  """
+  @spec add_trust_store_revocations(trust_store_arn(), add_trust_store_revocations_opts()) :: ExAws.Operation.Query.t()
+  def add_trust_store_revocations(trust_store_arn, opts \\ []) do
+    opts
+    |> keyword_to_map()
+    |> Map.merge(%{trust_store_arn: trust_store_arn})
+    |> build_request(:add_trust_store_revocations)
   end
 
   @doc """
@@ -186,12 +1718,36 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   in the *Application Load Balancers Guide*
   * [Listeners for Your Network Load Balancers](http://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-listeners.html)
   in the *Network Load Balancers Guide*
+  * This function replaces the deprecated `create_listener/5` function and moves all optional parameters to the opts argument.
 
   ## Examples:
 
-      iex> ExAws.ElasticLoadBalancingV2.create_listener(
-      ...> "load_balancer_arn",
-      ...> "HTTP", 80, [%{type: "forward", target_group_arn: "target_arn"}])
+      iex> default_actions = [%{type: "forward", target_group_arn: "target_arn"}]
+      iex> load_balancer_arn = "load_balancer_arn"
+      iex> opts = [protocol: "HTTP", port: 80,
+      ...>         alpn_policy: ["HTTP1Only"],
+      ...>         mutual_authentication: %{trust_store_arn: "trust_store_arn"}]
+      iex> ExAws.ElasticLoadBalancingV2.create_listener(load_balancer_arn, default_actions, opts)
+      %ExAws.Operation.Query{
+        path: "/",
+        params: %{
+          "Action" => "CreateListener",
+          "AlpnPolicy.member.1" => "HTTP1Only",
+          "DefaultActions.member.1.TargetGroupArn" => "target_arn",
+          "DefaultActions.member.1.Type" => "forward",
+          "LoadBalancerArn" => "load_balancer_arn",
+          "MutualAuthentication.TrustStoreArn" => "trust_store_arn",
+          "Port" => 80,
+          "Protocol" => "HTTP",
+          "Version" => "2015-12-01"
+        },
+        content_encoding: "identity",
+        service: :elasticloadbalancing,
+        action: :create_listener,
+        parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+      }
+      iex> opts = %{protocol: "HTTP", port: 80}
+      iex> ExAws.ElasticLoadBalancingV2.create_listener(load_balancer_arn, default_actions, opts)
       %ExAws.Operation.Query{
         path: "/",
         params: %{
@@ -209,30 +1765,60 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @type create_listener_opts :: [
-          ssl_policy: binary,
-          certificates: [certificate, ...]
-        ]
+  @spec create_listener(load_balancer_arn(), [action, ...], create_listener_opts()) :: ExAws.Operation.Query.t()
+  def create_listener(load_balancer_arn, default_actions, opts \\ []) do
+    opts
+    |> keyword_to_map()
+    |> Map.merge(%{
+      load_balancer_arn: load_balancer_arn,
+      default_actions: default_actions
+    })
+    |> build_request(:create_listener)
+  end
+
+  @doc """
+  Creates a listener for the specified Application Load Balancer
+
+  ## Examples:
+
+      iex> default_actions = [%{type: "forward", target_group_arn: "target_arn"}]
+      iex> protocol = "HTTP"
+      iex> port = 80
+      iex> ExAws.ElasticLoadBalancingV2.create_listener("load_balancer_arn", protocol, port, default_actions)
+      %ExAws.Operation.Query{
+        path: "/",
+        params: %{
+          "Action" => "CreateListener",
+          "DefaultActions.member.1.TargetGroupArn" => "target_arn",
+          "DefaultActions.member.1.Type" => "forward",
+          "LoadBalancerArn" => "load_balancer_arn",
+          "Port" => 80,
+          "Protocol" => "HTTP",
+          "Version" => "2015-12-01"
+        },
+        content_encoding: "identity",
+        service: :elasticloadbalancing,
+        action: :create_listener,
+        parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+      }
+  """
+  @deprecated "Use `create_listener/3` instead"
   @spec create_listener(
-          load_balancer_arn :: binary,
-          protocol :: binary,
-          port :: integer,
-          default_actions :: [action, ...]
+          load_balancer_arn(),
+          protocol(),
+          port_num(),
+          [action, ...],
+          deprecated_create_listener_opts()
         ) :: ExAws.Operation.Query.t()
-  @spec create_listener(
-          load_balancer_arn :: binary,
-          protocol :: binary,
-          port :: integer,
-          default_actions :: [action, ...],
-          opts :: create_listener_opts
-        ) :: ExAws.Operation.Query.t()
-  def create_listener(load_balancer_arn, protocol, port, default_actions, opts \\ []) do
-    [
-      {:load_balancer_arn, load_balancer_arn},
-      {:protocol, protocol},
-      {:port, port},
-      {:default_actions, default_actions} | opts
-    ]
+  def create_listener(load_balancer_arn, protocol, port_num, default_actions, opts \\ []) do
+    opts
+    |> keyword_to_map()
+    |> Map.merge(%{
+      load_balancer_arn: load_balancer_arn,
+      protocol: protocol,
+      port: port_num,
+      default_actions: default_actions
+    })
     |> build_request(:create_listener)
   end
 
@@ -240,21 +1826,25 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   Creates an Application Load Balancer or a Network Load Balancer.
 
   When you create a load balancer, you can specify security groups, subnets,
-  IP address type, and tags. Otherwise, you could do so later using set_security_groups,
-  set_subnets, set_ip_address_type, and add_tags.
+  IP address type, and tags. Otherwise, you could do so later using `set_security_groups/3`,
+  `set_subnets/3`, `set_ip_address_type/2`, and `add_tags/2`.
 
-  To create listeners for your load balancer, use `create_listener/1`. To describe your
-  current load balancers, see `describe_load_balancer/1`. When you are finished with a
+  To create listeners for your load balancer, use `create_listener/3`. To describe your
+  current load balancers, see `describe_load_balancers/1`. When you are finished with a
   load balancer, you can delete it using `delete_load_balancer/1`.
 
   You can create up to 20 load balancers per region per account. You can request an
   increase for the number of load balancers for your account.
 
-  More information:
-  * [Limits for Your Application Load Balancer](http://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-limits.html)
-  in the *Application Load Balancers Guide*
-  * [Limits for Your Network Load Balancer](http://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-limits.html)
-  in the *Network Load Balancers Guide*
+  For more information, see the following:
+
+  - [Application Load Balancers](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/application-load-balancers.html)
+  - [Network Load Balancers](https://docs.aws.amazon.com/elasticloadbalancing/latest/network/network-load-balancers.html)
+  - [Gateway Load Balancers](https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/gateway-load-balancers.html)
+
+  This operation is idempotent, which means that it completes at most one time.
+  If you attempt to create multiple load balancers with the same settings, each
+  call succeeds.
 
   ## Examples:
 
@@ -272,19 +1862,22 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
 
-      iex> ExAws.ElasticLoadBalancingV2.create_load_balancer("Loader",
-      ...> [schema: "internet-facing",
-      ...> subnet_mappings: [%{subnet_id: "1.2.3.4", allocation_id: "i2234342"}],
+      iex> opts = [
+      ...> scheme: "internet-facing",
+      ...> subnet_mappings: [
+      ...>   %{subnet_id: "1.2.3.4", allocation_id: "i2234342"}
+      ...> ],
       ...> subnets: ["1.2.3.4", "5.6.7.8"],
       ...> security_groups: ["Secure123", "Secure456"],
-      ...> type: "application", ip_address_type: "ipv4"])
+      ...> type: "application", ip_address_type: "ipv4"]
+      iex> ExAws.ElasticLoadBalancingV2.create_load_balancer("Loader", opts)
       %ExAws.Operation.Query{
         path: "/",
         params: %{
           "Action" => "CreateLoadBalancer",
           "IpAddressType" => "ipv4",
           "Name" => "Loader",
-          "Schema" => "internet-facing",
+          "Scheme" => "internet-facing",
           "SecurityGroups.member.1" => "Secure123",
           "SecurityGroups.member.2" => "Secure456",
           "SubnetMappings.member.1.AllocationId" => "i2234342",
@@ -300,20 +1893,11 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @type create_load_balancer_opts :: [
-          subnets: [binary, ...],
-          subnet_mappings: [subnet_mapping, ...],
-          security_groups: [binary, ...],
-          scheme: binary,
-          tags: [tag, ...],
-          type: binary,
-          ip_address_type: binary
-        ]
-  @spec create_load_balancer(name :: binary) :: ExAws.Operation.Query.t()
-  @spec create_load_balancer(name :: binary, opts :: create_load_balancer_opts) ::
-          ExAws.Operation.Query.t()
-  def create_load_balancer(name, opts \\ []) do
-    [{:name, name} | opts]
+  @spec create_load_balancer(load_balancer_name, create_load_balancer_opts) :: ExAws.Operation.Query.t()
+  def create_load_balancer(load_balancer_name, opts \\ []) do
+    opts
+    |> keyword_to_map()
+    |> Map.merge(%{name: load_balancer_name})
     |> build_request(:create_load_balancer)
   end
 
@@ -332,47 +1916,98 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   To view your current rules, use `describe_rules/1`. To update a rule, use
   `modify_rule/1`. To set the priorities of your rules, use `set_rule_priorities/1`.
   To delete a rule, use `delete_rule/1`.
+
+  ## Examples
+
+      iex> conditions = [%{field: "path-pattern", values: ["/images/*", "/videos/*"]}]
+      iex> actions = [%{type: "forward", target_group_arn: "target_arn"}]
+      iex> priority = 10
+      iex> listener_arn = "arn:aws:test_arn"
+      iex> ExAws.ElasticLoadBalancingV2.create_rule(listener_arn, conditions, priority, actions)
+      %ExAws.Operation.Query{
+        path: "/",
+        params: %{
+          "Action" => "CreateRule",
+          "Actions.member.1.TargetGroupArn" => "target_arn",
+          "Actions.member.1.Type" => "forward",
+          "Conditions.member.1.Field" => "path-pattern",
+          "Conditions.member.1.Values.member.1" => "/images/*",
+          "Conditions.member.1.Values.member.2" => "/videos/*",
+          "ListenerArn" => "arn:aws:test_arn",
+          "Priority" => 10,
+          "Version" => "2015-12-01"
+        },
+        content_encoding: "identity",
+        service: :elasticloadbalancing,
+        action: :create_rule,
+        parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+      }
   """
-  @spec create_rule(
-          listener_arn :: binary,
-          conditions :: [rule_condition, ...],
-          priority :: integer,
-          actions :: [action, ...]
-        ) :: ExAws.Operation.Query.t()
+  @spec create_rule(listener_arn(), conditions(), priority(), actions(), create_rule_opts()) ::
+          ExAws.Operation.Query.t()
   def create_rule(listener_arn, conditions, priority, actions, opts \\ []) do
-    [
-      {:listener_arn, listener_arn},
-      {:conditions, conditions},
-      {:priority, priority},
-      {:actions, actions} | opts
-    ]
+    opts
+    |> keyword_to_map()
+    |> Map.merge(%{
+      listener_arn: listener_arn,
+      conditions: conditions,
+      priority: priority,
+      actions: actions
+    })
     |> build_request(:create_rule)
   end
 
   @doc """
   Creates a target group.
 
-  To register targets with the target group, use `register_targets/1`. To
+  To register targets with the target group, use `register_targets/2`. To
   update the health check settings for the target group, use
   `modify_target_group/1`. To monitor the health of targets in the target group,
   use `describe_target_health/1`. To route traffic to the targets in a target group,
-  specify the target group in an action using `create_listener/1` or `create_rule/1`.
+  specify the target group in an action using `create_listener/3` or `create_rule/5`.
   To delete a target group, use `delete_target_group/1`.
 
   More information:
-  * [Target Groups for Your Application Load Balancers](http://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-target-groups.html)
-  in the *Application Load Balancers Guide*
-  * [Target Groups for Your Network Load Balancers](http://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-target-groups.html)
-  in the *Network Load Balancers Guide*.
+
+  - [Target Groups for Your Application Load Balancers](http://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-target-groups.html)
+  - [Target Groups for Your Network Load Balancers](http://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-target-groups.html)
+  - [Target groups for your Gateway Load Balancers](https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/target-groups.html)
+
+  This operation is idempotent, which means that it completes at most one time.
+  If you attempt to create multiple target groups with the same settings, each
+  call succeeds.
 
   ## Examples:
 
-      iex> ExAws.ElasticLoadBalancingV2.create_target_group("target_group_name", "vpc_id")
+      iex> opts = [protocol: "HTTP", port: 80, health_check_path: "/health", vpc_id: "vpc_id"]
+      iex> ExAws.ElasticLoadBalancingV2.create_target_group("target_group_name", opts)
       %ExAws.Operation.Query{
         path: "/",
         params: %{
           "Action" => "CreateTargetGroup",
+          "HealthCheckPath" => "/health",
           "Name" => "target_group_name",
+          "Port" => 80,
+          "Protocol" => "HTTP",
+          "Version" => "2015-12-01",
+          "VpcId" => "vpc_id"
+        },
+        content_encoding: "identity",
+        service: :elasticloadbalancing,
+        action: :create_target_group,
+        parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+      }
+      iex> # Demonstrate passing opts as a map
+      iex> opts = %{protocol: "HTTP", port: 80, health_check_path: "/health", vpc_id: "vpc_id"}
+      iex> ExAws.ElasticLoadBalancingV2.create_target_group("target_group_name", opts)
+      %ExAws.Operation.Query{
+        path: "/",
+        params: %{
+          "Action" => "CreateTargetGroup",
+          "HealthCheckPath" => "/health",
+          "Name" => "target_group_name",
+          "Port" => 80,
+          "Protocol" => "HTTP",
           "Version" => "2015-12-01",
           "VpcId" => "vpc_id"
         },
@@ -382,28 +2017,56 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @type create_target_group_opts :: [
-          protocol: binary,
-          port: integer,
-          health_check_protocol: binary,
-          health_check_port: binary,
-          health_check_path: binary,
-          # min 5, max 300
-          health_check_interval_seconds: integer,
-          # min 2, max 60
-          health_check_timeout_seconds: integer,
-          healthy_threshold_count: integer,
-          # min 2, max 60
-          unhealthy_threshold_count: integer,
-          matcher: binary,
-          target_type: binary
-        ]
-  @spec create_target_group(name :: binary, vpc_id :: binary) :: ExAws.Operation.Query.t()
-  @spec create_target_group(name :: binary, vpc_id :: binary, opts :: create_target_group_opts) ::
-          ExAws.Operation.Query.t()
-  def create_target_group(name, vpc_id, opts \\ []) do
-    [{:name, name}, {:vpc_id, vpc_id} | opts]
+  @spec create_target_group(target_group_name(), create_target_group_opts()) :: ExAws.Operation.Query.t()
+  def create_target_group(name, opts \\ []) do
+    opts
+    |> keyword_to_map()
+    |> Map.merge(%{name: name})
     |> build_request(:create_target_group)
+  end
+
+  @doc """
+  Creates a trust store.
+
+  For more information, see
+  [Mutual TLS for Application Load Balancers](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/mutual-authentication.html).
+
+  ## Examples:
+
+      iex> trust_store_name = "my-trust-store"
+      iex> ca_certificates_bundle_s3_bucket = "amzn-s3-demo-bucket"
+      iex> ca_certificates_bundle_s3_key = "CACertBundle.pem"
+      iex> ExAws.ElasticLoadBalancingV2.create_trust_store(trust_store_name, ca_certificates_bundle_s3_bucket, ca_certificates_bundle_s3_key)
+      %ExAws.Operation.Query{
+        path: "/",
+        params: %{
+          "Action" => "CreateTrustStore",
+          "CaCertificatesBundleS3Bucket" => "amzn-s3-demo-bucket",
+          "CaCertificatesBundleS3Key" => "CACertBundle.pem",
+          "TrustStoreName" => "my-trust-store",
+          "Version" => "2015-12-01"
+        },
+        content_encoding: "identity",
+        service: :elasticloadbalancing,
+        action: :create_trust_store,
+        parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+      }
+  """
+  @spec create_trust_store(
+          trust_store_name(),
+          ca_certificates_bundle_s3_bucket(),
+          ca_certificates_bundle_s3_key(),
+          create_trust_store_opts()
+        ) :: ExAws.Operation.Query.t()
+  def create_trust_store(trust_store_name, ca_certs_bundle_s3_bucket, ca_certs_bundle_s3_key, opts \\ []) do
+    opts
+    |> keyword_to_map()
+    |> Map.merge(%{
+      trust_store_name: trust_store_name,
+      ca_certificates_bundle_s3_bucket: ca_certs_bundle_s3_bucket,
+      ca_certificates_bundle_s3_key: ca_certs_bundle_s3_key
+    })
+    |> build_request(:create_trust_store)
   end
 
   @doc """
@@ -428,15 +2091,15 @@ defmodule ExAws.ElasticLoadBalancingV2 do
           parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
         }
   """
-  @spec delete_listener(listener_arn :: binary) :: ExAws.Operation.Query.t()
-  def delete_listener(listener_arn, opts \\ []) do
-    [{:listener_arn, listener_arn} | opts]
+  @spec delete_listener(listener_arn()) :: ExAws.Operation.Query.t()
+  def delete_listener(listener_arn) do
+    [{:listener_arn, listener_arn}]
     |> build_request(:delete_listener)
   end
 
   @doc """
-  Deletes the specified Application Load Balancer or Network Load Balancer
-  and its attached listeners.
+  Deletes the specified Application Load Balancer, Network Load Balancer,
+  or Gateway Load Balancer. Deleting a load balancer also deletes its listeners.
 
   You can't delete a load balancer if deletion protection is enabled.
   If the load balancer does not exist or has already been deleted,
@@ -463,14 +2126,16 @@ defmodule ExAws.ElasticLoadBalancingV2 do
           parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
         }
   """
-  @spec delete_load_balancer(load_balancer_arn :: binary) :: ExAws.Operation.Query.t()
-  def delete_load_balancer(load_balancer_arn, opts \\ []) do
-    [{:load_balancer_arn, load_balancer_arn} | opts]
+  @spec delete_load_balancer(load_balancer_arn()) :: ExAws.Operation.Query.t()
+  def delete_load_balancer(load_balancer_arn) do
+    [{:load_balancer_arn, load_balancer_arn}]
     |> build_request(:delete_load_balancer)
   end
 
   @doc """
-  Deletes the specified rule.
+  Deletes the specified rule
+
+  You can't delete the default rule.
 
   ## Examples:
 
@@ -488,18 +2153,45 @@ defmodule ExAws.ElasticLoadBalancingV2 do
           parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
         }
   """
-  @spec delete_rule(rule_arn :: binary) :: ExAws.Operation.Query.t()
-  def delete_rule(rule_arn, opts \\ []) do
-    [{:rule_arn, rule_arn} | opts]
+  @spec delete_rule(rule_arn()) :: ExAws.Operation.Query.t()
+  def delete_rule(rule_arn) do
+    [{:rule_arn, rule_arn}]
     |> build_request(:delete_rule)
+  end
+
+  @doc """
+  Deletes a shared trust store association
+
+  ## Examples:
+
+        iex> ExAws.ElasticLoadBalancingV2.delete_shared_trust_store_association("resource_arn", "trust_store_arn")
+        %ExAws.Operation.Query{
+          path: "/",
+          params: %{
+            "Action" => "DeleteSharedTrustStoreAssociation",
+            "ResourceArn" => "resource_arn",
+            "TrustStoreArn" => "trust_store_arn",
+            "Version" => "2015-12-01"
+          },
+          content_encoding: "identity",
+          service: :elasticloadbalancing,
+          action: :delete_shared_trust_store_association,
+          parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+        }
+  """
+  @spec delete_shared_trust_store_association(resource_arn(), trust_store_arn()) :: ExAws.Operation.Query.t()
+  def delete_shared_trust_store_association(resource_arn, trust_store_arn) do
+    [{:resource_arn, resource_arn}, {:trust_store_arn, trust_store_arn}]
+    |> build_request(:delete_shared_trust_store_association)
   end
 
   @doc """
   Deletes the specified target group.
 
-  You can delete a target group if it is not referenced by any
-  actions. Deleting a target group also deletes any associated
-  health checks.
+  You can delete a target group if it is not referenced by any actions.
+  Deleting a target group also deletes any associated health checks.
+  Deleting a target group does not affect its registered targets.
+  For example, any EC2 instances continue to run until you stop or terminate them.
 
   ## Examples:
 
@@ -517,22 +2209,60 @@ defmodule ExAws.ElasticLoadBalancingV2 do
           parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
         }
   """
-  @spec delete_target_group(target_group_arn :: binary) :: ExAws.Operation.Query.t()
-  def delete_target_group(target_group_arn, opts \\ []) do
-    [{:target_group_arn, target_group_arn} | opts]
+  @spec delete_target_group(target_group_arn()) :: ExAws.Operation.Query.t()
+  def delete_target_group(target_group_arn) do
+    [{:target_group_arn, target_group_arn}]
     |> build_request(:delete_target_group)
   end
 
   @doc """
-  Deregisters the specified targets from the specified target group.
-
-  After the targets are deregistered, they no longer receive traffic
-  from the load balancer.
+  Deletes the specified trust store.
 
   ## Examples:
 
-        iex>  targets = [%{id: "test"}, %{id: "test2", port: 8088, availablility_zone: "us-east-1"}]
-        [%{id: "test"}, %{id: "test2", port: 8088, availablility_zone: "us-east-1"}]
+        iex> ExAws.ElasticLoadBalancingV2.delete_trust_store("trust_store_arn")
+        %ExAws.Operation.Query{
+          path: "/",
+          params: %{
+            "Action" => "DeleteTrustStore",
+            "TrustStoreArn" => "trust_store_arn",
+            "Version" => "2015-12-01"
+          },
+          content_encoding: "identity",
+          service: :elasticloadbalancing,
+          action: :delete_trust_store,
+          parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+        }
+  """
+  def delete_trust_store(trust_store_arn) do
+    [{:trust_store_arn, trust_store_arn}]
+    |> build_request(:delete_trust_store)
+  end
+
+  @doc """
+  Deregisters the specified targets from the specified target group
+
+  After the targets are deregistered, they no longer receive traffic from the load balancer.
+
+  The load balancer stops sending requests to targets that are deregistering, but uses connection
+  draining to ensure that in-flight traffic completes on the existing connections. This deregistration
+  delay is configured by default but can be updated for each target group.
+
+  For more information, see the following:
+
+  - [Deregistration delay](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/edit-target-group-attributes.html#deregistration-delay)
+  in the Application Load Balancers User Guide
+  - [Deregistration delay](https://docs.aws.amazon.com/elasticloadbalancing/latest/network/edit-target-group-attributes.html#deregistration-delay)
+  in the Network Load Balancers User Guide
+  - [Deregistration delay](https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/edit-target-group-attributes.html#deregistration-delay)
+  in the Gateway Load Balancers User Guide
+
+  Note: If the specified target does not exist, the action returns successfully.
+
+  ## Examples:
+
+        iex>  targets = [%{id: "test"}, %{id: "test2", port: 8088, availability_zone: "us-east-1"}]
+        [%{id: "test"}, %{id: "test2", port: 8088, availability_zone: "us-east-1"}]
         iex> ExAws.ElasticLoadBalancingV2.deregister_targets("target_group_arn", targets)
         %ExAws.Operation.Query{
           path: "/",
@@ -540,7 +2270,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
             "Action" => "DeregisterTargets",
             "TargetGroupArn" => "target_group_arn",
             "Targets.member.1.Id" => "test",
-            "Targets.member.2.AvailablilityZone" => "us-east-1",
+            "Targets.member.2.AvailabilityZone" => "us-east-1",
             "Targets.member.2.Id" => "test2",
             "Targets.member.2.Port" => 8088,
             "Version" => "2015-12-01"
@@ -566,10 +2296,9 @@ defmodule ExAws.ElasticLoadBalancingV2 do
           parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
         }
   """
-  @spec deregister_targets(target_group_arn :: binary, targets :: target_descriptions) ::
-          ExAws.Operation.Query.t()
-  def deregister_targets(target_group_arn, targets, opts \\ []) do
-    [{:target_group_arn, target_group_arn}, {:targets, targets} | opts]
+  @spec deregister_targets(target_group_arn(), target_descriptions()) :: ExAws.Operation.Query.t()
+  def deregister_targets(target_group_arn, targets) do
+    [{:target_group_arn, target_group_arn}, {:targets, targets}]
     |> build_request(:deregister_targets)
   end
 
@@ -577,11 +2306,11 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   Describes the current Elastic Load Balancing resource limits
   for your AWS account.
 
-  More information:
-  * [Limits for Your Application Load Balancers](http://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-limits.html)
-  in the *Application Load Balancer Guide*
-  * [Limits for Your Network Load Balancers](http://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-limits.html)
-  in the *Network Load Balancers Guide*.
+  For more information, see the following:
+
+  - [Quotas for your Application Load Balancers](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-limits.html)
+  - [Quotas for your Network Load Balancers](https://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-limits.html)
+  - [Quotas for your Gateway Load Balancers](https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/quotas-limits.html)
 
   ## Examples:
 
@@ -595,19 +2324,68 @@ defmodule ExAws.ElasticLoadBalancingV2 do
           parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
         }
   """
-  @type describe_account_limits_opts :: [
-          marker: binary,
-          # Minimum value of 1. Maximum value of 400
-          page_size: integer
-        ]
-  @spec describe_account_limits() :: ExAws.Operation.Query.t()
-  @spec describe_account_limits(opts :: describe_account_limits_opts) :: ExAws.Operation.Query.t()
+  @spec describe_account_limits(describe_account_limits_opts()) :: ExAws.Operation.Query.t()
   def describe_account_limits(opts \\ []) do
     opts |> build_request(:describe_account_limits)
   end
 
   @doc """
-  Describes the certificates for the specified secure listener.
+  Describes the capacity reservation status for the specified load balancer.
+
+  ## Examples:
+
+        iex> ExAws.ElasticLoadBalancingV2.describe_capacity_reservation("load_balancer_arn")
+        %ExAws.Operation.Query{
+          path: "/",
+          params: %{
+            "Action" => "DescribeCapacityReservation",
+            "LoadBalancerArn" => "load_balancer_arn",
+            "Version" => "2015-12-01"
+          },
+          content_encoding: "identity",
+          service: :elasticloadbalancing,
+          action: :describe_capacity_reservation,
+          parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+        }
+  """
+  def describe_capacity_reservation(load_balancer_arn) do
+    [{:load_balancer_arn, load_balancer_arn}]
+    |> build_request(:describe_capacity_reservation)
+  end
+
+  @doc """
+  Describes the attributes for the specified listener
+
+  ## Examples:
+
+        iex> ExAws.ElasticLoadBalancingV2.describe_listener_attributes("listener_arn")
+        %ExAws.Operation.Query{
+          path: "/",
+          params: %{
+            "Action" => "DescribeListenerAttributes",
+            "ListenerArn" => "listener_arn",
+            "Version" => "2015-12-01"
+          },
+          content_encoding: "identity",
+          service: :elasticloadbalancing,
+          action: :describe_listener_attributes,
+          parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+        }
+  """
+  def describe_listener_attributes(listener_arn) do
+    [{:listener_arn, listener_arn}]
+    |> build_request(:describe_listener_attributes)
+  end
+
+  @doc """
+  Describes the default certificate and the certificate list for the specified HTTPS or TLS listener
+
+  If the default certificate is also in the certificate list, it appears twice in the
+  results (once with `is_default` set to true and once with `is_default` set to false).
+
+  For more information, see [SSL certificates](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/https-listener-certificates.html)
+  in the Application Load Balancers Guide or [Server certificates](https://docs.aws.amazon.com/elasticloadbalancing/latest/network/tls-listener-certificates.html)
+  in the Network Load Balancers Guide.
 
   ## Examples:
 
@@ -625,26 +2403,24 @@ defmodule ExAws.ElasticLoadBalancingV2 do
           parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
         }
   """
-  @type describe_listener_certificates_opts :: [
-          marker: binary,
-          # Minimum value of 1. Maximum value of 400
-          page_size: integer
-        ]
-  @spec describe_listener_certificates(listener_arn :: binary) :: ExAws.Operation.Query.t()
-  @spec describe_listener_certificates(
-          listener_arn :: binary,
-          opts :: describe_listener_certificates_opts
-        ) :: ExAws.Operation.Query.t()
+  @spec describe_listener_certificates(listener_arn(), describe_listener_certificates_opts()) ::
+          ExAws.Operation.Query.t()
   def describe_listener_certificates(listener_arn, opts \\ []) do
-    [{:listener_arn, listener_arn} | opts]
+    opts
+    |> keyword_to_map()
+    |> Map.merge(%{
+      listener_arn: listener_arn
+    })
     |> build_request(:describe_listener_certificates)
   end
 
   @doc """
-  Describes the specified listeners or the listeners for the
-  specified Application Load Balancer or Network Load Balancer.
+  Describes the specified listeners or the listeners for the specified Application
+  Load Balancer, Network Load Balancer, or Gateway Load Balancer. You must specify
+  either a load balancer or one or more listeners.
 
-  You must specify either a load balancer or one or more listeners.
+  For an HTTPS or TLS listener, the output includes the default certificate for the
+  listener. To describe the certificate list for the listener, use `describe_listener_certificates/2`.
 
   ## Example
 
@@ -658,21 +2434,23 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @type describe_listeners_opts :: [
-          listener_arns: [binary, ...],
-          load_balancer_arn: binary,
-          marker: binary,
-          page_size: integer
-        ]
-  @spec describe_listeners() :: ExAws.Operation.Query.t()
-  @spec describe_listeners(opts :: describe_listeners_opts) :: ExAws.Operation.Query.t()
+  @spec describe_listeners(describe_listeners_opts()) :: ExAws.Operation.Query.t()
   def describe_listeners(opts \\ []) do
     opts |> build_request(:describe_listeners)
   end
 
   @doc """
-  Describes the attributes for the specified Application Load
-  Balancer or Network Load Balancer.
+  Describes the attributes for the specified Application Load Balancer,
+  Network Load Balancer, or Gateway Load Balancer.
+
+  For more information, see the following:
+
+  - [Load balancer attributes](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/application-load-balancers.html#load-balancer-attributes)
+    in the Application Load Balancers Guide
+  - [Load balancer attributes](https://docs.aws.amazon.com/elasticloadbalancing/latest/network/network-load-balancers.html#load-balancer-attributes)
+    in the Network Load Balancers Guide
+  - [Load balancer attributes](https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/gateway-load-balancers.html#load-balancer-attributes)
+    in the Gateway Load Balancers Guide
 
   ## Examples:
 
@@ -690,10 +2468,9 @@ defmodule ExAws.ElasticLoadBalancingV2 do
           parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
         }
   """
-  @spec describe_load_balancer_attributes(load_balancer_arn :: binary) ::
-          ExAws.Operation.Query.t()
-  def describe_load_balancer_attributes(load_balancer_arn, opts \\ []) do
-    [{:load_balancer_arn, load_balancer_arn} | opts]
+  @spec describe_load_balancer_attributes(load_balancer_arn()) :: ExAws.Operation.Query.t()
+  def describe_load_balancer_attributes(load_balancer_arn) do
+    [{:load_balancer_arn, load_balancer_arn}]
     |> build_request(:describe_load_balancer_attributes)
   end
 
@@ -704,24 +2481,9 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   To describe the listeners for a load balancer, use `describe_listeners/1`.
   To describe the attributes for a load balancer, use `describe_load_balancer_attributes/1`.
 
-  The options that can be passed into `describe_load_balancers/1` allow load_balancer_arns or names
-  (there would not be a reason ordinarily to specify both). Elastic Load Balancing provides
-  two versions of ARNS (one for Classic and one for Application Load Balancer). The syntax for
-  each is below:
-
-  Classic Load Balancer ARN Syntax:
-
-      arn:aws:elasticloadbalancing:region:account-id:loadbalancer/name
-
-  Application Load Balancer ARN Syntax:
-
-      arn:aws:elasticloadbalancing:region:account-id:loadbalancer/app/load-balancer-name/load-balancer-id
-      arn:aws:elasticloadbalancing:region:account-id:listener/app/load-balancer-name/load-balancer-id/listener-id
-      arn:aws:elasticloadbalancing:region:account-id:listener-rule/app/load-balancer-name/load-balancer-id/listener-id/rule-id
-      arn:aws:elasticloadbalancing:region:account-id:targetgroup/target-group-name/target-group-id
-
   ## Examples:
 
+      iex> # Describe all load balancers
       iex> ExAws.ElasticLoadBalancingV2.describe_load_balancers()
       %ExAws.Operation.Query{
         path: "/",
@@ -732,14 +2494,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @type describe_load_balancers_opts :: [
-          load_balancer_arns: [binary, ...],
-          names: [binary, ...],
-          marker: binary,
-          page_size: integer
-        ]
-  @spec describe_load_balancers() :: ExAws.Operation.Query.t()
-  @spec describe_load_balancers(opts :: describe_load_balancers_opts) :: ExAws.Operation.Query.t()
+  @spec describe_load_balancers(describe_load_balancers_opts()) :: ExAws.Operation.Query.t()
   def describe_load_balancers(opts \\ []) do
     opts |> build_request(:describe_load_balancers)
   end
@@ -776,14 +2531,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @type describe_rules_opts :: [
-          listener_arn: binary,
-          rule_arns: [binary, ...],
-          marker: binary,
-          page_size: integer
-        ]
-  @spec describe_rules() :: ExAws.Operation.Query.t()
-  @spec describe_rules(opts :: describe_rules_opts) :: ExAws.Operation.Query.t()
+  @spec describe_rules(describe_rules_opts) :: ExAws.Operation.Query.t()
   def describe_rules(opts \\ []) do
     opts |> build_request(:describe_rules)
   end
@@ -791,9 +2539,12 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   @doc """
   Describes the specified policies or all policies used for SSL negotiation.
 
-  More information:
-  * [Security Policies](http://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-https-listener.html#describe-ssl-policies)
-  in the *Application Load Balancers Guide*.
+  For more information, see:
+
+  - [Security policies](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/describe-ssl-policies.html)
+    in the Application Load Balancers Guide
+  - [Security policies](https://docs.aws.amazon.com/elasticloadbalancing/latest/network/describe-ssl-policies.html)
+    in the Network Load Balancers Guide.
 
   ## Examples:
 
@@ -812,8 +2563,8 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         path: "/",
         params: %{
           "Action" => "DescribeSslPolicies",
-          "SslPolicyNames.1" => "policy1",
-          "SslPolicyNames.2" => "policy2",
+          "Names.member.1" => "policy1",
+          "Names.member.2" => "policy2",
           "Version" => "2015-12-01"
         },
         content_encoding: "identity",
@@ -822,22 +2573,17 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @type describe_ssl_policies_opts :: [
-          ssl_policy_names: [binary, ...],
-          marker: binary,
-          page_size: integer
-        ]
-  @spec describe_ssl_policies() :: ExAws.Operation.Query.t()
-  @spec describe_ssl_policies(opts :: describe_ssl_policies_opts) :: ExAws.Operation.Query.t()
+  @spec describe_ssl_policies(describe_ssl_policies_opts()) :: ExAws.Operation.Query.t()
   def describe_ssl_policies(opts \\ []) do
     opts |> build_request(:describe_ssl_policies)
   end
 
   @doc """
-  Describes the tags for the specified resources.
+  Describes the tags for the specified Elastic Load Balancing resources
 
   You can describe the tags for one or more Application Load Balancers,
-  Network Load Balancers, and target groups.
+  Network Load Balancers, Gateway Load Balancers, target groups, listeners,
+  or rules.  You can specify up to 20 resources in a single call.
 
   ## Examples:
 
@@ -856,14 +2602,23 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @spec describe_tags(resource_arns :: [binary, ...]) :: ExAws.Operation.Query.t()
-  def describe_tags(resource_arns, opts \\ []) do
-    [{:resource_arns, resource_arns} | opts]
+  @spec describe_tags(resource_arns()) :: ExAws.Operation.Query.t()
+  def describe_tags(resource_arns) do
+    [{:resource_arns, resource_arns}]
     |> build_request(:describe_tags)
   end
 
   @doc """
   Describes the attributes for the specified target group.
+
+  For more information, see the following:
+
+  - [Target group attributes](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-target-groups.html#target-group-attributes)
+    in the Application Load Balancers Guide
+  - [Target group attributes](https://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-target-groups.html#target-group-attributes)
+    in the Network Load Balancers Guide
+  - [Target group attributes](https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/target-groups.html#target-group-attributes)
+    in the Gateway Load Balancers Guide
 
   ## Examples:
 
@@ -882,9 +2637,9 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @spec describe_target_group_attributes(target_group_arn :: binary) :: ExAws.Operation.Query.t()
-  def describe_target_group_attributes(target_group_arn, opts \\ []) do
-    [{:target_group_arn, target_group_arn} | opts]
+  @spec describe_target_group_attributes(target_group_arn()) :: ExAws.Operation.Query.t()
+  def describe_target_group_attributes(target_group_arn) do
+    [{:target_group_arn, target_group_arn}]
     |> build_request(:describe_target_group_attributes)
   end
 
@@ -898,7 +2653,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
    target group, use `describe_target_health/1`. To describe the attributes
    of a target group, use `describe_target_group_attributes/1`.
 
-   ## Examples:
+  ## Examples:
 
       iex> ExAws.ElasticLoadBalancingV2.describe_target_groups()
       %ExAws.Operation.Query{
@@ -909,12 +2664,23 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         action: :describe_target_groups,
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
-
       iex> opts = [load_balancer_arn: "load_balancer_arn", target_group_arns: ["target_group_arn1", "target_group_arn2"]]
-      [
-        load_balancer_arn: "load_balancer_arn",
-        target_group_arns: ["target_group_arn1", "target_group_arn2"]
-      ]
+      iex> ExAws.ElasticLoadBalancingV2.describe_target_groups(opts)
+      %ExAws.Operation.Query{
+        path: "/",
+        params: %{
+          "Action" => "DescribeTargetGroups",
+          "LoadBalancerArn" => "load_balancer_arn",
+          "TargetGroupArns.member.1" => "target_group_arn1",
+          "TargetGroupArns.member.2" => "target_group_arn2",
+          "Version" => "2015-12-01"
+        },
+        content_encoding: "identity",
+        service: :elasticloadbalancing,
+        action: :describe_target_groups,
+        parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+      }
+      iex> opts = %{load_balancer_arn: "load_balancer_arn", target_group_arns: ["target_group_arn1", "target_group_arn2"]}
       iex> ExAws.ElasticLoadBalancingV2.describe_target_groups(opts)
       %ExAws.Operation.Query{
         path: "/",
@@ -931,30 +2697,310 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @type describe_target_groups_opts :: [
-          load_balancer_arn: binary,
-          target_group_arns: [binary, ...],
-          names: [binary, ...],
-          marker: binary,
-          page_size: integer
-        ]
-  @spec describe_target_groups() :: ExAws.Operation.Query.t()
-  @spec describe_target_groups(opts :: describe_target_groups_opts) :: ExAws.Operation.Query.t()
+  @spec describe_target_groups(describe_target_groups_opts()) :: ExAws.Operation.Query.t()
   def describe_target_groups(opts \\ []) do
     opts |> build_request(:describe_target_groups)
   end
 
   @doc """
-  Describes the health of the specified targets or all of your targets.
-  """
-  @type describe_target_health_opts :: [targets: target_descriptions]
+  Describes the health of the specified targets or all of your targets
 
-  @spec describe_target_health(target_group_arn :: binary) :: ExAws.Operation.Query.t()
-  @spec describe_target_health(target_group_arn :: binary, opts :: describe_target_health_opts) ::
-          ExAws.Operation.Query.t()
+  ## Examples:
+
+      iex> ExAws.ElasticLoadBalancingV2.describe_target_health("target_group_arn")
+      %ExAws.Operation.Query{
+        path: "/",
+        params: %{
+          "Action" => "DescribeTargetHealth",
+          "TargetGroupArn" => "target_group_arn",
+          "Version" => "2015-12-01"
+        },
+        content_encoding: "identity",
+        service: :elasticloadbalancing,
+        action: :describe_target_health,
+        parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+      }
+      iex> opts = [include: ["AnomalyDetection"]]
+      iex> ExAws.ElasticLoadBalancingV2.describe_target_health("target_group_arn", opts)
+      %ExAws.Operation.Query{
+        path: "/",
+        params: %{
+          "Action" => "DescribeTargetHealth",
+          "Include.member.1" => "AnomalyDetection",
+          "TargetGroupArn" => "target_group_arn",
+          "Version" => "2015-12-01"
+        },
+        content_encoding: "identity",
+        service: :elasticloadbalancing,
+        action: :describe_target_health,
+        parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+      }
+  """
+  @spec describe_target_health(target_group_arn(), describe_target_health_opts()) :: ExAws.Operation.Query.t()
   def describe_target_health(target_group_arn, opts \\ []) do
     [{:target_group_arn, target_group_arn} | opts]
     |> build_request(:describe_target_health)
+  end
+
+  @doc """
+  Describes all resources associated with the specified trust store
+
+  ## Examples:
+
+      iex> ExAws.ElasticLoadBalancingV2.describe_trust_store_associations("trust_store_arn")
+      %ExAws.Operation.Query{
+        path: "/",
+        params: %{
+          "Action" => "DescribeTrustStoreAssociations",
+          "TrustStoreArn" => "trust_store_arn",
+          "Version" => "2015-12-01"
+        },
+        content_encoding: "identity",
+        service: :elasticloadbalancing,
+        action: :describe_trust_store_associations,
+        parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+      }
+  """
+  @spec describe_trust_store_associations(trust_store_arn(), describe_trust_store_associations_opts()) ::
+          ExAws.Operation.Query.t()
+  def describe_trust_store_associations(trust_store_arn, opts \\ []) do
+    opts
+    |> keyword_to_map()
+    |> Map.merge(%{trust_store_arn: trust_store_arn})
+    |> build_request(:describe_trust_store_associations)
+  end
+
+  @doc """
+  Describes the revocation files in use by the specified trust store or revocation files
+
+  ## Examples:
+
+      iex> ExAws.ElasticLoadBalancingV2.describe_trust_store_revocations("trust_store_arn")
+      %ExAws.Operation.Query{
+        path: "/",
+        params: %{
+          "Action" => "DescribeTrustStoreRevocations",
+          "TrustStoreArn" => "trust_store_arn",
+          "Version" => "2015-12-01"
+        },
+        content_encoding: "identity",
+        service: :elasticloadbalancing,
+        action: :describe_trust_store_revocations,
+        parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+      }
+      iex> ExAws.ElasticLoadBalancingV2.describe_trust_store_revocations("trust_store_arn", %{revocation_ids: [3423, 12423]})
+      %ExAws.Operation.Query{
+        path: "/",
+        params: %{
+          "Action" => "DescribeTrustStoreRevocations",
+          "RevocationIds.member.1" => 3423,
+          "RevocationIds.member.2" => 12423,
+          "TrustStoreArn" => "trust_store_arn",
+          "Version" => "2015-12-01"
+        },
+        content_encoding: "identity",
+        service: :elasticloadbalancing,
+        action: :describe_trust_store_revocations,
+        parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+      }
+  """
+  @spec describe_trust_store_revocations(trust_store_arn(), describe_trust_store_revocations_opts()) ::
+          ExAws.Operation.Query.t()
+  def describe_trust_store_revocations(trust_store_arn, opts \\ []) do
+    opts
+    |> keyword_to_map()
+    |> Map.merge(%{trust_store_arn: trust_store_arn})
+    |> build_request(:describe_trust_store_revocations)
+  end
+
+  @doc """
+  Describes all trust stores for the specified account
+
+  ## Examples:
+
+      iex> ExAws.ElasticLoadBalancingV2.describe_trust_stores()
+      %ExAws.Operation.Query{
+        path: "/",
+        params: %{"Action" => "DescribeTrustStores", "Version" => "2015-12-01"},
+        content_encoding: "identity",
+        service: :elasticloadbalancing,
+        action: :describe_trust_stores,
+        parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+      }
+      iex> opts = %{trust_store_names: ["trust_store1", "trust_store2"]}
+      iex> ExAws.ElasticLoadBalancingV2.describe_trust_stores(opts)
+      %ExAws.Operation.Query{
+        path: "/",
+        params: %{
+          "Action" => "DescribeTrustStores",
+          "TrustStoreNames.1" => "trust_store1",
+          "TrustStoreNames.2" => "trust_store2",
+          "Version" => "2015-12-01"
+        },
+        content_encoding: "identity",
+        service: :elasticloadbalancing,
+        action: :describe_trust_stores,
+        parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+      }
+      iex> opts = %{trust_store_arns: ["arn1", "arn2"]}
+      iex> ExAws.ElasticLoadBalancingV2.describe_trust_stores(opts)
+      %ExAws.Operation.Query{
+        path: "/",
+        params: %{
+          "Action" => "DescribeTrustStores",
+          "TrustStoreArns.member.1" => "arn1",
+          "TrustStoreArns.member.2" => "arn2",
+          "Version" => "2015-12-01"
+        },
+        content_encoding: "identity",
+        service: :elasticloadbalancing,
+        action: :describe_trust_stores,
+        parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+      }
+  """
+  @spec describe_trust_stores(describe_trust_stores_opts()) :: ExAws.Operation.Query.t()
+  def describe_trust_stores(opts \\ []) do
+    opts |> build_request(:describe_trust_stores)
+  end
+
+  @doc """
+  Retrieves the resource policy for a specified resource
+
+  ## Examples:
+
+      iex> ExAws.ElasticLoadBalancingV2.get_resource_policy("resource_arn")
+      %ExAws.Operation.Query{
+        path: "/",
+        params: %{
+          "Action" => "GetResourcePolicy",
+          "ResourceArn" => "resource_arn",
+          "Version" => "2015-12-01"
+        },
+        content_encoding: "identity",
+        service: :elasticloadbalancing,
+        action: :get_resource_policy,
+        parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+      }
+  """
+  @spec get_resource_policy(resource_arn()) :: ExAws.Operation.Query.t()
+  def get_resource_policy(resource_arn) do
+    [{:resource_arn, resource_arn}]
+    |> build_request(:get_resource_policy)
+  end
+
+  @doc """
+  Retrieves the CA certificates bundle for the specified trust store
+
+  This action returns a pre-signed S3 URI which is active for ten minutes.
+
+  ## Examples:
+
+      iex> ExAws.ElasticLoadBalancingV2.get_trust_store_ca_certificates_bundle("trust_store_arn")
+      %ExAws.Operation.Query{
+        path: "/",
+        params: %{
+          "Action" => "GetTrustStoreCaCertificatesBundle",
+          "TrustStoreArn" => "trust_store_arn",
+          "Version" => "2015-12-01"
+        },
+        content_encoding: "identity",
+        service: :elasticloadbalancing,
+        action: :get_trust_store_ca_certificates_bundle,
+        parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+      }
+  """
+  @spec get_trust_store_ca_certificates_bundle(trust_store_arn()) :: ExAws.Operation.Query.t()
+  def get_trust_store_ca_certificates_bundle(trust_store_arn) do
+    [{:trust_store_arn, trust_store_arn}]
+    |> build_request(:get_trust_store_ca_certificates_bundle)
+  end
+
+  @doc """
+  Retrieves the specified revocation file.
+
+  This action returns a pre-signed S3 URI which is active for ten minutes.
+
+  ## Examples:
+
+      iex> ExAws.ElasticLoadBalancingV2.get_trust_store_revocation_content("trust_store_arn", 2134342)
+      %ExAws.Operation.Query{
+        path: "/",
+        params: %{
+          "Action" => "GetTrustStoreRevocationContent",
+          "RevocationId" => 2134342,
+          "TrustStoreArn" => "trust_store_arn",
+          "Version" => "2015-12-01"
+        },
+        content_encoding: "identity",
+        service: :elasticloadbalancing,
+        action: :get_trust_store_revocation_content,
+        parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+      }
+  """
+  @spec get_trust_store_revocation_content(trust_store_arn(), revocation_id()) :: ExAws.Operation.Query.t()
+  def get_trust_store_revocation_content(trust_store_arn, revocation_id) do
+    [{:trust_store_arn, trust_store_arn}, {:revocation_id, revocation_id}]
+    |> build_request(:get_trust_store_revocation_content)
+  end
+
+  @doc """
+  Modifies the capacity reservation of the specified load balancer.
+
+  When modifying capacity reservation, you must include at least
+  one `:minimum_load_balancer_capacity` or `:reset_capacity_reservation`.
+
+  ## Examples:
+
+      iex> ExAws.ElasticLoadBalancingV2.modify_capacity_reservation("load_balancer_arn", minimum_load_balancer_capacity: 5)
+      %ExAws.Operation.Query{
+        path: "/",
+        params: %{
+          "Action" => "ModifyCapacityReservation",
+          "LoadBalancerArn" => "load_balancer_arn",
+          "MinimumLoadBalancerCapacity" => 5,
+          "Version" => "2015-12-01"
+        },
+        content_encoding: "identity",
+        service: :elasticloadbalancing,
+        action: :modify_capacity_reservation,
+        parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+      }
+  """
+  @spec modify_capacity_reservation(load_balancer_arn(), modify_capacity_reservation_opts()) ::
+          ExAws.Operation.Query.t()
+  def modify_capacity_reservation(load_balancer_arn, opts \\ []) do
+    opts
+    |> keyword_to_map()
+    |> Map.merge(%{load_balancer_arn: load_balancer_arn})
+    |> build_request(:modify_capacity_reservation)
+  end
+
+  @doc """
+  [Application Load Balancers] Modify the IP pool associated to a load balancer.
+
+  ## Examples:
+
+      iex> ExAws.ElasticLoadBalancingV2.modify_ip_pools("load_balancer_arn", ipam_pools: [%{ipv4_ipam_pool_id: "pool1"}])
+      %ExAws.Operation.Query{
+        path: "/",
+        params: %{
+          "Action" => "ModifyIpPools",
+          "IpamPools.member.1.Ipv4IpamPoolId" => "pool1",
+          "LoadBalancerArn" => "load_balancer_arn",
+          "Version" => "2015-12-01"
+        },
+        content_encoding: "identity",
+        service: :elasticloadbalancing,
+        action: :modify_ip_pools,
+        parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+      }
+  """
+  @spec modify_ip_pools(load_balancer_arn(), modify_ip_pools_opts()) :: ExAws.Operation.Query.t()
+  def modify_ip_pools(load_balancer_arn, opts \\ []) do
+    opts
+    |> keyword_to_map()
+    |> Map.merge(%{load_balancer_arn: load_balancer_arn})
+    |> build_request(:modify_ip_pools)
   end
 
   @doc """
@@ -1000,19 +3046,20 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @type modify_listener_opts :: [
-          port: integer,
-          protocol: binary,
-          ssl_policy: binary,
-          certificates: [binary, ...],
-          default_actions: [action, ...]
-        ]
-  @spec modify_listener(listener_arn :: binary) :: ExAws.Operation.Query.t()
-  @spec modify_listener(listener_arn :: binary, opts :: modify_listener_opts) ::
-          ExAws.Operation.Query.t()
+  @spec modify_listener(listener_arn(), modify_listener_opts()) :: ExAws.Operation.Query.t()
   def modify_listener(listener_arn, opts \\ []) do
     [{:listener_arn, listener_arn} | opts]
     |> build_request(:modify_listener)
+  end
+
+  @doc """
+  Modifies the specified attributes of the specified listener.
+  """
+  @spec modify_listener_attributes(listener_arn(), [listener_attribute(), ...]) ::
+          ExAws.Operation.Query.t()
+  def modify_listener_attributes(listener_arn, attributes) do
+    [{:listener_arn, listener_arn}, {:attributes, attributes}]
+    |> build_request(:modify_listener_attributes)
   end
 
   @doc """
@@ -1023,12 +3070,10 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   fails. Any existing attributes that you do not modify retain their current
   values.
   """
-  @spec modify_load_balancer_attributes(
-          load_balancer_arn :: binary,
-          attributes :: [load_balancer_attribute, ...]
-        ) :: ExAws.Operation.Query.t()
-  def modify_load_balancer_attributes(load_balancer_arn, attributes, opts \\ []) do
-    [{:load_balancer_arn, load_balancer_arn}, {:attributes, attributes} | opts]
+  @spec modify_load_balancer_attributes(load_balancer_arn(), [load_balancer_attribute(), ...]) ::
+          ExAws.Operation.Query.t()
+  def modify_load_balancer_attributes(load_balancer_arn, attributes) do
+    [{:load_balancer_arn, load_balancer_arn}, {:attributes, attributes}]
     |> build_request(:modify_load_balancer_attributes)
   end
 
@@ -1036,14 +3081,9 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   Modifies the specified rule.
 
   Any existing properties that you do not modify retain their current values.
-  To modify the default action, use `modify_listener/1`.
+  To modify the actions for the default rule, use `modify_listener/1`.
   """
-  @type modify_rule_opts :: [
-          actions: [action, ...],
-          conditions: [rule_condition, ...]
-        ]
-  @spec modify_rule(rule_arn :: binary) :: ExAws.Operation.Query.t()
-  @spec modify_rule(rule_arn :: binary, opts :: modify_rule_opts) :: ExAws.Operation.Query.t()
+  @spec modify_rule(rule_arn(), modify_rule_opts()) :: ExAws.Operation.Query.t()
   def modify_rule(rule_arn, opts \\ []) do
     [{:rule_arn, rule_arn} | opts] |> build_request(:modify_rule)
   end
@@ -1089,21 +3129,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @type modify_target_group_opts :: [
-          health_check_protocol: binary,
-          health_check_port: binary,
-          health_check_path: binary,
-          # min 5, max 300
-          health_check_interval_seconds: integer,
-          # min 2, max 60
-          health_check_timeout_seconds: integer,
-          # min 2, max 60
-          unhealthy_threshold_count: integer,
-          matcher: binary
-        ]
-  @spec modify_target_group(target_group_arn :: binary) :: ExAws.Operation.Query.t()
-  @spec modify_target_group(target_group_arn :: binary, opts :: modify_target_group_opts) ::
-          ExAws.Operation.Query.t()
+  @spec modify_target_group(target_group_arn(), modify_target_group_opts()) :: ExAws.Operation.Query.t()
   def modify_target_group(target_group_arn, opts \\ []) do
     [{:target_group_arn, target_group_arn} | opts]
     |> build_request(:modify_target_group)
@@ -1115,7 +3141,6 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   ## Examples:
 
       iex> attributes = [{:hello, "test"}]
-      [hello: "test"]
       iex> ExAws.ElasticLoadBalancingV2.modify_target_group_attributes("target_group_arn", attributes)
       %ExAws.Operation.Query{
         path: "/",
@@ -1131,35 +3156,86 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         action: :modify_target_group_attributes,
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
+      iex> attributes = [%{key: "hello", value: "test"}, %{key: "goodbye", value: "farewell"}]
+      iex> ExAws.ElasticLoadBalancingV2.modify_target_group_attributes("target_group_arn", attributes)
+      %ExAws.Operation.Query{
+        path: "/",
+        params: %{
+          "Action" => "ModifyTargetGroupAttributes",
+          "Attributes.member.1.Key" => "hello",
+          "Attributes.member.1.Value" => "test",
+          "Attributes.member.2.Key" => "goodbye",
+          "Attributes.member.2.Value" => "farewell",
+          "TargetGroupArn" => "target_group_arn",
+          "Version" => "2015-12-01"
+        },
+        content_encoding: "identity",
+        service: :elasticloadbalancing,
+        action: :modify_target_group_attributes,
+        parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+      }
   """
-  @spec modify_target_group_attributes(
-          target_group_arn :: binary,
-          attributes :: [target_group_attribute, ...]
-        ) :: ExAws.Operation.Query.t()
-  def modify_target_group_attributes(target_group_arn, attributes, opts \\ []) do
-    [{:target_group_arn, target_group_arn}, {:attributes, attributes} | opts]
+  @spec modify_target_group_attributes(target_group_arn(), target_group_attributes()) :: ExAws.Operation.Query.t()
+  def modify_target_group_attributes(target_group_arn, attributes) do
+    [{:target_group_arn, target_group_arn}, {:attributes, attributes}]
     |> build_request(:modify_target_group_attributes)
+  end
+
+  @doc """
+  Update the ca certificate bundle for the specified trust store.
+
+  ## Examples:
+
+      iex> ExAws.ElasticLoadBalancingV2.modify_trust_store("trust_store_arn", "s3_bucket", "s3_key")
+      %ExAws.Operation.Query{
+        path: "/",
+        params: %{
+          "Action" => "ModifyTrustStore",
+          "CaCertificatesBundleS3Bucket" => "s3_bucket",
+          "CaCertificatesBundleS3Key" => "s3_key",
+          "TrustStoreArn" => "trust_store_arn",
+          "Version" => "2015-12-01"
+        },
+        content_encoding: "identity",
+        service: :elasticloadbalancing,
+        action: :modify_trust_store,
+        parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+      }
+  """
+  @spec modify_trust_store(
+          trust_store_arn(),
+          ca_certificates_bundle_s3_bucket(),
+          ca_certificates_bundle_s3_key(),
+          modify_trust_store_opts()
+        ) :: ExAws.Operation.Query.t()
+  def modify_trust_store(trust_store_arn, ca_certificates_bundle_s3_bucket, ca_certificates_bundle_s3_key, opts \\ []) do
+    opts
+    |> keyword_to_map()
+    |> Map.merge(%{
+      trust_store_arn: trust_store_arn,
+      ca_certificates_bundle_s3_bucket: ca_certificates_bundle_s3_bucket,
+      ca_certificates_bundle_s3_key: ca_certificates_bundle_s3_key
+    })
+    |> build_request(:modify_trust_store)
   end
 
   @doc """
   Registers the specified targets with the specified target group.
 
-  You can register targets by instance ID or by IP address. If the
-  target is an EC2 instance, it must be in the `running` state when you
-  register it.
+  If the target is an EC2 instance, it must be in the running state when you register it.
 
-  By default, the load balancer routes requests to registered targets using
-  the protocol and port for the target group. Alternatively, you can override
-  the port for a target when you register it. You can register each EC2
-  instance or IP address with the same target group multiple times using
-  different ports.
+  By default, the load balancer routes requests to registered targets using the protocol
+  and port for the target group. Alternatively, you can override the port for a target when
+  you register it. You can register each EC2 instance or IP address with the same target
+  group multiple times using different ports.
 
-  With a Network Load Balancer, you cannot register instances by instance ID
-  if they have the following instance types: C1, CC1, CC2, CG1, CG2, CR1,
-  CS1, G1, G2, HI1, HS1, M1, M2, M3, and T1. You can register instances of
-  these types by IP address.
+  For more information, see the following:
 
-  To remove a target from a target group, use `deregister_targets/1`.
+  - Register targets for your Application Load Balancer
+  - Register targets for your Network Load Balancer
+  - Register targets for your Gateway Load Balancer
+
+  To remove a target from a target group, use `deregister_targets/2`.
 
   ## Examples:
 
@@ -1179,10 +3255,9 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @spec register_targets(target_group_arn :: binary, targets :: target_descriptions) ::
-          ExAws.Operation.Query.t()
-  def register_targets(target_group_arn, targets, opts \\ []) do
-    [{:target_group_arn, target_group_arn}, {:targets, targets} | opts]
+  @spec register_targets(target_group_arn(), target_descriptions()) :: ExAws.Operation.Query.t()
+  def register_targets(target_group_arn, targets) do
+    [{:target_group_arn, target_group_arn}, {:targets, targets}]
     |> build_request(:register_targets)
   end
 
@@ -1217,16 +3292,17 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @spec remove_listener_certificates(listener_arn :: binary, certificates :: [certificate, ...]) ::
-          ExAws.Operation.Query.t()
-  def remove_listener_certificates(listener_arn, certificates, opts \\ []) do
-    [{:listener_arn, listener_arn}, {:certificates, certificates} | opts]
+  @spec remove_listener_certificates(listener_arn(), certificates()) :: ExAws.Operation.Query.t()
+  def remove_listener_certificates(listener_arn, certificates) do
+    [{:listener_arn, listener_arn}, {:certificates, certificates}]
     |> build_request(:remove_listener_certificates)
   end
 
   @doc """
-  Removes the specified tags from the specified Elastic Load Balancing
-  resource.
+  Removes the specified tags from the specified Elastic Load Balancing resources
+
+  You can remove the tags for one or more Application Load Balancers, Network Load
+  Balancers, Gateway Load Balancers, target groups, listeners, or rules.
 
   To list the current tags for your resources, use `describe_tags/1`.
 
@@ -1249,11 +3325,37 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @spec remove_tags(resource_arns :: [binary, ...], tag_keys :: [binary, ...]) ::
-          ExAws.Operation.Query.t()
-  def remove_tags(resource_arns, tag_keys, opts \\ []) do
-    [{:resource_arns, resource_arns}, {:tags_keys, tag_keys} | opts]
+  @spec remove_tags(resource_arns(), tag_keys()) :: ExAws.Operation.Query.t()
+  def remove_tags(resource_arns, tag_keys) do
+    [{:resource_arns, resource_arns}, {:tags_keys, tag_keys}]
     |> build_request(:remove_tags)
+  end
+
+  @doc """
+  Removes the specified revocation files from the specified trust store
+
+  ## Examples:
+
+      iex> ExAws.ElasticLoadBalancingV2.remove_trust_store_revocations("trust_store_arn", [1234, 5678])
+      %ExAws.Operation.Query{
+        path: "/",
+        params: %{
+          "Action" => "RemoveTrustStoreRevocations",
+          "RevocationIds.member.1" => 1234,
+          "RevocationIds.member.2" => 5678,
+          "TrustStoreArn" => "trust_store_arn",
+          "Version" => "2015-12-01"
+        },
+        content_encoding: "identity",
+        service: :elasticloadbalancing,
+        action: :remove_trust_store_revocations,
+        parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
+      }
+  """
+  @spec remove_trust_store_revocations(trust_store_arn(), revocation_ids()) :: ExAws.Operation.Query.t()
+  def remove_trust_store_revocations(trust_store_arn, revocation_ids) do
+    [{:trust_store_arn, trust_store_arn}, {:revocation_ids, revocation_ids}]
+    |> build_request(:remove_trust_store_revocations)
   end
 
   @doc """
@@ -1279,10 +3381,9 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @spec set_ip_address_type(load_balancer_arn :: binary, ip_address_type :: binary) ::
-          ExAws.Operation.Query.t()
-  def set_ip_address_type(load_balancer_arn, ip_address_type, opts \\ []) do
-    [{:load_balancer_arn, load_balancer_arn}, {:ip_address_type, ip_address_type} | opts]
+  @spec set_ip_address_type(load_balancer_arn(), ip_address_type()) :: ExAws.Operation.Query.t()
+  def set_ip_address_type(load_balancer_arn, ip_address_type) do
+    [{:load_balancer_arn, load_balancer_arn}, {:ip_address_type, ip_address_type}]
     |> build_request(:set_ip_address_type)
   end
 
@@ -1295,14 +3396,16 @@ defmodule ExAws.ElasticLoadBalancingV2 do
 
   ## Examples:
 
-      iex> ExAws.ElasticLoadBalancingV2.set_rule_priorities([1,2,3])
+      iex> rule_priorities = [%{rule_arn: "rule1_arn", priority: 1}, %{rule_arn: "rule2_arn", priority: 2}]
+      iex> ExAws.ElasticLoadBalancingV2.set_rule_priorities(rule_priorities)
       %ExAws.Operation.Query{
         path: "/",
         params: %{
           "Action" => "SetRulePriorities",
-          "RulePriorities.member.1" => 1,
-          "RulePriorities.member.2" => 2,
-          "RulePriorities.member.3" => 3,
+          "RulePriorities.member.1.Priority" => 1,
+          "RulePriorities.member.1.RuleArn" => "rule1_arn",
+          "RulePriorities.member.2.Priority" => 2,
+          "RulePriorities.member.2.RuleArn" => "rule2_arn",
           "Version" => "2015-12-01"
         },
         content_encoding: "identity",
@@ -1311,9 +3414,9 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @spec set_rule_priorities(rule_priorities :: [integer, ...]) :: ExAws.Operation.Query.t()
-  def set_rule_priorities(rule_priorities, opts \\ []) do
-    [{:rule_priorities, rule_priorities} | opts]
+  @spec set_rule_priorities(rule_priorities()) :: ExAws.Operation.Query.t()
+  def set_rule_priorities(rule_priorities) do
+    [{:rule_priorities, rule_priorities}]
     |> build_request(:set_rule_priorities)
   end
 
@@ -1344,7 +3447,7 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @spec set_security_groups(load_balancer_arn :: binary, security_groups :: [binary, ...]) ::
+  @spec set_security_groups(load_balancer_arn(), security_groups(), set_security_groups_opts()) ::
           ExAws.Operation.Query.t()
   def set_security_groups(load_balancer_arn, security_groups, opts \\ []) do
     [{:load_balancer_arn, load_balancer_arn}, {:security_groups, security_groups} | opts]
@@ -1352,12 +3455,11 @@ defmodule ExAws.ElasticLoadBalancingV2 do
   end
 
   @doc """
-  Enables the Availability Zone for the specified subnets for the specified
-  Application Load Balancer.
+  Enables the Availability Zones for the specified public subnets for the
+  specified Application Load Balancer, Network Load Balancer or Gateway Load
+  Balancer
 
   The specified subnets replace the previously enabled subnets.
-
-  *Note: You can't change the subnets for a Network Load Balancer*.
 
   ## Examples:
 
@@ -1377,30 +3479,39 @@ defmodule ExAws.ElasticLoadBalancingV2 do
         parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2
       }
   """
-  @type set_subnets_opts :: [
-          subnet_mappings: [subnet_mapping, ...]
-        ]
-  @spec set_subnets(load_balancer_arn :: binary, subnets :: [binary, ...]) ::
-          ExAws.Operation.Query.t()
-  @spec set_subnets(
-          load_balancer_arn :: binary,
-          subnets :: [binary, ...],
-          opts :: set_subnets_opts
-        ) :: ExAws.Operation.Query.t()
+  @spec set_subnets(load_balancer_arn(), subnets(), set_subnets_opts()) :: ExAws.Operation.Query.t()
   def set_subnets(load_balancer_arn, subnets, opts \\ []) do
-    [{:load_balancer_arn, load_balancer_arn}, {:subnets, subnets} | opts]
+    opts
+    |> keyword_to_map()
+    |> Map.merge(%{
+      load_balancer_arn: load_balancer_arn,
+      subnets: subnets
+    })
     |> build_request(:set_subnets)
   end
 
   ####################
   # Helper Functions #
   ####################
+  defp build_request(opts, actions) when is_map(opts) do
+    opts
+    |> Map.to_list()
+    |> build_request(actions)
+  end
 
   defp build_request(opts, action) do
     opts
-    |> Enum.flat_map(&format_param/1)
+    |> Enum.flat_map(&FormatV2.format_param/1)
     |> request(action)
   end
+
+  defp keyword_to_map(keyword) when is_list(keyword) do
+    keyword
+    |> Enum.into(%{}, fn {k, v} -> {k, v} end)
+  end
+
+  defp keyword_to_map(map) when is_map(map), do: map
+  defp keyword_to_map(_), do: %{}
 
   defp request(params, action) do
     action_string = action |> Atom.to_string() |> Macro.camelize()
@@ -1416,94 +3527,5 @@ defmodule ExAws.ElasticLoadBalancingV2 do
       action: action,
       parser: &V2Parser.parse/2
     }
-  end
-
-  defp format_param({:actions, actions}) do
-    actions |> format(prefix: "Actions.member")
-  end
-
-  defp format_param({:attributes, attributes}) do
-    attributes
-    |> Enum.map(fn {key, value} -> [key: maybe_stringify(key), value: value] end)
-    |> format(prefix: "Attributes.member")
-  end
-
-  defp format_param({:certificates, certificates}) do
-    certificates |> format(prefix: "Certificates.member")
-  end
-
-  defp format_param({:conditions, conditions}) do
-    conditions |> format(prefix: "Conditions.member")
-  end
-
-  defp format_param({:default_actions, actions}) do
-    actions |> format(prefix: "DefaultActions.member")
-  end
-
-  defp format_param({:listener_arns, listener_arns}) do
-    listener_arns |> format(prefix: "ListenerArns.member")
-  end
-
-  defp format_param({:load_balancer_arns, load_balancer_arns}) do
-    load_balancer_arns |> format(prefix: "LoadBalancerArns.member")
-  end
-
-  defp format_param({:names, names}) do
-    names |> format(prefix: "Names.member")
-  end
-
-  defp format_param({:resource_arns, resource_arns}) do
-    resource_arns |> format(prefix: "ResourceArns.member")
-  end
-
-  defp format_param({:rule_arns, rule_arns}) do
-    rule_arns |> format(prefix: "RuleArns.member")
-  end
-
-  defp format_param({:rule_priorities, rule_priorities}) do
-    rule_priorities |> format(prefix: "RulePriorities.member")
-  end
-
-  defp format_param({:security_groups, security_groups}) do
-    security_groups |> format(prefix: "SecurityGroups.member")
-  end
-
-  defp format_param({:subnets, subnets}) do
-    subnets |> format(prefix: "Subnets.member")
-  end
-
-  defp format_param({:subnet_mappings, subnet_mappings}) do
-    subnet_mappings |> format(prefix: "SubnetMappings.member")
-  end
-
-  defp format_param({:tags, tags}) do
-    tags
-    |> Enum.map(fn tag ->
-      case is_map(tag) do
-        true ->
-          tag
-
-        false ->
-          {key, value} = tag
-          %{key: maybe_stringify(key), value: value}
-      end
-    end)
-    |> format(prefix: "Tags.member")
-  end
-
-  defp format_param({:tag_keys, tag_keys}) do
-    tag_keys |> format(prefix: "TagKeys.member")
-  end
-
-  defp format_param({:targets, targets}) do
-    targets |> format(prefix: "Targets.member")
-  end
-
-  defp format_param({:target_group_arns, target_group_arns}) do
-    target_group_arns |> format(prefix: "TargetGroupArns.member")
-  end
-
-  defp format_param({key, parameters}) do
-    format([{key, parameters}])
   end
 end

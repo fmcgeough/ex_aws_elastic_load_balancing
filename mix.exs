@@ -2,7 +2,7 @@ defmodule ExAws.ElasticLoadBalancing.Mixfile do
   use Mix.Project
 
   @source_url "https://github.com/fmcgeough/ex_aws_elastic_load_balancing"
-  @version "2.2.2"
+  @version "3.0.0"
 
   def project do
     [
@@ -34,7 +34,7 @@ defmodule ExAws.ElasticLoadBalancing.Mixfile do
   defp deps do
     [
       {:sweet_xml, "~> 0.6", optional: true},
-      {:hackney, "1.6.3 or 1.6.5 or 1.7.1 or 1.8.6 or ~> 1.9", only: [:dev, :test]},
+      {:hackney, "~> 1.16", optional: true},
       {:poison, ">= 1.2.0", optional: true},
       {:ex_doc, "~> 0.39.1", only: [:dev, :test]},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
